@@ -91,8 +91,24 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 }
 .canvas-wrap canvas { position: absolute; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: 100%; display: block; }
 
-#globe-view, #map-view { touch-action: none; cursor: grab; }
-#globe-view:active, #map-view:active { cursor: grabbing; }
+#globe-view, #globe3d-view, #map-view { touch-action: none; cursor: grab; }
+#globe-view:active, #globe3d-view:active, #map-view:active { cursor: grabbing; }
+
+.hidden { display: none; }
+.canvas-wrap canvas.hidden { display: none; }
+
+/* bascule vue de dessus / globe 3D */
+.view-toggle {
+  display: inline-flex; gap: 3px; padding: 3px;
+  background: #0a0f22; border: 1px solid var(--border); border-radius: 999px;
+}
+.view-toggle button {
+  border: 1px solid transparent; background: transparent; color: var(--muted);
+  border-radius: 999px; padding: 4px 12px; font-size: .8rem;
+}
+.view-toggle button[aria-pressed="true"] {
+  background: #243158; border-color: #3b4c86; color: var(--text);
+}
 
 /* petit rappel « attrape la Terre » superposé au globe */
 .drag-hint {

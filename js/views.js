@@ -4,6 +4,8 @@
 
 import { TAU, DEG, PLACES, GREENWICH_LON, placeAngle, subsolarLon, solarHours,
          sunAltitude, wrapLon } from './model.js';
+import { CONTINENTS, GREENLAND, ANTARCTICA_BAND, SEAS, ISLES, ANTILLES,
+         FRANCE } from './geo.js';
 
 const COL = {
   bg: '#070b17',
@@ -46,7 +48,7 @@ export function drawStars(view, ctx, w, h, count) {
 
 // Texte avec halo sombre : lisible sur le jour comme sur la nuit.
 // `clampW`/`clampH` : garde le texte à l'intérieur du canvas (mesure réelle).
-function label(ctx, text, x, y, opts) {
+export function label(ctx, text, x, y, opts) {
   const o = opts || {};
   const size = o.size || 11;
   const weight = o.weight || 700;
@@ -249,59 +251,10 @@ export class PolarView {
 }
 
 // ------------------------------------------------------------- Carte du monde
-// Planisphère « dessiné à la main » : continents très simplifiés, tout en
-// rondeurs. La nuit est une bande verticale (équinoxe) qui balaie la carte
+// Planisphère « dessiné à la main » (contours partagés avec le globe 3D via
+// js/geo.js). La nuit est une bande verticale (équinoxe) qui balaie la carte
 // d'est en ouest ; un petit soleil marque « midi ici », une lune « minuit ici ».
-
-// Contours (longitude, latitude), volontairement approximatifs et ronds.
-const LANDS = [
-  // Amérique du Nord et centrale
-  [[-166, 63], [-152, 68], [-135, 70], [-118, 71], [-100, 73], [-86, 71], [-72, 64],
-   [-58, 52], [-64, 47], [-73, 42], [-77, 35], [-81, 28], [-92, 21], [-97, 17],
-   [-92, 14], [-86, 12], [-81, 9], [-84, 13], [-91, 16], [-100, 20], [-108, 25],
-   [-115, 32], [-123, 40], [-128, 49], [-137, 57], [-150, 59], [-161, 58]],
-  // Amérique du Sud
-  [[-79, 8], [-71, 11], [-62, 9], [-53, 4], [-45, -2], [-37, -7], [-35, -12],
-   [-40, -18], [-48, -24], [-55, -30], [-60, -37], [-64, -45], [-67, -53], [-71, -54],
-   [-73, -46], [-71, -37], [-72, -27], [-70, -17], [-76, -9], [-80, -1], [-82, 5]],
-  // Eurasie (Europe + Asie, d'un seul tenant)
-  [[-10, 36], [-9, 43], [-4, 47], [-4, 49], [2, 50], [6, 54], [9, 57], [15, 56],
-   [23, 59], [31, 62], [44, 67], [59, 71], [78, 74], [98, 74], [117, 72], [136, 69],
-   [155, 65], [170, 62], [176, 60], [170, 58], [158, 55], [147, 50], [139, 43],
-   [131, 39], [125, 33], [119, 25], [111, 19], [106, 12], [103, 4], [99, 7],
-   [96, 13], [92, 20], [87, 22], [83, 15], [79, 7], [75, 13], [70, 21], [63, 25],
-   [56, 25], [50, 15], [45, 13], [41, 20], [37, 30], [33, 36], [26, 37], [19, 39],
-   [12, 41], [5, 41], [-2, 38], [-8, 36]],
-  // Afrique
-  [[-7, 34], [3, 36], [11, 36], [20, 32], [30, 31], [35, 26], [38, 20], [42, 13],
-   [48, 12], [51, 9], [47, 3], [42, -3], [39, -10], [36, -17], [33, -24], [28, -31],
-   [22, -35], [17, -34], [14, -27], [12, -19], [9, -9], [9, -1], [5, 3], [-2, 4],
-   [-9, 5], [-14, 10], [-17, 15], [-16, 22], [-12, 28], [-9, 32]],
-  // Australie
-  [[114, -22], [120, -19], [126, -14], [131, -11], [136, -12], [141, -11], [146, -14],
-   [151, -21], [154, -28], [150, -36], [145, -39], [138, -36], [131, -32], [124, -33],
-   [117, -34], [113, -27]],
-];
-const ICES = [
-  // Groenland
-  [[-52, 60], [-47, 66], [-38, 72], [-27, 73], [-19, 69], [-26, 63], [-36, 60], [-45, 59]],
-  // Antarctique (bande du bas, les coins passent sous le cadre arrondi)
-  [[-185, -71], [-150, -73], [-120, -71], [-90, -74], [-60, -71], [-30, -73], [0, -71],
-   [30, -74], [60, -71], [90, -73], [120, -71], [150, -74], [185, -71], [185, -95], [-185, -95]],
-];
-// Îles et presqu'îles en ellipses : [lon, lat, rayon lon°, rayon lat°, rotation]
-const ISLES = [
-  [-2.5, 53.5, 3, 4.6, 0], [-8, 53.2, 2.2, 2.6, 0], [-19, 65, 3, 2, 0],       // îles Britanniques, Islande
-  [47, -19.5, 2.4, 5.5, 0.3], [80.8, 7.5, 1.3, 1.9, 0],                        // Madagascar, Sri Lanka
-  [-79.5, 21.8, 4.6, 1.3, -0.15], [-71, 19, 2.7, 1.3, 0],                      // Cuba, Hispaniola
-  [141, 42, 2, 3, 0.3], [137, 36, 2, 2.6, 0.5], [131.5, 33.2, 2.2, 1.7, 0.4], // Japon
-  [101.5, -0.8, 6, 2.1, -0.55], [110.5, -7.3, 5.2, 1.4, 0.08],                 // Sumatra, Java
-  [114, 0.5, 4.6, 4.8, 0], [121.5, -2, 2, 3.2, 0.2], [141, -5.5, 7.5, 3.2, 0.12], // Bornéo, Célèbes, Nouvelle-Guinée
-  [115.5, -8.6, 1.1, 0.85, 0],                                                 // Bali !
-  [173, -39, 1.5, 2.8, 0.35], [169, -44.5, 1.5, 2.6, 0.35],                    // Nouvelle-Zélande
-];
-// Petites Antilles : l'arc d'îles autour de la Guadeloupe
-const ANTILLES = [[-63, 18.1], [-62.2, 17.2], [-61.5, 16.25], [-61.2, 15.4], [-61, 14.6], [-60.9, 13.8]];
+// La France, pays du récit, est surlignée en rose avec ses frontières.
 
 export class MapView {
   constructor(canvas) { this.canvas = canvas; this.layout = null; }
@@ -342,18 +295,29 @@ export class MapView {
       ctx.fillStyle = fill; ctx.fill();
       ctx.strokeStyle = COL.landEdge; ctx.lineWidth = 1.4; ctx.stroke();
     };
-    for (const land of LANDS) drawLand(land, COL.land);
-    for (const ice of ICES) drawLand(ice, COL.ice);
+    for (const land of CONTINENTS) drawLand(land, COL.land);
+    drawLand(GREENLAND, COL.ice);
+    drawLand(ANTARCTICA_BAND, COL.ice);
     for (const [lon, lat, rx, ry, rot] of ISLES) {
       ctx.beginPath();
       ctx.ellipse(X(lon), Y(lat), rx * W / 360, ry * H / 180, rot, 0, TAU);
       ctx.fillStyle = COL.land; ctx.fill();
       ctx.strokeStyle = COL.landEdge; ctx.lineWidth = 1.2; ctx.stroke();
     }
+    // mers intérieures et grands lacs, posés par-dessus les terres
+    for (const [lon, lat, rx, ry, rot] of SEAS) {
+      ctx.beginPath();
+      ctx.ellipse(X(lon), Y(lat), rx * W / 360, ry * H / 180, rot, 0, TAU);
+      ctx.fillStyle = '#3c7fd0'; ctx.fill();
+    }
     ctx.fillStyle = COL.land;
     for (const [lon, lat] of ANTILLES) {
       ctx.beginPath(); ctx.ellipse(X(lon), Y(lat), 2.2, 3, 0.2, 0, TAU); ctx.fill();
     }
+    // la France et ses frontières, surlignées en rose
+    smoothPath(ctx, FRANCE.map((p) => [X(p[0]), Y(p[1])]));
+    ctx.fillStyle = 'rgba(255, 107, 157, 0.3)'; ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 107, 157, 0.85)'; ctx.lineWidth = 1.3; ctx.stroke();
 
     // méridien de Greenwich
     ctx.setLineDash([4, 6]); ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)'; ctx.lineWidth = 1.3;

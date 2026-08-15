@@ -4,6 +4,7 @@
 import { TAU, PLACES, SCENARIOS, wrap24, localClock, formatHM, periodWord,
          activityFor, dayBadge } from './model.js';
 import { PolarView, MapView, SkyView, buildClock } from './views.js';
+import { Globe3D } from './view3d.js';
 
 const $ = (id) => document.getElementById(id);
 const wrapPi = (a) => ((a + Math.PI) % TAU + TAU) % TAU - Math.PI;
@@ -17,7 +18,9 @@ const sim = {
 };
 
 const globe = new PolarView($('globe-view'));
+const globe3d = new Globe3D($('globe3d-view'));
 const map = new MapView($('map-view'));
+let viewMode = 'flat'; // 'flat' (pôle Nord) ou 'globe' (3D orbitable)
 
 // Une vignette par lieu : horloge, textes, ciel.
 const cards = PLACES.map((place) => ({
@@ -51,7 +54,31 @@ function hideHint() {
   const hint = $('drag-hint');
   if (hint) hint.classList.add('hide');
 }
-setTimeout(hideHint, 8000);
+let hintTimer = setTimeout(hideHint, 8000);
+
+// ---- bascule vue de dessus / globe 3D ----
+
+const HINTS = {
+  flat: '👆 Attrape la Terre et fais-la tourner !',
+  globe: '👆 Fais le tour de la Terre — va voir la nuit !',
+};
+
+function setViewMode(mode) {
+  viewMode = mode;
+  $('globe-view').classList.toggle('hidden', mode !== 'flat');
+  $('globe3d-view').classList.toggle('hidden', mode !== 'globe');
+  $('title-flat').classList.toggle('hidden', mode !== 'flat');
+  $('title-globe').classList.toggle('hidden', mode !== 'globe');
+  $('btn-view-flat').setAttribute('aria-pressed', mode === 'flat' ? 'true' : 'false');
+  $('btn-view-globe').setAttribute('aria-pressed', mode === 'globe' ? 'true' : 'false');
+  const hint = $('drag-hint');
+  hint.textContent = HINTS[mode];
+  hint.classList.remove('hide');
+  clearTimeout(hintTimer);
+  hintTimer = setTimeout(hideHint, 6000);
+}
+$('btn-view-flat').addEventListener('click', () => setViewMode('flat'));
+$('btn-view-globe').addEventListener('click', () => setViewMode('globe'));
 
 // ---- le grand curseur ----
 
@@ -126,7 +153,32 @@ function wireMapDrag(canvas) {
   canvas.addEventListener('pointercancel', end);
 }
 
+// Sur le globe 3D, glisser ne change pas l'heure : on ORBITE autour de la
+// Terre (lacet libre, inclinaison bornée) pendant qu'elle continue de tourner.
+function wireOrbitDrag(canvas) {
+  let dragging = false, lastX = 0, lastY = 0;
+  canvas.addEventListener('pointerdown', (e) => {
+    if (!globe3d.layout) return;
+    dragging = true;
+    lastX = e.clientX; lastY = e.clientY;
+    if (canvas.setPointerCapture) canvas.setPointerCapture(e.pointerId);
+    hideHint();
+    e.preventDefault();
+  });
+  canvas.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    const R = globe3d.layout.R;
+    globe3d.yaw += (e.clientX - lastX) / R;
+    globe3d.pitch = Math.max(-1.2, Math.min(1.2, globe3d.pitch + (e.clientY - lastY) / R));
+    lastX = e.clientX; lastY = e.clientY;
+  });
+  const end = () => { dragging = false; };
+  canvas.addEventListener('pointerup', end);
+  canvas.addEventListener('pointercancel', end);
+}
+
 wireGlobeDrag($('globe-view'));
+wireOrbitDrag($('globe3d-view'));
 wireMapDrag($('map-view'));
 
 // ---- les boutons-scénarios ----
@@ -246,7 +298,8 @@ function frame(ms) {
     } else if (sim.playing) {
       sim.homeH = wrap24(sim.homeH + sim.spinSpeed * dt);
     }
-    globe.draw(sim.homeH);
+    if (viewMode === 'flat') globe.draw(sim.homeH);
+    else globe3d.draw(sim.homeH);
     map.draw(sim.homeH);
     updateCards();
   } finally {

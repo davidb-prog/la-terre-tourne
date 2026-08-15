@@ -35,12 +35,20 @@
 
     <div class="sim-grid">
       <div class="panel canvas-panel globe-panel">
-        <div class="canvas-title">La Terre vue de dessus
-          <span class="hint">(on la regarde depuis le pôle Nord)</span>
+        <div class="canvas-title">
+          <span id="title-flat">La Terre vue de dessus
+            <span class="hint">(on la regarde depuis le pôle Nord)</span></span>
+          <span id="title-globe" class="hidden">La Terre en vrai globe
+            <span class="hint">(glisse pour en faire le tour)</span></span>
+          <span class="view-toggle" role="group" aria-label="Choisir la représentation de la Terre">
+            <button id="btn-view-flat" aria-pressed="true">vue de dessus</button>
+            <button id="btn-view-globe" aria-pressed="false">globe en 3D</button>
+          </span>
           <button id="btn-spin" class="spin-btn" aria-pressed="true">⏸ Elle tourne toute seule</button>
         </div>
         <div class="canvas-wrap ratio-square">
           <canvas id="globe-view" aria-label="La Terre vue du pôle Nord. Le Soleil, fixe à droite, éclaire une moitié de la Terre : de ce côté c’est le jour, de l’autre la nuit. Trois points colorés marquent la Guadeloupe, la France et Bali, et la ligne pointillée le méridien de Greenwich. Faites glisser pour faire tourner la Terre et changer l’heure."></canvas>
+          <canvas id="globe3d-view" class="hidden" aria-label="La Terre en trois dimensions, avec les continents dessinés et la France surlignée. Le Soleil, fixe, éclaire une moitié ; faites glisser pour tourner autour du globe et découvrir le côté nuit. Les trois lieux apparaissent quand ils sont du côté visible."></canvas>
           <div class="drag-hint" id="drag-hint">👆 Attrape la Terre et fais-la tourner !</div>
         </div>
         <div class="time-control">
