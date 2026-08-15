@@ -61,17 +61,6 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 .hint { color: var(--muted); font-weight: 400; font-size: .78em; }
 .muted { color: var(--muted); }
 
-/* ---------- l'histoire à lire ensemble ---------- */
-
-.story-intro { padding: 22px 26px; margin-bottom: 16px; font-size: 1.12rem; line-height: 1.75; }
-.story-intro p { margin: .5em 0; }
-.hl-sun { color: var(--sun); }
-.hl-night { color: #9db9ff; }
-.hl-earth { color: var(--earth); }
-.hl-guadeloupe { color: var(--teal); }
-.hl-france { color: var(--rose); }
-.hl-bali { color: var(--violet); }
-
 /* ---------- grille du simulateur ---------- */
 
 .sim-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(300px, 5fr); gap: 16px; }
@@ -91,24 +80,10 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 }
 .canvas-wrap canvas { position: absolute; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: 100%; display: block; }
 
-#globe-view, #globe3d-view, #map-view { touch-action: none; cursor: grab; }
-#globe-view:active, #globe3d-view:active, #map-view:active { cursor: grabbing; }
+#globe3d-view, #map-view { touch-action: none; cursor: grab; }
+#globe3d-view:active, #map-view:active { cursor: grabbing; }
 
 .hidden { display: none; }
-.canvas-wrap canvas.hidden { display: none; }
-
-/* bascule vue de dessus / globe 3D */
-.view-toggle {
-  display: inline-flex; gap: 3px; padding: 3px;
-  background: #0a0f22; border: 1px solid var(--border); border-radius: 999px;
-}
-.view-toggle button {
-  border: 1px solid transparent; background: transparent; color: var(--muted);
-  border-radius: 999px; padding: 4px 12px; font-size: .8rem;
-}
-.view-toggle button[aria-pressed="true"] {
-  background: #243158; border-color: #3b4c86; color: var(--text);
-}
 
 /* petit rappel « attrape la Terre » superposé au globe */
 .drag-hint {
@@ -173,9 +148,9 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 
 /* ---------- les trois vignettes-maisons ---------- */
 
-.vignettes { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.vignettes { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 
-.vignette { padding: 12px 14px 14px; border-top: 3px solid var(--place, var(--border)); }
+.vignette { padding: 10px 13px 12px; border-top: 3px solid var(--place, var(--border)); }
 .vignette-guadeloupe { --place: #46c2a5; }
 .vignette-france { --place: #ff6b9d; }
 .vignette-bali { --place: #a98bff; }
@@ -192,7 +167,7 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 .day-badge.yesterday { background: #0e3a33; color: #7fe0c8; border: 1px solid #2f8f7a; }
 
 .vignette-body { display: flex; gap: 14px; align-items: center; }
-.clock-slot { flex: none; width: 80px; height: 80px; }
+.clock-slot { flex: none; width: 72px; height: 72px; }
 .clock { width: 100%; height: 100%; display: block; }
 .clock-face { fill: #0d1428; stroke: var(--place, var(--border)); stroke-width: 3; }
 .clock-tick { stroke: rgba(233, 237, 248, .38); stroke-width: 2; stroke-linecap: round; }
@@ -203,11 +178,11 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 .clock-center { fill: var(--text); }
 
 .clock-text { min-width: 0; }
-.clock-digital { font-size: 1.8rem; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.clock-digital { font-size: 1.6rem; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .clock-period { color: var(--muted); font-size: .92rem; }
 .activity { color: var(--muted); font-size: .88rem; margin-top: 5px; }
 
-.sky-wrap { position: relative; margin-top: 10px; height: 96px; border-radius: 10px; overflow: hidden; background: #070b17; }
+.sky-wrap { position: relative; margin-top: 9px; height: 86px; border-radius: 10px; overflow: hidden; background: #070b17; }
 .sky-wrap canvas { position: absolute; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: 100%; display: block; }
 
 /* ---------- boutons-scénarios + histoire ---------- */
@@ -253,12 +228,18 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 .map-caption strong { color: var(--text); }
 .map-caption.muted { font-size: .83rem; color: var(--muted); }
 
-/* ---------- note aux parents ---------- */
+/* ---------- note aux parents (repliée) ---------- */
 
-.parents { margin-top: 26px; padding: 20px 24px; }
-.parents h2 { margin: 0 0 10px; font-size: 1.15rem; color: var(--sun); }
-.parents ul { margin: 0; padding-left: 1.25em; }
-.parents li { margin: 9px 0; color: #c9d2ea; font-size: .95rem; }
+.parents { margin-top: 22px; }
+.parents summary {
+  cursor: pointer; padding: 14px 20px; font-weight: 700; color: var(--sun);
+  list-style: none;
+}
+.parents summary::-webkit-details-marker { display: none; }
+.parents summary::before { content: '▸ '; }
+.parents[open] summary::before { content: '▾ '; }
+.parents ul { margin: 0; padding: 0 24px 18px 2.6em; }
+.parents li { margin: 8px 0; color: #c9d2ea; font-size: .93rem; }
 .parents strong { color: var(--text); }
 
 /* ---------- boutons génériques ---------- */
@@ -300,4 +281,60 @@ button:focus-visible, input:focus-visible, a:focus-visible {
   .drag-hint { transition: none; }
   .scn, button { transition: none; }
   html { scroll-behavior: auto; }
+}
+
+/* ---------- recherche de lieux ---------- */
+
+.search-row { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; margin: 0 2px 10px; }
+.search-box { position: relative; flex: 1 1 240px; min-width: 220px; }
+#place-search {
+  width: 100%; font: inherit; font-size: 1rem; color: var(--text);
+  background: #0a0f22; border: 1px solid var(--border); border-radius: 999px;
+  padding: 10px 16px; outline: none;
+  -webkit-appearance: none; appearance: none;
+}
+#place-search:focus { border-color: #3b4c86; box-shadow: 0 0 0 3px rgba(90, 167, 255, .25); }
+#place-search::placeholder { color: var(--muted); }
+.search-results {
+  position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 30;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+  padding: 6px; box-shadow: 0 12px 30px rgba(0, 0, 0, .5);
+  max-height: 280px; overflow-y: auto;
+}
+.search-results button {
+  display: flex; width: 100%; align-items: baseline; gap: 8px; text-align: left;
+  background: transparent; border: none; border-radius: 9px; padding: 8px 10px; font-size: .98rem;
+}
+.search-results button:hover, .search-results button:focus-visible { background: var(--surface-2); }
+.search-results .sub { color: var(--muted); font-size: .8rem; margin-left: auto; white-space: nowrap; }
+.search-results .none { color: var(--muted); padding: 8px 10px; font-size: .9rem; }
+.search-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.search-chips button {
+  font-size: .8rem; padding: 4px 11px; border-radius: 999px;
+  background: #0a0f22; border: 1px solid var(--border); color: var(--muted);
+}
+.search-chips button:hover { color: var(--text); border-color: #3b4c86; filter: none; }
+
+/* bouton retirer de la carte invitée */
+.card-close {
+  flex: none; width: 26px; height: 26px; padding: 0; line-height: 1; font-size: .85rem;
+  border-radius: 50%; color: var(--muted);
+}
+.card-close:hover { color: var(--text); }
+
+/* ---------- plein écran du globe ---------- */
+
+.globe-panel:fullscreen {
+  display: flex; flex-direction: column; border-radius: 0; padding: 12px 14px;
+  background: #0b1020;
+}
+.globe-panel:fullscreen .canvas-wrap { flex: 1; height: auto; min-height: 0; }
+.globe-panel.fs-fallback {
+  position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 60;
+  display: flex; flex-direction: column; border-radius: 0; margin: 0;
+  overflow-y: auto;
+}
+.globe-panel.fs-fallback .canvas-wrap { flex: 1; height: auto; min-height: 220px; }
+@supports (aspect-ratio: 1 / 1) {
+  .globe-panel:fullscreen .canvas-wrap, .globe-panel.fs-fallback .canvas-wrap { aspect-ratio: auto; }
 }

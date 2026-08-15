@@ -1,9 +1,10 @@
-// Tests du jeu de données géographiques — zéro dépendance : `node test/geo.test.mjs`
-// Bornes valides + « les bons endroits tombent dans les bonnes formes ».
+// Tests du jeu de données géographiques (Natural Earth 110m, généré) —
+// zéro dépendance : `node test/geo.test.mjs`
+// Bornes valides + « les bons endroits tombent dans les bons pays ».
 
-import { CONTINENTS, GREENLAND, ANTARCTICA_BAND, ANTARCTICA_RING, SEAS, ISLES,
-         ANTILLES, FRANCE } from '../js/geo.js';
+import { COUNTRIES, LAKES, ICE_ISOS, FRANCE_ISO, ANTILLES, SPECKS } from '../js/geo.js';
 import { PLACES } from '../js/model.js';
+import { GAZETTEER, searchPlaces, flagEmoji, normalize } from '../js/places.js';
 
 let failed = 0;
 let passed = 0;
@@ -22,47 +23,69 @@ function inside(pt, poly) {
   }
   return c;
 }
-const inAnyLand = (pt) => CONTINENTS.some((poly) => inside(pt, poly));
+const byIso = {};
+for (const c of COUNTRIES) byIso[c.iso] = c;
+const inCountry = (pt, iso) => byIso[iso] && byIso[iso].rings.some((r) => inside(pt, r));
+const inAnyLand = (pt) => COUNTRIES.some((c) => c.rings.some((r) => inside(pt, r)));
 
-console.log('Bornes et formes');
+console.log('Bornes et volume des données');
 {
-  const all = CONTINENTS.concat([GREENLAND, ANTARCTICA_BAND, ANTARCTICA_RING, FRANCE]);
-  let ok = true;
-  for (const poly of all) {
-    if (poly.length < 12) ok = false;
-    for (const [lon, lat] of poly) {
-      if (lon < -185 || lon > 185 || lat < -95 || lat > 90) ok = false;
+  let ok = true, pts = 0;
+  for (const c of COUNTRIES) {
+    for (const ring of c.rings) {
+      pts += ring.length;
+      for (const [lon, lat] of ring) {
+        if (lon < -180.01 || lon > 180.01 || lat < -90.01 || lat > 90.01) ok = false;
+      }
     }
   }
-  check('polygones assez détaillés, coordonnées dans les bornes', ok);
-  check('5 continents, des mers intérieures, un bon paquet d’îles',
-    CONTINENTS.length === 5 && SEAS.length >= 4 && ISLES.length >= 25);
-  const pts = CONTINENTS.reduce((n, p) => n + p.length, 0);
-  check('côtes nettement plus détaillées que des patatoïdes (≥ 300 points)', pts >= 300, String(pts));
+  check('coordonnées dans les bornes', ok);
+  check('~177 pays, des lacs, beaucoup de points',
+    COUNTRIES.length >= 170 && LAKES.length >= 15 && pts >= 8000,
+    COUNTRIES.length + ' pays, ' + LAKES.length + ' lacs, ' + pts + ' points');
+  check('la glace connaît l’Antarctique et le Groenland', ICE_ISOS.AQ === true && ICE_ISOS.GL === true);
 }
 
-console.log('Les bons endroits tombent au bon endroit');
-check('Paris est en France (frontières tracées)', inside([2.35, 46.5], FRANCE));
-check('Paris est aussi sur le continent eurasiatique', inside([2.35, 46.5], CONTINENTS[0]));
-check('Moscou, Delhi et Pékin sont en Eurasie',
-  inside([37.6, 55.7], CONTINENTS[0]) && inside([77.2, 28.6], CONTINENTS[0]) &&
-  inside([116.4, 39.9], CONTINENTS[0]));
-check('le Tchad est en Afrique', inside([18, 12], CONTINENTS[1]));
-check('le Kansas est en Amérique du Nord', inside([-98, 38.5], CONTINENTS[2]));
-check('l’Amazonie est en Amérique du Sud', inside([-60, -5], CONTINENTS[3]));
-check('Alice Springs est en Australie', inside([133.9, -23.7], CONTINENTS[4]));
-check('le milieu de l’Atlantique et du Pacifique sont bien de l’océan',
+console.log('Les bons endroits tombent dans les bons pays');
+check('Paris est en France', inCountry([2.35, 48.86], FRANCE_ISO));
+check('la Corse aussi', inCountry([9.1, 42.2], FRANCE_ISO));
+check('Tokyo est au Japon', inCountry([139.7, 35.7], 'JP'));
+check('le Kansas est aux États-Unis', inCountry([-98, 38.5], 'US'));
+check('Alice Springs est en Australie', inCountry([133.9, -23.7], 'AU'));
+check('Brasilia est au Brésil', inCountry([-47.9, -15.8], 'BR'));
+check('Le Caire est en Égypte', inCountry([31.2, 30], 'EG'));
+check('Java est en Indonésie', inCountry([110, -7.3], 'ID'));
+check('Bali, La Réunion et Tahiti ont leur île dessinée à la main',
+  [[115.2, -8.6], [55.45, -20.9], [-149.57, -17.55]].every((pt) =>
+    SPECKS.some(([lon, lat, r]) => Math.abs(lon - pt[0]) < r + 0.4 && Math.abs(lat - pt[1]) < r + 0.4)));
+check('le milieu des océans est bien de l’eau',
   !inAnyLand([-30, 0]) && !inAnyLand([-150, 0]) && !inAnyLand([80, -40]));
+check('la Guadeloupe garde son arc d’Antilles dessiné à la main',
+  ANTILLES.some(([lon, lat]) => Math.abs(lon - PLACES[0].lonDeg) < 0.6 && Math.abs(lat - 16.25) < 0.6));
+
+console.log('Le répertoire de recherche');
 {
-  const bali = PLACES[2];
-  const isle = ISLES.some(([lon, lat, rlon, rlat]) =>
-    Math.abs(lon - bali.lonDeg) <= rlon + 0.4 && Math.abs(lat - (-8.6)) <= rlat + 0.4);
-  check('Bali a son île dans l’archipel indonésien', isle);
-  const guad = PLACES[0];
-  const antille = ANTILLES.some(([lon, lat]) =>
-    Math.abs(lon - guad.lonDeg) < 0.6 && Math.abs(lat - 16.25) < 0.6);
-  check('la Guadeloupe a son île dans l’arc des Antilles', antille);
-  check('la France du récit est dans sa forme surlignée', inside([PLACES[1].lonDeg, 46.6], FRANCE));
+  let ok = true;
+  for (const e of GAZETTEER) {
+    if (!(e.lat >= -90 && e.lat <= 90 && e.lon >= -180 && e.lon <= 180)) ok = false;
+    if (!(e.tz >= -12 && e.tz <= 14)) ok = false;
+    if (!e.n) ok = false;
+  }
+  check('~220 lieux, coordonnées et décalages valides', ok && GAZETTEER.length >= 200,
+    GAZETTEER.length + ' lieux');
+  check('« tokyo » trouve Tokyo', searchPlaces('tokyo', 3)[0].n === 'Tokyo');
+  check('« reunion » (sans accent) trouve La Réunion', searchPlaces('reunion', 3)[0].n === 'La Réunion');
+  check('« tahiti » trouve Papeete', searchPlaces('tahiti', 3)[0].n === 'Papeete');
+  check('« new » propose New York et New Delhi',
+    searchPlaces('new', 8).map((e) => e.n).join('|').indexOf('New York') !== -1 &&
+    searchPlaces('new', 8).map((e) => e.n).join('|').indexOf('New Delhi') !== -1);
+  check('l’Inde vit à +5 h 30, le Népal à +5 h 45',
+    searchPlaces('inde', 1)[0].tz === 5.5 && searchPlaces('nepal', 3)[0].tz === 5.75);
+  check('chaque pays cherché a son polygone à surligner',
+    ['JP', 'AU', 'BR', 'IN', 'MA'].every((iso) => byIso[iso] && byIso[iso].rings.length > 0));
+  check('drapeaux émoji', flagEmoji('FR').length > 0 && flagEmoji('') === '📍');
+  check('normalisation : accents et tirets neutralisés',
+    normalize('Île-de-Fràn ce') === 'ile de fran ce');
 }
 
 console.log('');

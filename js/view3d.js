@@ -1,18 +1,19 @@
 // Globe 3D « maison » : projection orthographique en canvas 2D, comme la vue 3D
 // de l'épisode 1 — aucune bibliothèque. Le Soleil est fixe dans l'espace ; la
 // Terre tourne avec l'heure ; on glisse pour orbiter autour et aller voir la
-// nuit. Les continents (js/geo.js) sont découpés à l'horizon de la sphère et
-// recousus le long du limbe.
+// nuit. Les pays (js/geo.js, Natural Earth 110m) sont découpés à l'horizon de
+// la sphère et recousus le long du limbe.
 
-import { TAU, DEG, PLACES, GREENWICH_LON, placeAngle } from './model.js';
-import { CONTINENTS, GREENLAND, ANTARCTICA_RING, SEAS, ISLES, ANTILLES,
-         FRANCE } from './geo.js';
+import { TAU, DEG, GREENWICH_LON, placeAngle } from './model.js';
+import { COUNTRIES, LAKES, ICE_ISOS, FRANCE_ISO, ANTILLES, SPECKS } from './geo.js';
 import { fitCanvas, drawStars, label } from './views.js';
 
 const COL3D = {
   bg: '#070b17',
-  land: '#4fc79f', landEdge: 'rgba(16, 60, 48, 0.4)',
+  land: '#4fc79f', landEdge: 'rgba(16, 60, 48, 0.35)',
+  border: 'rgba(10, 40, 32, 0.55)',
   ice: '#cfdff0',
+  lake: '#3c7fd0',
   night: '8, 17, 42',
 };
 
@@ -23,29 +24,13 @@ const norm = (v) => {
   return [v[0] / n, v[1] / n, v[2] / n];
 };
 
-// Les ellipses de la carte (îles, mers intérieures) deviennent de petits
-// polygones lon/lat : le globe les incurve et les raccourcit correctement.
-// La rotation des ellipses est définie en repère écran (y vers le bas).
-function ellipsePoly(e) {
-  const cr = Math.cos(e[4] || 0), sr = Math.sin(e[4] || 0);
-  const pts = [];
-  for (let i = 0; i < 18; i++) {
-    const t = i / 18 * TAU;
-    const du = e[2] * Math.cos(t) * cr - e[3] * Math.sin(t) * sr;
-    const dv = e[2] * Math.cos(t) * sr + e[3] * Math.sin(t) * cr;
-    pts.push([e[0] + du, e[1] - dv]);
-  }
-  return pts;
-}
-const ISLE_POLYS = ISLES.map(ellipsePoly);
-const SEA_POLYS = SEAS.map(ellipsePoly);
-
 export class Globe3D {
   constructor(canvas) {
     this.canvas = canvas;
-    this.yaw = -55 * DEG;  // caméra : le matin d'Europe au centre, le Soleil à droite
+    this.yaw = -55 * DEG;  // caméra : l'Europe au centre au chargement (midi)
     this.pitch = 16 * DEG; // pôle Nord légèrement penché vers nous
     this.layout = null;
+    this.pulse = null;     // { lonDeg, latDeg, k } — anneau après un vol
   }
 
   // (lon, lat) → vecteur unitaire dans le repère caméra.
@@ -58,13 +43,14 @@ export class Globe3D {
     return [cp * Math.cos(lam), y0 * this._ct - z0 * this._st, y0 * this._st + z0 * this._ct];
   }
 
-  draw(homeH) {
+  // places : liste de lieux à marquer ; highlightIso : pays à surligner (invité).
+  draw(homeH, places, highlightIso, highlightColor) {
     const { ctx, w, h } = fitCanvas(this.canvas);
     ctx.fillStyle = COL3D.bg; ctx.fillRect(0, 0, w, h);
     drawStars(this, ctx, w, h, 150);
 
     const S = Math.min(w, h);
-    const cx = 0.5 * w, cy = 0.5 * h, R = 0.42 * S;
+    const cx = 0.5 * w, cy = 0.5 * h, R = 0.44 * S;
     this.layout = { cx: cx, cy: cy, R: R };
     this._spin = placeAngle(homeH, GREENWICH_LON);
     this._ct = Math.cos(this.pitch); this._st = Math.sin(this.pitch);
@@ -72,7 +58,7 @@ export class Globe3D {
     // le Soleil, fixe dans l'espace (azimut 0), vu dans le repère caméra
     const sl = this.yaw;
     const sun = [Math.cos(sl), Math.sin(sl) * this._ct, Math.sin(sl) * this._st];
-    const sunScreen = norm([sun[0], -sun[2], 0]); // direction du Soleil sur l'écran
+    const sunScreen = norm([sun[0], -sun[2], 0]);
 
     // halo du Soleil au bord de l'écran, seulement s'il est de notre côté
     const facing = Math.max(0, -sun[1] + 0.25);
@@ -104,18 +90,37 @@ export class Globe3D {
     ctx.save();
     ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.clip();
 
-    // terres, glaces, France
-    for (const land of CONTINENTS) this.shape(ctx, land, cx, cy, R, COL3D.land, COL3D.landEdge);
-    this.shape(ctx, GREENLAND, cx, cy, R, COL3D.ice, COL3D.landEdge);
-    this.shape(ctx, ANTARCTICA_RING, cx, cy, R, COL3D.ice, COL3D.landEdge);
-    for (const isle of ISLE_POLYS) this.shape(ctx, isle, cx, cy, R, COL3D.land, COL3D.landEdge);
-    for (const sea of SEA_POLYS) this.shape(ctx, sea, cx, cy, R, '#3c7fd0');
+    // pays (avec leurs frontières), glaces, lacs
+    for (const country of COUNTRIES) {
+      const fill = ICE_ISOS[country.iso] ? COL3D.ice : COL3D.land;
+      for (const ring of country.rings) {
+        this.shape(ctx, ring, cx, cy, R, fill, COL3D.border);
+      }
+    }
+    for (const lake of LAKES) this.shape(ctx, lake, cx, cy, R, COL3D.lake);
     for (const [lon, lat] of ANTILLES) this.spot(ctx, lon, lat, 1.8, COL3D.land, cx, cy, R);
-    this.shape(ctx, FRANCE, cx, cy, R, 'rgba(255, 107, 157, 0.45)', 'rgba(255, 107, 157, 0.9)');
+    for (const [lon, lat, r] of SPECKS) {
+      this.spot(ctx, lon, lat, Math.max(1.4, r * DEG * R), COL3D.land, cx, cy, R);
+    }
 
-    // équateur et méridien de Greenwich
+    // la France (chez nous) toujours en rose, le pays cherché dans sa couleur
+    for (const country of COUNTRIES) {
+      const hl = country.iso === FRANCE_ISO ? 'rgba(255, 107, 157, 0.45)'
+        : (highlightIso && country.iso === highlightIso)
+          ? 'rgba(255, 207, 92, 0.4)' : null;
+      if (!hl) continue;
+      const edge = country.iso === FRANCE_ISO ? 'rgba(255, 107, 157, 0.9)'
+        : (highlightColor || 'rgba(255, 207, 92, 0.9)');
+      for (const ring of country.rings) this.shape(ctx, ring, cx, cy, R, hl, edge);
+    }
+
+    // les 24 fuseaux : un méridien tous les 15°, Greenwich en pointillé + équateur
+    for (let k = 0; k < 24; k++) {
+      const lon = -180 + 7.5 + k * 15;
+      this.arc(ctx, (t) => [lon, t * 168 - 84], 'rgba(255, 255, 255, 0.1)', [], cx, cy, R);
+    }
     this.arc(ctx, (t) => [t * 360 - 180, 0], 'rgba(255, 255, 255, 0.16)', [], cx, cy, R);
-    this.arc(ctx, (t) => [GREENWICH_LON, t * 170 - 85], 'rgba(255, 255, 255, 0.45)', [5, 6], cx, cy, R);
+    this.arc(ctx, (t) => [GREENWICH_LON, t * 170 - 85], 'rgba(255, 255, 255, 0.5)', [5, 6], cx, cy, R);
 
     // la nuit : la moitié qui tourne le dos au Soleil, avec un crépuscule tout doux
     this.nightCap(ctx, sun, 0.07, 0.26, cx, cy, R);
@@ -148,9 +153,9 @@ export class Globe3D {
     ctx.strokeStyle = 'rgba(150, 180, 240, 0.45)'; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
 
-    // les trois maisons — seulement du côté qu'on regarde
-    for (const p of PLACES) {
-      const v = this.point(p.lonDeg, p.id === 'guadeloupe' ? 16.25 : p.id === 'france' ? 46.5 : -8.6);
+    // les maisons — seulement du côté qu'on regarde
+    for (const p of places) {
+      const v = this.point(p.lonDeg, p.latDeg);
       if (-v[1] < 0.06) continue;
       const x = cx + R * v[0], y = cy - R * v[2];
       const s = 5 + 2.5 * -v[1];
@@ -163,9 +168,21 @@ export class Globe3D {
       label(ctx, p.name, x, y - s - 9,
         { align: 'center', size: 12.5, color: p.color, clampW: w, clampH: h });
     }
+
+    // petit anneau qui pulse à l'arrivée d'un vol
+    if (this.pulse && this.pulse.k > 0) {
+      const v = this.point(this.pulse.lonDeg, this.pulse.latDeg);
+      if (-v[1] > 0) {
+        const x = cx + R * v[0], y = cy - R * v[2];
+        ctx.strokeStyle = 'rgba(255, 207, 92, ' + (0.9 * this.pulse.k) + ')';
+        ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(x, y, 8 + (1 - this.pulse.k) * 30, 0, TAU); ctx.stroke();
+      }
+      this.pulse.k -= 0.02;
+    }
   }
 
-  // Petit disque (île, mer intérieure) si le point regarde vers nous.
+  // Petit disque (îlot) si le point regarde vers nous.
   spot(ctx, lon, lat, r, fill, cx, cy, R) {
     const v = this.point(lon, lat);
     if (-v[1] < 0.03) return;
@@ -238,8 +255,8 @@ export class Globe3D {
         if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y);
       }
       const last = pts[pts.length - 1], first = pts[0];
-      let aEnd = Math.atan2(last[2], last[0]);
-      let aStart = Math.atan2(first[2], first[0]);
+      const aEnd = Math.atan2(last[2], last[0]);
+      const aStart = Math.atan2(first[2], first[0]);
       // referme par le côté du limbe qui est dans la nuit
       const mid = (dir) => {
         const m = aEnd + dir * (((aStart - aEnd) * dir % TAU + TAU) % TAU) / 2;
@@ -260,19 +277,19 @@ export class Globe3D {
 
   // Polygone (lon, lat) découpé à l'horizon de la sphère et recousu au limbe.
   shape(ctx, pts, cx, cy, R, fill, stroke) {
-    // densifie les bords (4° max) pour suivre la courbure
+    // densifie les bords (5° max) pour suivre la courbure
     const dense = [];
     for (let i = 0; i < pts.length; i++) {
       const a = pts[i], b = pts[(i + 1) % pts.length];
-      const n = Math.max(1, Math.ceil(Math.max(Math.abs(b[0] - a[0]), Math.abs(b[1] - a[1])) / 4));
+      const gap = Math.max(Math.abs(b[0] - a[0]), Math.abs(b[1] - a[1]));
+      const n = gap > 5 ? Math.ceil(gap / 5) : 1;
       for (let k = 0; k < n; k++) {
         dense.push(this.point(a[0] + (b[0] - a[0]) * k / n, a[1] + (b[1] - a[1]) * k / n));
       }
     }
     const N = dense.length;
-    const frontOf = (p) => -p[1] > 0;
     let firstBack = -1;
-    for (let i = 0; i < N; i++) if (!frontOf(dense[i])) { firstBack = i; break; }
+    for (let i = 0; i < N; i++) if (!(-dense[i][1] > 0)) { firstBack = i; break; }
     ctx.beginPath();
     if (firstBack === -1) {
       // tout devant : chemin simple
@@ -291,7 +308,7 @@ export class Globe3D {
       };
       for (let k = 0; k < N; k++) {
         const a = dense[(firstBack + k) % N], b = dense[(firstBack + k + 1) % N];
-        const fa = frontOf(a), fb = frontOf(b);
+        const fa = -a[1] > 0, fb = -b[1] > 0;
         if (fa && fb) cur.push(b);
         else if (fa && !fb) { cur.push(horizon(a, b)); runs.push(cur); cur = null; }
         else if (!fa && fb) { cur = [horizon(a, b), b]; }
@@ -320,6 +337,6 @@ export class Globe3D {
     }
     ctx.closePath();
     ctx.fillStyle = fill; ctx.fill();
-    if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1.3; ctx.stroke(); }
+    if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1.1; ctx.stroke(); }
   }
 }

@@ -17,12 +17,12 @@ export const DEG = Math.PI / 180;
 // Pointe-à-Pitre ≈ 61,5° O, Paris ≈ 2,35° E, Denpasar (Bali) ≈ 115,2° E.
 // Décalages : Guadeloupe UTC−4 toute l'année, France UTC+1 (hiver), Bali UTC+8 toute l'année.
 export const PLACES = [
-  { id: 'guadeloupe', name: 'Guadeloupe', emoji: '🏝️', lonDeg: -61.5, utcOffset: -4,
-    color: '#46c2a5', scene: 'plage' },
-  { id: 'france', name: 'France', emoji: '🏠', lonDeg: 2.35, utcOffset: 1,
-    color: '#ff6b9d', scene: 'ville', home: true },
-  { id: 'bali', name: 'Bali', emoji: '🌺', lonDeg: 115.2, utcOffset: 8,
-    color: '#a98bff', scene: 'temple' },
+  { id: 'guadeloupe', name: 'Guadeloupe', emoji: '🏝️', lonDeg: -61.5, latDeg: 16.25,
+    utcOffset: -4, color: '#46c2a5', scene: 'plage' },
+  { id: 'france', name: 'France', emoji: '🏠', lonDeg: 2.35, latDeg: 46.5,
+    utcOffset: 1, color: '#ff6b9d', scene: 'ville', home: true },
+  { id: 'bali', name: 'Bali', emoji: '🌺', lonDeg: 115.2, latDeg: -8.6,
+    utcOffset: 8, color: '#a98bff', scene: 'temple' },
 ];
 
 export const HOME = PLACES[1]; // la France : « chez nous », centre du récit

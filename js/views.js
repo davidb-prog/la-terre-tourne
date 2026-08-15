@@ -3,9 +3,8 @@
 // aucune tuile externe, aucune bibliothèque.
 
 import { TAU, DEG, PLACES, GREENWICH_LON, placeAngle, subsolarLon, solarHours,
-         sunAltitude, wrapLon } from './model.js';
-import { CONTINENTS, GREENLAND, ANTARCTICA_BAND, SEAS, ISLES, ANTILLES,
-         FRANCE } from './geo.js';
+         sunAltitude, wrapLon, wrap24, utcHours } from './model.js';
+import { COUNTRIES, LAKES, ICE_ISOS, FRANCE_ISO, ANTILLES, SPECKS } from './geo.js';
 
 const COL = {
   bg: '#070b17',
@@ -251,15 +250,24 @@ export class PolarView {
 }
 
 // ------------------------------------------------------------- Carte du monde
-// Planisphère « dessiné à la main » (contours partagés avec le globe 3D via
-// js/geo.js). La nuit est une bande verticale (équinoxe) qui balaie la carte
-// d'est en ouest ; un petit soleil marque « midi ici », une lune « minuit ici ».
-// La France, pays du récit, est surlignée en rose avec ses frontières.
+// Planisphère avec les vraies côtes (js/geo.js — Natural Earth 110m). La nuit
+// est une bande verticale (équinoxe) qui balaie la carte d'est en ouest ; les
+// 24 fuseaux sont dessinés en bandes, chacune avec son heure en haut. La
+// France est surlignée en rose, le pays cherché dans sa couleur.
+
+function ringPath(ctx, ring, X, Y) {
+  ctx.beginPath();
+  for (let i = 0; i < ring.length; i++) {
+    const x = X(ring[i][0]), y = Y(ring[i][1]);
+    if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y);
+  }
+  ctx.closePath();
+}
 
 export class MapView {
   constructor(canvas) { this.canvas = canvas; this.layout = null; }
 
-  draw(homeH) {
+  draw(homeH, places, highlightIso, highlightColor) {
     const { ctx, w, h } = fitCanvas(this.canvas);
     ctx.fillStyle = COL.bg; ctx.fillRect(0, 0, w, h);
     drawStars(this, ctx, w, h, 90);
@@ -272,6 +280,7 @@ export class MapView {
     const X = (lon) => ox + (lon + 180) / 360 * W;
     const Y = (lat) => oy + (90 - lat) / 180 * H;
     const sub = subsolarLon(homeH);
+    const utc = utcHours(homeH);
 
     ctx.save();
     roundRectPath(ctx, ox, oy, W, H, 12);
@@ -282,42 +291,51 @@ export class MapView {
     og.addColorStop(0, '#4b93e0'); og.addColorStop(0.5, '#3c7fd0'); og.addColorStop(1, '#2f6cb8');
     ctx.fillStyle = og; ctx.fillRect(ox, oy, W, H);
 
-    // limites discrètes des 24 fuseaux
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.07)'; ctx.lineWidth = 1;
+    // les 24 fuseaux : bandes alternées + limites discrètes
+    for (let m = -12; m <= 12; m++) {
+      const x0 = Math.max(ox, X(15 * m - 7.5)), x1 = Math.min(ox + W, X(15 * m + 7.5));
+      if (x1 <= x0) continue;
+      if (((m % 2) + 2) % 2 === 0) {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+        ctx.fillRect(x0, oy, x1 - x0, H);
+      }
+    }
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.09)'; ctx.lineWidth = 1;
     for (let k = 0; k < 24; k++) {
       const x = X(-180 + 7.5 + k * 15);
       ctx.beginPath(); ctx.moveTo(x, oy); ctx.lineTo(x, oy + H); ctx.stroke();
     }
 
-    // continents
-    const drawLand = (pts, fill) => {
-      smoothPath(ctx, pts.map((p) => [X(p[0]), Y(p[1])]));
-      ctx.fillStyle = fill; ctx.fill();
-      ctx.strokeStyle = COL.landEdge; ctx.lineWidth = 1.4; ctx.stroke();
-    };
-    for (const land of CONTINENTS) drawLand(land, COL.land);
-    drawLand(GREENLAND, COL.ice);
-    drawLand(ANTARCTICA_BAND, COL.ice);
-    for (const [lon, lat, rx, ry, rot] of ISLES) {
-      ctx.beginPath();
-      ctx.ellipse(X(lon), Y(lat), rx * W / 360, ry * H / 180, rot, 0, TAU);
-      ctx.fillStyle = COL.land; ctx.fill();
-      ctx.strokeStyle = COL.landEdge; ctx.lineWidth = 1.2; ctx.stroke();
+    // pays (avec leurs frontières), lacs, Antilles
+    for (const country of COUNTRIES) {
+      ctx.fillStyle = ICE_ISOS[country.iso] ? COL.ice : COL.land;
+      for (const ring of country.rings) {
+        ringPath(ctx, ring, X, Y);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(10, 40, 32, 0.5)'; ctx.lineWidth = 0.8; ctx.stroke();
+      }
     }
-    // mers intérieures et grands lacs, posés par-dessus les terres
-    for (const [lon, lat, rx, ry, rot] of SEAS) {
-      ctx.beginPath();
-      ctx.ellipse(X(lon), Y(lat), rx * W / 360, ry * H / 180, rot, 0, TAU);
-      ctx.fillStyle = '#3c7fd0'; ctx.fill();
-    }
+    ctx.fillStyle = '#3c7fd0';
+    for (const lake of LAKES) { ringPath(ctx, lake, X, Y); ctx.fill(); }
     ctx.fillStyle = COL.land;
     for (const [lon, lat] of ANTILLES) {
-      ctx.beginPath(); ctx.ellipse(X(lon), Y(lat), 2.2, 3, 0.2, 0, TAU); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(X(lon), Y(lat), 2, 2.6, 0.2, 0, TAU); ctx.fill();
     }
-    // la France et ses frontières, surlignées en rose
-    smoothPath(ctx, FRANCE.map((p) => [X(p[0]), Y(p[1])]));
-    ctx.fillStyle = 'rgba(255, 107, 157, 0.3)'; ctx.fill();
-    ctx.strokeStyle = 'rgba(255, 107, 157, 0.85)'; ctx.lineWidth = 1.3; ctx.stroke();
+    for (const [lon, lat, r] of SPECKS) {
+      ctx.beginPath();
+      ctx.arc(X(lon), Y(lat), Math.max(1.4, r * W / 360), 0, TAU); ctx.fill();
+    }
+
+    // la France toujours en rose, le pays cherché dans sa couleur
+    for (const country of COUNTRIES) {
+      const isFr = country.iso === FRANCE_ISO;
+      const isHl = highlightIso && country.iso === highlightIso;
+      if (!isFr && !isHl) continue;
+      ctx.fillStyle = isFr ? 'rgba(255, 107, 157, 0.35)' : 'rgba(255, 207, 92, 0.35)';
+      ctx.strokeStyle = isFr ? 'rgba(255, 107, 157, 0.9)' : (highlightColor || 'rgba(255, 207, 92, 0.9)');
+      ctx.lineWidth = 1.2;
+      for (const ring of country.rings) { ringPath(ctx, ring, X, Y); ctx.fill(); ctx.stroke(); }
+    }
 
     // méridien de Greenwich
     ctx.setLineDash([4, 6]); ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)'; ctx.lineWidth = 1.3;
@@ -327,9 +345,9 @@ export class MapView {
 
     // la nuit : 180° de large, du coucher (à l'ouest) au lever (à l'est),
     // avec 18° de crépuscule tout doux de chaque côté
-    const uSet = X(wrapLon(sub + 90));       // début de la nuit (en allant vers l'est)
+    const uSet = X(wrapLon(sub + 90));
     const F = W * 18 / 360, NIGHT_W = W / 2;
-    const span = (u0, width, fillFor) => {   // dessine [u0, u0+width] en repassant au bord
+    const span = (u0, width, fillFor) => {
       for (const shift of [0, -W, W]) {
         const a = u0 + shift, b = a + width;
         if (b <= ox || a >= ox + W) continue;
@@ -365,8 +383,16 @@ export class MapView {
     }
     ctx.globalAlpha = 1;
 
-    // petit soleil « il est midi ici » et petite lune « il est minuit ici » —
-    // dessinés aussi décalés d'un tour pour les bords de la carte
+    // l'heure de chaque bande, en haut de la carte (par-dessus la nuit)
+    const step = W >= 640 ? 1 : 2;
+    for (let m = -11; m <= 12; m += step) {
+      const x = Math.max(ox + 14, Math.min(ox + W - 14, X(15 * m)));
+      const bh = Math.floor(wrap24(utc + m));
+      label(ctx, bh + ' h', x, oy + 10,
+        { align: 'center', size: 9.5, alpha: 0.85, weight: 400, color: 'rgba(225, 234, 252, 0.95)' });
+    }
+
+    // petit soleil « il est midi ici » et petite lune « il est minuit ici »
     const both = (lon, fn) => {
       const x = X(wrapLon(lon));
       fn(x);
@@ -408,10 +434,9 @@ export class MapView {
       }
     });
 
-    // les trois maisons
-    for (const p of PLACES) {
-      const lat = p.id === 'guadeloupe' ? 16.25 : p.id === 'france' ? 46.5 : -8.6;
-      const x = X(p.lonDeg), y = Y(lat);
+    // les maisons
+    for (const p of places) {
+      const x = X(p.lonDeg), y = Y(p.latDeg);
       ctx.save();
       ctx.shadowColor = p.color; ctx.shadowBlur = 9;
       ctx.beginPath(); ctx.arc(x, y, 6, 0, TAU); ctx.fillStyle = p.color; ctx.fill();
@@ -419,7 +444,8 @@ export class MapView {
       ctx.beginPath(); ctx.arc(x, y, 6, 0, TAU);
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)'; ctx.lineWidth = 2; ctx.stroke();
       const above = p.id === 'france';
-      label(ctx, p.name, x, above ? y - 14 : y + 15, { align: 'center', size: 11.5, color: p.color });
+      label(ctx, p.name, x, above ? y - 14 : y + 15,
+        { align: 'center', size: 11.5, color: p.color, clampW: w, clampH: h });
     }
 
     ctx.restore();
@@ -514,7 +540,9 @@ export class SkyView {
 
   scenery(ctx, w, h, horizon, alt) {
     const night = alt < -0.02; // fenêtres allumées dès que le soleil est couché
-    if (this.place.scene === 'plage') {
+    const scene = this.place.scene ||
+      (Math.abs(this.place.latDeg || 0) <= 23.5 ? 'plage' : 'campagne');
+    if (scene === 'plage') {
       // la mer à droite, deux palmiers, la petite maison
       ctx.fillStyle = '#1c4a86';
       ctx.beginPath();
@@ -526,16 +554,21 @@ export class SkyView {
       house(ctx, w * 0.14, horizon, night);
       palm(ctx, w * 0.44, horizon, 30, -1);
       palm(ctx, w * 0.78, horizon, 24, 1);
-    } else if (this.place.scene === 'ville') {
+    } else if (scene === 'ville') {
       // chez nous : la maison, un sapin, et la tour Eiffel au loin
       house(ctx, w * 0.16, horizon, night);
       fir(ctx, w * 0.48, horizon, 26);
       eiffel(ctx, w * 0.74, horizon, Math.min(58, horizon - 12), night);
-    } else {
+    } else if (scene === 'temple') {
       // Bali : la maison, un palmier et le temple aux toits empilés
       house(ctx, w * 0.12, horizon, night);
       palm(ctx, w * 0.46, horizon, 26, 1);
       temple(ctx, w * 0.72, horizon, night);
+    } else {
+      // ailleurs : une maison et des arbres
+      house(ctx, w * 0.18, horizon, night);
+      fir(ctx, w * 0.55, horizon, 24);
+      fir(ctx, w * 0.78, horizon, 30);
     }
   }
 }
