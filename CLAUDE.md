@@ -17,7 +17,9 @@ L'épisode 1 fait référence pour l'identité visuelle et le niveau d'exigence 
   canvas interactifs ; tester à 390 px de large.
 - `js/model.js` est **pur** (aucun accès DOM) et doit le rester : il se teste avec
   `node test/model.test.mjs`. Toutes les constantes de lieux et de décalages vivent dedans —
-  ne jamais les recopier ailleurs.
+  ne jamais les recopier ailleurs. Même règle pour `js/geo.js` (contours lon/lat purs, testés
+  par `node test/geo.test.mjs`) : c'est la source unique de la géographie, partagée par la
+  carte à plat et le globe 3D.
 - **Honnêteté pédagogique.** Conventions assumées du site : heure d'hiver (France UTC+1) et jour
   d'équinoxe (lever 6 h / coucher 18 h en heure solaire). Toute nouvelle simplification se
   documente dans la « note aux parents » (index.html) et dans « Ce que le site simplifie »
@@ -35,11 +37,17 @@ L'épisode 1 fait référence pour l'identité visuelle et le niveau d'exigence 
 - `css/style.css` — thème sombre de la série (palette de l'épisode 1), plus rond et plus joueur
 - `js/model.js` — logique horaire pure (lieux, horloges locales, report de jour, heure solaire,
   hauteur du soleil, scénarios avec leurs phrases)
+- `js/geo.js` — contours lon/lat « dessinés à la main » (continents, mers intérieures, îles,
+  France avec ses frontières), partagés par la carte et le globe 3D
 - `js/views.js` — rendus : globe vu du pôle Nord, planisphère stylisé, ciels des vignettes,
   horloges SVG
-- `js/main.js` — boucle d'animation, curseur, glisser (globe circulaire, carte horizontale),
-  scénarios (rotation en douceur, toujours vers l'est)
+- `js/view3d.js` — globe 3D orbitable : projection orthographique maison, polygones découpés à
+  l'horizon de la sphère et recousus au limbe, nuit en calottes à seuils — pas de lib 3D, c'est
+  voulu (même esprit que la vue 3D de l'épisode 1). Glisser = orbiter (le temps ne change pas)
+- `js/main.js` — boucle d'animation, curseur, glisser (globe circulaire, carte horizontale,
+  orbite 3D), bascule vue de dessus / globe 3D, scénarios (rotation en douceur, vers l'est)
 - `test/model.test.mjs` — tests Node du modèle (46 vérifications)
+- `test/geo.test.mjs` — tests Node de la géographie (14 vérifications)
 
 ## Conventions
 

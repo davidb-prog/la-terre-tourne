@@ -18,6 +18,14 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
   Soleil, lieux colorés qui défilent en tournant vers l'est, lueurs d'aube et de crépuscule au
   terminateur, méridien de Greenwich tracé, flèche du sens de rotation, 24 quartiers discrets
   (un par fuseau). **On attrape la Terre** au doigt ou au pointeur pour la faire tourner.
+- **Le globe en 3D** (bascule en haut du panneau) : la Terre en vrai globe, avec des côtes
+  reconnaissables, la France surlignée avec ses frontières, Greenwich et l'équateur tracés,
+  et le crépuscule tout doux le long du terminateur. On glisse pour **orbiter autour** — aller
+  voir le côté nuit ! — pendant que la Terre continue de tourner ; les trois maisons
+  n'apparaissent que du côté visible. Projection orthographique maison en canvas 2D, comme la
+  vue 3D de l'épisode 1 : toujours zéro bibliothèque.
+
+![Le globe en 3D — on glisse pour orbiter jusqu’au côté nuit](docs/screenshot-3d.png)
 - **Grand curseur 0–24 h** (l'heure en France) : sa piste raconte elle-même la journée —
   nuit → aube → jour → crépuscule → nuit.
 - **Trois vignettes-maisons** : horloge analogique + grosse heure digitale, mot-repère
@@ -29,10 +37,12 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
   « Quand je vais au dodo (20 h) », « Le soleil se lève à Bali ». La Terre tourne en douceur —
   toujours vers l'est, son vrai sens ! — jusqu'au moment choisi, puis une petite histoire raconte
   ce que font les enfants aux trois endroits.
-- **Carte du monde stylisée** (continents dessinés à la main en canvas — aucune tuile, aucune
-  bibliothèque) : la nuit balaie la carte d'est en ouest, un petit soleil marque « il est midi
-  ici », une petite lune « il est minuit ici », limites discrètes des 24 fuseaux, méridien de
-  Greenwich. Glisser horizontalement change aussi l'heure.
+- **Carte du monde stylisée** (contours dessinés à la main dans `js/geo.js`, partagés avec le
+  globe 3D — aucune tuile, aucune bibliothèque) : côtes reconnaissables, mers intérieures,
+  archipels, France surlignée en rose avec ses frontières. La nuit balaie la carte d'est en
+  ouest, un petit soleil marque « il est midi ici », une petite lune « il est minuit ici »,
+  limites discrètes des 24 fuseaux, méridien de Greenwich. Glisser horizontalement change
+  aussi l'heure.
 - **Note aux parents** : l'heure d'été, l'équinoxe permanent, les fuseaux qui zigzaguent, le
   miroir Bali/Guadeloupe, le sens de rotation.
 - Accessible : aria-labels sur tous les canvas, `prefers-reduced-motion` respecté (rien ne bouge
@@ -52,16 +62,18 @@ puis ouvrir <http://localhost:8000>.
 
 ## Tests
 
-Le modèle horaire est pur et se teste sous Node, sans navigateur :
+Le modèle horaire et la géographie sont purs et se testent sous Node, sans navigateur :
 
 ```bash
-node test/model.test.mjs
+node test/model.test.mjs && node test/geo.test.mjs
 ```
 
-46 vérifications, dont les données exactes du récit : **12 h en France (hiver) → 7 h en
+46 vérifications horaires, dont les données exactes du récit : **12 h en France (hiver) → 7 h en
 Guadeloupe et 19 h à Bali** ; l'ordre des levers de soleil **Bali → France → Guadeloupe** ;
 l'effet « **déjà demain** » (20 h chez nous = 3 h le lendemain à Bali) ; « encore hier » au petit
-matin ; le miroir Bali/Guadeloupe (lever sur l'une ≈ coucher sur l'autre).
+matin ; le miroir Bali/Guadeloupe (lever sur l'une ≈ coucher sur l'autre). Et 14 vérifications
+géographiques : Paris tombe dans la France surlignée, le Kansas en Amérique du Nord, Bali dans
+l'archipel indonésien, le milieu du Pacifique dans l'océan…
 
 Le site a aussi été vérifié en navigateur (Playwright/Chromium) : zéro erreur de console, heures
 affichées conformes sur tous les scénarios, glisser du globe et de la carte opérationnels, rendu
@@ -102,8 +114,12 @@ Tout est dans [`js/model.js`](js/model.js) (aucun accès DOM, toutes les constan
   l'horloge, le soleil n'est pas tout à fait au zénith de Paris (il y culmine vers 12 h 50 en
   hiver) ; à l'horloge, le soleil se lève vers 6 h 51 en France, 6 h 06 en Guadeloupe, 6 h 19 à
   Bali.
-- **Cartes stylisées.** Globe et planisphère sont dessinés à la main, continents très simplifiés
-  « tout en rondeurs » — pour se repérer, pas pour naviguer.
+- **Cartes stylisées.** Globe et planisphère sont dessinés à la main (contours partagés dans
+  `js/geo.js`), avec des côtes reconnaissables mais volontairement arrondies — pour se repérer,
+  pas pour naviguer.
+- **Un seul pays a ses frontières : la France**, héroïne du récit. Tracer les frontières des
+  ~200 pays du monde rendrait la carte illisible à cette taille (et exigerait des données
+  massives, contraires au « zéro dépendance ») ; les autres pays ne sont pas délimités.
 - **Un joli hasard, exact et vérifié** : Bali (UTC+8) et la Guadeloupe (UTC−4) ont 12 h d'écart —
   quand le soleil se lève à Bali, il vient de se coucher en Guadeloupe (à ~13 min près), pendant
   qu'en France il est presque minuit. Le « milieu de la nuit » en Guadeloupe, c'est au réveil
@@ -115,9 +131,12 @@ Tout est dans [`js/model.js`](js/model.js) (aucun accès DOM, toutes les constan
 index.html            page unique (globe, curseur, vignettes, scénarios, carte, note aux parents)
 css/style.css         thème sombre de la série, responsive, aucune lib
 js/model.js           logique horaire pure (lieux, horloges, soleil) — testable sous Node
+js/geo.js             contours lon/lat dessinés à la main, partagés carte + globe 3D
 js/views.js           rendus canvas/SVG maison (globe polaire, carte du monde, ciels, horloges)
-js/main.js            boucle d'animation + interactions (curseur, glisser, scénarios)
-test/model.test.mjs   tests Node du modèle
+js/view3d.js          globe 3D orbitable (projection orthographique maison, découpe à l'horizon)
+js/main.js            boucle d'animation + interactions (curseur, glisser, orbite, scénarios)
+test/model.test.mjs   tests Node du modèle horaire
+test/geo.test.mjs     tests Node de la géographie
 ```
 
 ## La série
