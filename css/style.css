@@ -1,0 +1,287 @@
+/* La Terre tourne — épisode 2 du Petit labo d'astronomie.
+   Thème sombre « espace » hérité de l'épisode 1, en plus rond et plus joueur (public : 5 ans).
+   Zéro dépendance. Compat mobiles anciens : pas d'inset, repli @supports pour aspect-ratio. */
+
+:root {
+  --bg: #0b1020;
+  --bg2: #0e1530;
+  --surface: #121a33;
+  --surface-2: #1c2540;
+  --border: #26304f;
+  --text: #e9edf8;
+  --muted: #9aa5c3;
+  --sun: #ffcf5c;
+  --sun-deep: #ff9f1c;
+  --earth: #5aa7ff;
+  --night: #16335e;
+  --rose: #ff6b9d;
+  --teal: #46c2a5;
+  --violet: #a98bff;
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(1100px 700px at 72% -8%, #182450 0%, rgba(11, 16, 32, 0) 60%),
+    radial-gradient(900px 600px at 8% 108%, rgba(169, 139, 255, 0.10) 0%, rgba(11, 16, 32, 0) 55%);
+  background-attachment: fixed;
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.55;
+}
+
+/* ---------- entête ---------- */
+
+.site-header { max-width: 900px; margin: 0 auto; padding: 38px 20px 22px; text-align: center; }
+.kicker {
+  margin: 0; color: var(--sun); font-size: .8rem; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase;
+}
+.episode {
+  display: inline-block; margin-left: 8px; padding: 1px 10px; letter-spacing: .08em;
+  border: 1px solid var(--sun-deep); border-radius: 999px; color: var(--sun);
+  font-size: .72rem; vertical-align: 1px;
+}
+.site-header h1 { margin: .22em 0 .3em; font-size: clamp(2.1rem, 5.5vw, 3.1rem); line-height: 1.1; }
+.tagline { margin: 0 auto; max-width: 62ch; color: var(--muted); }
+
+main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
+
+.panel {
+  background: linear-gradient(180deg, var(--surface), var(--bg2));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.hint { color: var(--muted); font-weight: 400; font-size: .78em; }
+.muted { color: var(--muted); }
+
+/* ---------- l'histoire à lire ensemble ---------- */
+
+.story-intro { padding: 22px 26px; margin-bottom: 16px; font-size: 1.12rem; line-height: 1.75; }
+.story-intro p { margin: .5em 0; }
+.hl-sun { color: var(--sun); }
+.hl-night { color: #9db9ff; }
+.hl-earth { color: var(--earth); }
+.hl-guadeloupe { color: var(--teal); }
+.hl-france { color: var(--rose); }
+.hl-bali { color: var(--violet); }
+
+/* ---------- grille du simulateur ---------- */
+
+.sim-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(300px, 5fr); gap: 16px; }
+@media (max-width: 960px) { .sim-grid { grid-template-columns: 1fr; } }
+
+.canvas-panel { padding: 12px; }
+.canvas-title { font-size: .88rem; color: var(--muted); margin: 2px 4px 10px; }
+.canvas-wrap { position: relative; border-radius: 12px; overflow: hidden; background: #070b17; }
+.ratio-square { aspect-ratio: 1 / 1; }
+.ratio-map { aspect-ratio: 2 / 1; }
+@media (max-width: 700px) { .ratio-map { aspect-ratio: 16 / 10; } }
+/* repli pour navigateurs sans aspect-ratio (Safari iOS < 15) : hauteurs fixes */
+@supports not (aspect-ratio: 1 / 1) {
+  .ratio-square { height: min(92vw, 620px); }
+  .ratio-map { height: min(46vw, 520px); }
+  @media (max-width: 700px) { .ratio-map { height: min(58vw, 300px); } }
+}
+.canvas-wrap canvas { position: absolute; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: 100%; display: block; }
+
+#globe-view, #map-view { touch-action: none; cursor: grab; }
+#globe-view:active, #map-view:active { cursor: grabbing; }
+
+/* petit rappel « attrape la Terre » superposé au globe */
+.drag-hint {
+  position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%);
+  max-width: calc(100% - 20px); text-align: center;
+  background: rgba(7, 11, 23, .62);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  border: 1px solid var(--border); border-radius: 999px;
+  padding: 7px 14px; font-size: .85rem; color: var(--text);
+  pointer-events: none; opacity: 1; transition: opacity .4s;
+}
+.drag-hint.hide { opacity: 0; }
+
+/* ---------- le grand curseur du temps ---------- */
+
+.globe-panel .canvas-title { display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap; }
+.spin-btn { margin-left: auto; padding: 5px 12px; font-size: .8rem; border-radius: 999px; }
+
+.time-control { margin-top: 12px; padding: 0 4px 2px; }
+.time-readout { font-size: 1.05rem; margin-bottom: 4px; }
+.time-readout strong {
+  font-size: 1.55rem; color: var(--sun); font-variant-numeric: tabular-nums;
+  margin: 0 2px 0 4px;
+}
+.period { color: var(--muted); }
+
+/* le curseur raconte lui-même la journée : nuit → aube → jour → crépuscule → nuit */
+#time-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block; width: 100%; height: 44px; margin: 2px 0 0;
+  background: transparent; cursor: pointer;
+}
+#time-slider::-webkit-slider-runnable-track {
+  height: 16px; border-radius: 9px; border: 1px solid var(--border);
+  background: linear-gradient(90deg,
+    #0e1a38 0%, #16335e 20%, #f2924c 28.5%, #8ec2f0 38%,
+    #cfe7ff 50%, #8ec2f0 62%, #f2924c 78.5%, #16335e 87%, #0e1a38 100%);
+}
+#time-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 34px; height: 34px; margin-top: -10px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 34%, #fff7d6, var(--sun) 55%, var(--sun-deep));
+  border: 3px solid rgba(255, 255, 255, .9);
+  box-shadow: 0 0 16px rgba(255, 207, 92, .75), 0 2px 6px rgba(0, 0, 0, .5);
+}
+#time-slider::-moz-range-track {
+  height: 16px; border-radius: 9px; border: 1px solid var(--border);
+  background: linear-gradient(90deg,
+    #0e1a38 0%, #16335e 20%, #f2924c 28.5%, #8ec2f0 38%,
+    #cfe7ff 50%, #8ec2f0 62%, #f2924c 78.5%, #16335e 87%, #0e1a38 100%);
+}
+#time-slider::-moz-range-thumb {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 34%, #fff7d6, var(--sun) 55%, var(--sun-deep));
+  border: 3px solid rgba(255, 255, 255, .9);
+  box-shadow: 0 0 16px rgba(255, 207, 92, .75), 0 2px 6px rgba(0, 0, 0, .5);
+}
+.slider-scale { display: flex; justify-content: space-between; color: var(--muted); font-size: .72rem; margin-top: 4px; }
+
+/* ---------- les trois vignettes-maisons ---------- */
+
+.vignettes { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+.vignette { padding: 12px 14px 14px; border-top: 3px solid var(--place, var(--border)); }
+.vignette-guadeloupe { --place: #46c2a5; }
+.vignette-france { --place: #ff6b9d; }
+.vignette-bali { --place: #a98bff; }
+
+.vignette-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.vignette-name { margin: 0; font-size: 1.18rem; line-height: 1.2; }
+.home-chip {
+  font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--rose); border: 1px solid var(--rose); border-radius: 999px;
+  padding: 2px 8px; margin-left: 6px; vertical-align: 3px; white-space: nowrap;
+}
+.day-badge { flex: none; font-size: .78rem; font-weight: 800; border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+.day-badge.tomorrow { background: #2b1e52; color: #cabcff; border: 1px solid #5f43b3; }
+.day-badge.yesterday { background: #0e3a33; color: #7fe0c8; border: 1px solid #2f8f7a; }
+
+.vignette-body { display: flex; gap: 14px; align-items: center; }
+.clock-slot { flex: none; width: 80px; height: 80px; }
+.clock { width: 100%; height: 100%; display: block; }
+.clock-face { fill: #0d1428; stroke: var(--place, var(--border)); stroke-width: 3; }
+.clock-tick { stroke: rgba(233, 237, 248, .38); stroke-width: 2; stroke-linecap: round; }
+.clock-num { fill: var(--muted); font-family: system-ui, sans-serif; font-size: 11px; font-weight: 700; }
+.hand { stroke: var(--text); stroke-linecap: round; }
+.hand-hour { stroke-width: 5.5; }
+.hand-min { stroke-width: 3; stroke: var(--place, var(--text)); }
+.clock-center { fill: var(--text); }
+
+.clock-text { min-width: 0; }
+.clock-digital { font-size: 1.8rem; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.clock-period { color: var(--muted); font-size: .92rem; }
+.activity { color: var(--muted); font-size: .88rem; margin-top: 5px; }
+
+.sky-wrap { position: relative; margin-top: 10px; height: 96px; border-radius: 10px; overflow: hidden; background: #070b17; }
+.sky-wrap canvas { position: absolute; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: 100%; display: block; }
+
+/* ---------- boutons-scénarios + histoire ---------- */
+
+.scenario-panel { margin-top: 16px; padding: 14px 16px 16px; }
+.scenario-title { font-weight: 700; font-size: 1.05rem; margin: 2px 2px 10px; }
+.scenario-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+@media (max-width: 860px) { .scenario-buttons { grid-template-columns: 1fr 1fr; } }
+
+.scn {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  min-height: 72px; padding: 10px 8px; border-radius: 16px; cursor: pointer;
+  font: inherit; font-weight: 700; font-size: .95rem; text-align: center; line-height: 1.25;
+  color: var(--text); background: var(--surface-2); border: 1px solid var(--border);
+  transition: filter .15s, transform .05s, box-shadow .15s;
+}
+.scn:hover { filter: brightness(1.2); }
+.scn:active { transform: translateY(1px); }
+.scn.active { box-shadow: 0 0 0 3px rgba(255, 207, 92, .55); }
+.scn-emoji { font-size: 1.6rem; line-height: 1; }
+.scn-sub { font-weight: 400; font-size: .76rem; opacity: .8; }
+.scn-reveil { background: linear-gradient(180deg, #4a3a0d, #332807); border-color: var(--sun-deep); color: var(--sun); }
+.scn-midi { background: linear-gradient(180deg, #1c3a63, #132644); border-color: #3f6db3; color: #bcd9ff; }
+.scn-dodo { background: linear-gradient(180deg, #2b1e52, #1c1433); border-color: #5f43b3; color: #cabcff; }
+.scn-bali-lever { background: linear-gradient(180deg, #4a1d33, #2d1122); border-color: var(--rose); color: #ffb3cd; }
+
+.story { margin-top: 12px; }
+.story-invite { margin: 4px 2px; color: var(--muted); }
+.story-line { display: flex; gap: 10px; align-items: flex-start; margin: 9px 0; font-size: 1.03rem; }
+.story-chip {
+  flex: none; padding: 3px 11px; border-radius: 999px; font-weight: 700; font-size: .85rem;
+  white-space: nowrap;
+}
+.story-chip-guadeloupe { background: rgba(70, 194, 165, .14); color: var(--teal); border: 1px solid rgba(70, 194, 165, .5); }
+.story-chip-france { background: rgba(255, 107, 157, .13); color: var(--rose); border: 1px solid rgba(255, 107, 157, .5); }
+.story-chip-bali { background: rgba(169, 139, 255, .14); color: var(--violet); border: 1px solid rgba(169, 139, 255, .5); }
+.story-text { margin: 2px 0 0; }
+
+/* ---------- carte du monde ---------- */
+
+.map-panel { margin-top: 16px; }
+.map-caption { margin: 10px 4px 0; font-size: .96rem; color: #c9d2ea; }
+.map-caption strong { color: var(--text); }
+.map-caption.muted { font-size: .83rem; color: var(--muted); }
+
+/* ---------- note aux parents ---------- */
+
+.parents { margin-top: 26px; padding: 20px 24px; }
+.parents h2 { margin: 0 0 10px; font-size: 1.15rem; color: var(--sun); }
+.parents ul { margin: 0; padding-left: 1.25em; }
+.parents li { margin: 9px 0; color: #c9d2ea; font-size: .95rem; }
+.parents strong { color: var(--text); }
+
+/* ---------- boutons génériques ---------- */
+
+button {
+  font: inherit; color: var(--text);
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 8px 14px; cursor: pointer;
+  transition: filter .15s, transform .05s;
+}
+button:hover { filter: brightness(1.25); }
+button:active { transform: translateY(1px); }
+
+button:focus-visible, input:focus-visible, a:focus-visible {
+  outline: 3px solid var(--sun); outline-offset: 2px;
+}
+
+/* ---------- pied de page ---------- */
+
+.site-footer {
+  max-width: 1180px; margin: 40px auto 0; padding: 22px 20px 34px;
+  border-top: 1px solid var(--border); color: var(--muted); font-size: .88rem;
+}
+.site-footer a { color: var(--sun); }
+
+/* ---------- petits écrans ---------- */
+
+@media (max-width: 480px) {
+  .story-intro { padding: 16px 18px; font-size: 1.04rem; }
+  .clock-slot { width: 70px; height: 70px; }
+  .clock-digital { font-size: 1.55rem; }
+  .time-readout strong { font-size: 1.35rem; }
+  .scn { min-height: 64px; }
+}
+
+/* ---------- accessibilité : mouvement réduit ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .drag-hint { transition: none; }
+  .scn, button { transition: none; }
+  html { scroll-behavior: auto; }
+}

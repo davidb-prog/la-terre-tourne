@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La Terre tourne — les fuseaux horaires expliqués aux enfants</title>
+<meta name="description" content="Fais tourner la Terre : le Soleil n’éclaire qu’un côté à la fois, alors il n’est pas la même heure partout ! La Guadeloupe, la France et Bali en direct — épisode 2 du Petit labo d’astronomie, à explorer en famille.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌍</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <p class="kicker">Petit labo d’astronomie <span class="episode">épisode 2</span></p>
+  <h1>La Terre tourne</h1>
+  <p class="tagline">Quand tu te réveilles, d’autres enfants vont déjà dormir. Fais tourner la Terre
+    pour comprendre pourquoi : le Soleil n’éclaire qu’un côté à la fois, et il n’est pas la même
+    heure partout. À explorer avec un adulte, dès 5 ans.</p>
+</header>
+
+<main>
+  <section class="panel story-intro" aria-label="L’histoire, à lire ensemble">
+    <p>La Terre est une grosse boule qui <strong class="hl-earth">tourne</strong> tout doucement
+      sur elle-même. Un tour complet dure <strong>24 heures</strong> : une journée entière.</p>
+    <p>Le Soleil, lui, ne bouge pas. Il éclaire <strong class="hl-sun">un seul côté</strong> de la
+      Terre à la fois : de ce côté-là c’est <strong class="hl-sun">le jour</strong>, et de l’autre
+      c’est <strong class="hl-night">la nuit</strong>.</p>
+    <p>Alors il n’est <strong>pas la même heure partout</strong> ! Regarde nos trois maisons :
+      <strong class="hl-guadeloupe">la Guadeloupe</strong>, <strong class="hl-france">la France</strong>
+      (chez nous) et <strong class="hl-bali">Bali</strong>…</p>
+  </section>
+
+  <section class="sim" aria-labelledby="sim-title">
+    <h2 id="sim-title" class="visually-hidden">La Terre qui tourne, les horloges qui changent</h2>
+
+    <div class="sim-grid">
+      <div class="panel canvas-panel globe-panel">
+        <div class="canvas-title">La Terre vue de dessus
+          <span class="hint">(on la regarde depuis le pôle Nord)</span>
+          <button id="btn-spin" class="spin-btn" aria-pressed="true">⏸ Elle tourne toute seule</button>
+        </div>
+        <div class="canvas-wrap ratio-square">
+          <canvas id="globe-view" aria-label="La Terre vue du pôle Nord. Le Soleil, fixe à droite, éclaire une moitié de la Terre : de ce côté c’est le jour, de l’autre la nuit. Trois points colorés marquent la Guadeloupe, la France et Bali, et la ligne pointillée le méridien de Greenwich. Faites glisser pour faire tourner la Terre et changer l’heure."></canvas>
+          <div class="drag-hint" id="drag-hint">👆 Attrape la Terre et fais-la tourner !</div>
+        </div>
+        <div class="time-control">
+          <div class="time-readout">Chez nous, en France, il est
+            <strong id="home-time">12 h 00</strong> <span id="home-period" class="period">midi !</span></div>
+          <input type="range" id="time-slider" min="0" max="24" step="0.25" value="12"
+            aria-label="Choisir l’heure en France : le curseur fait tourner la Terre sur 24 heures">
+          <div class="slider-scale" aria-hidden="true">
+            <span>🌙 minuit</span><span>6 h</span><span>☀️ midi</span><span>18 h</span><span>🌙 minuit</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="vignettes">
+        <article class="panel vignette vignette-guadeloupe" data-place="guadeloupe">
+          <header class="vignette-head">
+            <h3 class="vignette-name">🏝️ Guadeloupe</h3>
+            <span class="day-badge" id="badge-guadeloupe" hidden></span>
+          </header>
+          <div class="vignette-body">
+            <div class="clock-slot" id="clock-guadeloupe"></div>
+            <div class="clock-text">
+              <div class="clock-digital" id="digital-guadeloupe">—</div>
+              <div class="clock-period" id="period-guadeloupe">—</div>
+              <div class="activity" id="activity-guadeloupe">—</div>
+            </div>
+          </div>
+          <div class="sky-wrap">
+            <canvas id="sky-guadeloupe" aria-label="Le ciel en Guadeloupe en ce moment : jour, coucher de soleil ou nuit étoilée"></canvas>
+          </div>
+        </article>
+
+        <article class="panel vignette vignette-france" data-place="france">
+          <header class="vignette-head">
+            <h3 class="vignette-name">🏠 France <span class="home-chip">chez nous</span></h3>
+            <span class="day-badge" id="badge-france" hidden></span>
+          </header>
+          <div class="vignette-body">
+            <div class="clock-slot" id="clock-france"></div>
+            <div class="clock-text">
+              <div class="clock-digital" id="digital-france">—</div>
+              <div class="clock-period" id="period-france">—</div>
+              <div class="activity" id="activity-france">—</div>
+            </div>
+          </div>
+          <div class="sky-wrap">
+            <canvas id="sky-france" aria-label="Le ciel en France en ce moment : jour, coucher de soleil ou nuit étoilée"></canvas>
+          </div>
+        </article>
+
+        <article class="panel vignette vignette-bali" data-place="bali">
+          <header class="vignette-head">
+            <h3 class="vignette-name">🌺 Bali</h3>
+            <span class="day-badge" id="badge-bali" hidden></span>
+          </header>
+          <div class="vignette-body">
+            <div class="clock-slot" id="clock-bali"></div>
+            <div class="clock-text">
+              <div class="clock-digital" id="digital-bali">—</div>
+              <div class="clock-period" id="period-bali">—</div>
+              <div class="activity" id="activity-bali">—</div>
+            </div>
+          </div>
+          <div class="sky-wrap">
+            <canvas id="sky-bali" aria-label="Le ciel à Bali en ce moment : jour, coucher de soleil ou nuit étoilée"></canvas>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <div class="panel scenario-panel">
+      <div class="scenario-title">🎲 Joue avec la Terre :</div>
+      <div class="scenario-buttons" id="scenario-buttons" role="group" aria-label="Choisir un moment de la journée"></div>
+      <div id="story" class="story" aria-live="polite">
+        <p class="story-invite">Appuie sur un bouton : la Terre tourne toute seule jusqu’au bon
+          moment, et on te raconte ce que font les enfants aux trois endroits.</p>
+      </div>
+    </div>
+
+    <div class="panel canvas-panel map-panel">
+      <div class="canvas-title">La même chose, à plat sur la carte du monde</div>
+      <div class="canvas-wrap ratio-map">
+        <canvas id="map-view" aria-label="Carte du monde stylisée. La moitié plongée dans la nuit est assombrie et se déplace quand l’heure change ; un petit soleil montre où il est midi pile, une petite lune où il est minuit. Les trois lieux et le méridien de Greenwich sont marqués. Faites glisser horizontalement pour changer l’heure."></canvas>
+      </div>
+      <p class="map-caption">Les grands ont découpé la Terre en 24 grandes bandes debout :
+        les <strong>fuseaux horaires</strong>. Tous les enfants d’une même bande lisent la même
+        heure sur leur horloge.</p>
+      <p class="map-caption muted">La ligne pointillée blanche est le méridien de Greenwich, la
+        « bande zéro » : en hiver, nos horloges françaises ont une heure d’avance sur lui.</p>
+    </div>
+  </section>
+
+  <section class="panel parents" aria-labelledby="parents-title">
+    <h2 id="parents-title">📝 La note aux parents</h2>
+    <ul>
+      <li><strong>L’heure d’été.</strong> Le site raconte l’heure d’hiver : la France à UTC+1, soit
+        1 h d’avance sur Greenwich, −5 h avec la Guadeloupe et +7 h avec Bali. En été, la France
+        passe à UTC+2 (2 h d’avance sur Greenwich) et les écarts deviennent −6 h et +6 h — la
+        Guadeloupe et Bali, eux, ne changent jamais d’heure.</li>
+      <li><strong>Un éternel jour de printemps.</strong> Ici, le soleil se lève vers 6 h et se couche
+        vers 18 h partout, comme à l’équinoxe. En vrai, la durée du jour change avec les saisons et
+        la latitude — c’est une autre histoire, pour un autre épisode !</li>
+      <li><strong>Des bandes qui zigzaguent.</strong> Chaque fuseau devrait être une bande bien
+        droite de 15° (360° ÷ 24 h), mais les pays s’arrangent entre voisins : les vraies frontières
+        des fuseaux font des zigzags. Petite curiosité : en hiver, à « midi » à l’horloge, le soleil
+        n’est pas encore au plus haut à Paris — il l’est vers 12 h 50.</li>
+      <li><strong>Bali et la Guadeloupe vivent à l’envers.</strong> 12 h d’écart pile entre elles :
+        quand le soleil se lève sur l’une, il se couche sur l’autre. C’est le scénario
+        « Le soleil se lève à Bali » — pendant ce temps, chez nous, il est presque minuit.</li>
+      <li><strong>Le sens de rotation.</strong> Vue du pôle Nord, la Terre tourne dans le sens
+        inverse des aiguilles d’une montre : d’ouest en est. Voilà pourquoi le soleil « se lève à
+        l’est » — d’abord à Bali, puis en France, puis en Guadeloupe.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <p>« La Terre tourne » — épisode 2 du <strong>Petit labo d’astronomie</strong>. Modèle
+    volontairement simplifié (jour d’équinoxe, heure d’hiver) : un outil pour comprendre,
+    pas un almanach.</p>
+  <p>Épisode 1 : <a href="https://davidb-prog.github.io/eclipse-explorer/">🌒 La mécanique des
+    éclipses</a> — pourquoi la Lune change de forme et ce qu’il faut pour une éclipse.</p>
+</footer>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
