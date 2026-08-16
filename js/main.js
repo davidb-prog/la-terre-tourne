@@ -561,6 +561,7 @@ function frame(ms) {
 
 const listenBtn = $('btn-listen');
 const voiceSel = $('voice-pick');
+const voiceHint = $('voice-hint');
 if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
   listenBtn.hidden = false;
   let speaking = false;
@@ -615,6 +616,12 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
       if (known) voiceSel.value = chosenURI;
       voiceSel.hidden = frVoices.length < 2;
     }
+    if (voiceHint) {
+      // en dessous de ce score, l'appareil n'a que des voix métalliques :
+      // on souffle aux parents comment en obtenir une plus douce
+      const best = frVoices.length ? voiceScore(frVoices[0]) : -1;
+      voiceHint.hidden = best >= 84;
+    }
   };
   refreshVoices();
   if ('onvoiceschanged' in window.speechSynthesis) {
@@ -638,27 +645,44 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
     const myGen = gen;
     window.speechSynthesis.cancel();
     const voice = pickVoice();
-    // une phrase par bulle : les longs textes d'une traite se font couper
-    const sentences = [];
+    // une phrase par bulle (les longs textes d'une traite se font couper), en
+    // retenant les fins de paragraphes pour y respirer plus longtemps
+    const chunks = [];
     const paras = $('explain-text').querySelectorAll('p');
     for (const para of paras) {
       const bits = para.textContent.replace(/\s+/g, ' ').match(/[^.!?…]+[.!?…]*/g) || [];
-      for (const b of bits) { if (b.trim()) sentences.push(b.trim()); }
+      const clean = [];
+      for (const b of bits) { if (b.trim()) clean.push(b.trim()); }
+      for (let i = 0; i < clean.length; i++) {
+        chunks.push({ text: clean[i], endPara: i === clean.length - 1 });
+      }
     }
-    let done = 0;
-    for (const sentence of sentences) {
-      const u = new SpeechSynthesisUtterance(sentence);
+    // ton de conteur : les phrases s'enchaînent avec de vraies pauses, sur un
+    // débit posé, et un peu de relief là où le texte s'exclame ou questionne
+    // (la synthèse du navigateur n'offre que rate et pitch — on s'en sert)
+    let at = 0;
+    const speakNext = () => {
+      if (myGen !== gen) return;
+      if (at >= chunks.length) { resetListen(); return; }
+      const c = chunks[at++];
+      const u = new SpeechSynthesisUtterance(c.text);
       u.lang = voice ? voice.lang : 'fr-FR';
       if (voice) u.voice = voice;
-      u.rate = 0.95;  // tout doucement, pour les petites oreilles
-      u.pitch = 1.0;
-      u.onend = () => { if (myGen !== gen) return; done++; if (done >= sentences.length) resetListen(); };
+      u.rate = 0.92; u.pitch = 1.04;
+      if (/!\s*$/.test(c.text)) { u.rate = 0.96; u.pitch = 1.14; }  // l'émerveillement
+      else if (/\?\s*$/.test(c.text)) { u.pitch = 1.12; }           // la question
+      else if (c.text.indexOf('…') !== -1) { u.rate = 0.87; }       // le suspens
+      u.onend = () => {
+        if (myGen !== gen) return;
+        window.setTimeout(speakNext, c.endPara ? 620 : 300);
+      };
       u.onerror = () => { if (myGen === gen) resetListen(); };
       window.speechSynthesis.speak(u);
-    }
+    };
     speaking = true;
     listenBtn.textContent = '⏹ Arrêter';
     listenBtn.setAttribute('aria-pressed', 'true');
+    speakNext();
   };
 
   listenBtn.addEventListener('click', () => {

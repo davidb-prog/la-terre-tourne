@@ -403,5 +403,6 @@ button:focus-visible, input:focus-visible, a:focus-visible {
   padding: 7px 12px; max-width: 230px;
 }
 .voice-pick:focus { outline: 2px solid var(--sun-deep); }
+.voice-hint { margin: 0 0 8px; font-size: .82rem; color: var(--muted); }
 .explain-text p { margin: .55em 0; color: #c9d2ea; font-size: 1.02rem; line-height: 1.7; }
 .explain-text strong { color: var(--text); }
