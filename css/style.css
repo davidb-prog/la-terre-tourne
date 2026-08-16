@@ -87,7 +87,7 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 
 /* petit rappel « attrape la Terre » superposé au globe */
 .drag-hint {
-  position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%);
+  position: absolute; left: 50%; bottom: 56px; transform: translateX(-50%);
   max-width: calc(100% - 20px); text-align: center;
   background: rgba(7, 11, 23, .62);
   -webkit-backdrop-filter: blur(5px);
@@ -97,6 +97,26 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
   pointer-events: none; opacity: 1; transition: opacity .4s;
 }
 .drag-hint.hide { opacity: 0; }
+
+/* les trois vues du globe, posées sous le disque : la caméra pivote d'un
+   coup, la Terre et les horloges ne bougent pas */
+.view-chips {
+  position: absolute; left: 50%; bottom: 10px;
+  -webkit-transform: translateX(-50%); transform: translateX(-50%);
+  display: flex; gap: 6px; z-index: 6; max-width: calc(100% - 12px);
+}
+.view-chip {
+  border-radius: 999px; padding: 6px 11px; font-size: .8rem; font-weight: 700;
+  background: rgba(7, 11, 23, .62);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--border); color: var(--muted);
+  white-space: nowrap;
+}
+.view-chip.active { border-color: var(--sun-deep); color: var(--sun); background: rgba(74, 58, 13, .55); }
+@media (max-width: 480px) {
+  .view-chip { font-size: .72rem; padding: 5px 8px; }
+}
 
 /* ---------- le grand curseur du temps ---------- */
 

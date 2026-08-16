@@ -406,6 +406,25 @@ export class MapView {
     }
     ctx.globalAlpha = 1;
 
+    // la bande qui vit midi s'illumine d'un voile doré : le midi se partage
+    // par fuseau entier, pas en un seul point — à 12 h chez nous, la bande
+    // dorée est celle dont la France a adopté l'heure, juste à côté d'elle
+    {
+      const bm = Math.round(sub / 15) * 15;
+      ctx.strokeStyle = 'rgba(255, 207, 92, 0.35)'; ctx.lineWidth = 1.2;
+      for (const shift of [0, -360, 360]) {
+        const a = X(bm - 7.5 + shift), b = X(bm + 7.5 + shift);
+        const xa = Math.max(a, ox), xb = Math.min(b, ox + W);
+        if (xb <= xa) continue;
+        ctx.fillStyle = 'rgba(255, 207, 92, 0.13)';
+        ctx.fillRect(xa, oy, xb - xa, H);
+        for (const x of [a, b]) {
+          if (x < ox || x > ox + W) continue;
+          ctx.beginPath(); ctx.moveTo(x, oy); ctx.lineTo(x, oy + H); ctx.stroke();
+        }
+      }
+    }
+
     // le décalage de chaque bande par rapport à UTC, en haut (par-dessus la
     // nuit) — les demi-bandes ±12, collées au bord, restent muettes ; sur les
     // petits écrans on abrège (« +2 » sans le « h ») pour que rien ne se touche

@@ -205,7 +205,38 @@ function centerCameraOn(lonDeg, latDeg) {
   const bias = away > 0 ? Math.sign(theta) * Math.min(42 * DEG, away) : 0;
   globe3d.yaw = -Math.PI / 2 - theta + bias;
   globe3d.pitch = Math.max(-50 * DEG, Math.min(50 * DEG, latDeg * DEG * 0.7));
+  setActiveView('ville');
 }
+
+// ---- les trois vues du globe : la ville, le lever/coucher, le plein jour —
+// seule la caméra pivote, la Terre et les horloges ne bougent jamais ----
+
+const viewChips = {
+  ville: $('view-ville'),
+  terminateur: $('view-terminateur'),
+  jour: $('view-jour'),
+};
+
+function setActiveView(id) {
+  for (const key in viewChips) {
+    viewChips[key].classList.toggle('active', key === id);
+    viewChips[key].setAttribute('aria-pressed', key === id ? 'true' : 'false');
+  }
+}
+
+viewChips.ville.addEventListener('click', () => {
+  globe3d.pulse = { lonDeg: selected.lonDeg, latDeg: selected.latDeg, k: 1 };
+  centerCameraOn(selected.lonDeg, selected.latDeg);
+});
+viewChips.terminateur.addEventListener('click', () => {
+  // le Soleil entier sur le côté (le plus proche), la limite jour/nuit au milieu
+  globe3d.yaw = Math.abs(wrapPi(globe3d.yaw)) <= Math.PI / 2 ? 0 : Math.PI;
+  setActiveView('terminateur');
+});
+viewChips.jour.addEventListener('click', () => {
+  globe3d.yaw = -Math.PI / 2; // la face éclairée bien en face
+  setActiveView('jour');
+});
 
 // ---- lecture / pause et curseur ----
 
