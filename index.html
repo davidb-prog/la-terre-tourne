@@ -38,7 +38,7 @@
           <div class="search-chips" id="search-chips" aria-label="Quelques idées de voyage"></div>
         </div>
         <div class="canvas-wrap ratio-square">
-          <canvas id="globe3d-view" aria-label="La Terre en trois dimensions, éclairée par le Soleil, fixe à droite. Les vrais continents et pays sont dessinés, la France est surlignée en rose, et les 24 fuseaux horaires apparaissent en tranches. Faites glisser horizontalement pour faire tourner la Terre et changer l’heure, verticalement pour la pencher, et cliquez sur un pays ou une ville pour l’observer."></canvas>
+          <canvas id="globe3d-view" aria-label="La Terre en trois dimensions, éclairée par le Soleil posé du côté d’où vient la lumière — quand on regarde la face nuit, il se glisse derrière la Terre et les villes s’allument. Les vrais continents et pays sont dessinés, la France est surlignée en rose, et les 24 fuseaux horaires apparaissent en tranches. Faites glisser horizontalement pour faire tourner la Terre et changer l’heure, verticalement pour la pencher, et cliquez sur un pays ou une ville pour l’observer."></canvas>
           <div class="globe-frame" id="globe-frame">
             <div class="frame-row frame-row-home">
               <span class="frame-flag">🏠</span>
@@ -161,7 +161,9 @@
         à côté du bouton 🔊 permet d’en essayer une autre.</li>
       <li><strong>Les cartes</strong> viennent de Natural Earth (domaine public), simplifiées ;
         seules les frontières des pays sont tracées, pas les régions. Bali et la Guadeloupe ont
-        12 h d’écart pile : quand le soleil se lève sur l’une, il se couche sur l’autre.</li>
+        12 h d’écart pile : quand le soleil se lève sur l’une, il se couche sur l’autre.
+        Quand la ville choisie dort en pleine nuit, le globe se cadre en la décalant un peu
+        vers le Soleil, pour que la limite jour/nuit reste visible.</li>
     </ul>
   </details>
 </main>

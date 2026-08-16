@@ -76,7 +76,12 @@ function buildCards() {
       close.className = 'card-close';
       close.textContent = '✕';
       close.setAttribute('aria-label', 'Retirer ' + place.name + ' et revenir à la Guadeloupe');
-      close.addEventListener('click', () => { selected = defaultSelected(); buildCards(); });
+      close.addEventListener('click', () => {
+        selected = defaultSelected();
+        buildCards();
+        globe3d.pulse = { lonDeg: selected.lonDeg, latDeg: selected.latDeg, k: 1 };
+        centerCameraOn(selected.lonDeg, selected.latDeg); // on recadre aussi
+      });
       head.appendChild(close);
     }
 
@@ -191,8 +196,14 @@ for (const idea of ['Guadeloupe', 'Bali', 'Tokyo', 'New York', 'Sydney', 'La Ré
 // Choisir un lieu ne fait pas bouger la Terre (l'heure ne change pas d'un
 // poil) : c'est la caméra qui se recale d'un coup, lieu au centre du disque —
 // et le Soleil retrouve sa place sur l'axe, du côté d'où vient la lumière.
+// Si le lieu dort en pleine nuit, le cadrage glisse un peu vers le Soleil :
+// la ville reste bien en vue, mais un croissant de jour et la limite
+// jour/nuit restent toujours à l'écran (sinon l'image ne serait que du noir).
 function centerCameraOn(lonDeg, latDeg) {
-  globe3d.yaw = -Math.PI / 2 - placeAngle(sim.homeH, lonDeg);
+  const theta = placeAngle(sim.homeH, lonDeg);
+  const away = Math.abs(theta) - 100 * DEG; // au-delà, plus aucun jour visible
+  const bias = away > 0 ? Math.sign(theta) * Math.min(42 * DEG, away) : 0;
+  globe3d.yaw = -Math.PI / 2 - theta + bias;
   globe3d.pitch = Math.max(-50 * DEG, Math.min(50 * DEG, latDeg * DEG * 0.7));
 }
 
