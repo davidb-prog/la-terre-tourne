@@ -5,6 +5,7 @@
 import { TAU, DEG, PLACES, GREENWICH_LON, placeAngle, subsolarLon, solarHours,
          sunAltitude, wrapLon, wrap24, utcHours } from './model.js';
 import { COUNTRIES, LAKES, ICE_ISOS, FRANCE_ISO, ANTILLES, SPECKS } from './geo.js';
+import { DECOR } from './places.js';
 
 const COL = {
   bg: '#070b17',
@@ -433,6 +434,20 @@ export class MapView {
         label(ctx, 'il est minuit ici', x, y + 27, { align: 'center', size: 10, alpha: 0.85, color: '#c9d5f2' });
       }
     });
+
+    // villes-décor : de petits points nommés pour que la carte ne soit jamais vide
+    for (const d of DECOR) {
+      let near = false;
+      for (const p of places) {
+        if (Math.abs(p.lonDeg - d.lon) < 5 && Math.abs(p.latDeg - d.lat) < 5) near = true;
+      }
+      if (near) continue;
+      const x = X(d.lon), y = Y(d.lat);
+      ctx.beginPath(); ctx.arc(x, y, 2.4, 0, TAU);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)'; ctx.fill();
+      label(ctx, d.n, x, y - 7,
+        { align: 'center', size: 8.5, alpha: 0.6, weight: 400, clampW: w, clampH: h });
+    }
 
     // les maisons
     for (const p of places) {

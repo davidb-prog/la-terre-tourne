@@ -123,41 +123,44 @@ export function dayBadge(dayShift) {
   return '';
 }
 
-// Les boutons-scénarios : la Terre tourne en douceur jusqu'à homeH, puis on raconte.
-// Vérité utile aux parents : Bali (UTC+8) et la Guadeloupe (UTC−4) ont 12 h d'écart —
-// quand le soleil se lève sur l'une, il se couche sur l'autre (à ~13 min près).
+// Une phrase courte sur un lieu à cet instant, à lire à voix haute : l'heure,
+// l'état du ciel, l'activité — et le report de jour s'il y en a un.
+export function placePhrase(homeH, place) {
+  const c = localClock(homeH, place);
+  const hm = formatHM(c.hours);
+  const s = skyState(solarHours(homeH, place.lonDeg));
+  const skyTxt = s === 'dawn' ? 'le soleil se lève' : s === 'day' ? 'le soleil brille'
+    : s === 'dusk' ? 'le soleil se couche' : 'il fait nuit';
+  const act = activityFor(c.hours);
+  const actTxt = act.text.charAt(0).toLowerCase() + act.text.slice(1);
+  let txt = 'Il est ' + hm.text + ' : ' + skyTxt + ', ' + actTxt + ' ' + act.emoji;
+  if (c.dayShift > 0) txt += ' — et c’est déjà demain !';
+  else if (c.dayShift < 0) txt += ' — et là-bas, on est encore hier !';
+  else txt += '.';
+  return txt;
+}
+
+// L'écart d'heures avec chez nous, en toutes lettres (pour le cadre du globe).
+export function offsetDiffText(place) {
+  const d = place.utcOffset - HOME.utcOffset;
+  if (d === 0) return 'la même heure que chez nous !';
+  const a = Math.abs(d);
+  const hh = Math.floor(a);
+  const mm = Math.round((a - hh) * 60);
+  const fmt = hh + ' h' + (mm ? ' ' + (mm < 10 ? '0' + mm : mm) : '');
+  return d > 0 ? fmt + ' d’avance sur nous' : fmt + ' de retard sur nous';
+}
+
+// Les boutons-scénarios : la Terre tourne en douceur jusqu'au moment choisi,
+// puis on raconte la France (texte fixe) et le lieu choisi (phrase générée).
+// Le dernier scénario est dynamique : le lever du soleil chez l'invité.
 export const SCENARIOS = [
-  {
-    id: 'reveil', emoji: '☀️', label: 'Quand je me réveille', sub: '7 h chez nous', homeH: 7,
-    story: [
-      { place: 'france', text: 'Debout ! Il est 7 h du matin, le soleil se lève.' },
-      { place: 'guadeloupe', text: 'Il est 2 h du matin : le milieu de la nuit. Chuuut… tout le monde dort.' },
-      { place: 'bali', text: 'Il est déjà 2 h de l’après-midi : les enfants jouent depuis longtemps !' },
-    ],
-  },
-  {
-    id: 'midi', emoji: '🥖', label: 'Quand je déjeune', sub: 'midi chez nous', homeH: 12,
-    story: [
-      { place: 'france', text: 'Il est midi pile : à table ! Le soleil est tout en haut.' },
-      { place: 'guadeloupe', text: 'Il est 7 h du matin : le soleil se lève sur les palmiers, c’est le petit-déjeuner.' },
-      { place: 'bali', text: 'Il est déjà 7 h du soir : le soleil est couché, on dîne.' },
-    ],
-  },
-  {
-    id: 'dodo', emoji: '🌙', label: 'Quand je vais au dodo', sub: '20 h chez nous', homeH: 20,
-    story: [
-      { place: 'france', text: 'Il est 8 h du soir : un bisou, et au dodo !' },
-      { place: 'guadeloupe', text: 'Il est 3 h de l’après-midi : on joue encore, peut-être à la plage !' },
-      { place: 'bali', text: 'Il est 3 h du matin… et c’est déjà demain ! Tout le monde dort.' },
-    ],
-  },
-  {
-    id: 'bali-lever', emoji: '🌅', label: 'Le soleil se lève à Bali', sub: 'tout à l’est',
-    homeH: sunriseHomeH(PLACES[2].lonDeg), // ≈ 23 h 19 en France, la veille au soir
-    story: [
-      { place: 'bali', text: 'Le soleil se lève : une nouvelle journée commence — et c’est déjà demain matin !' },
-      { place: 'france', text: 'Chez nous, il est presque minuit : nuit noire, on dort à poings fermés.' },
-      { place: 'guadeloupe', text: 'Le soleil vient tout juste de se coucher : le ciel est encore tout orange.' },
-    ],
-  },
+  { id: 'reveil', emoji: '☀️', label: 'Quand je me réveille', sub: '7 h chez nous', homeH: 7,
+    france: 'Debout ! Il est 7 h du matin, le soleil se lève.' },
+  { id: 'midi', emoji: '🥖', label: 'Quand je déjeune', sub: 'midi chez nous', homeH: 12,
+    france: 'Il est midi pile : à table ! Le soleil est tout en haut.' },
+  { id: 'dodo', emoji: '🌙', label: 'Quand je vais au dodo', sub: '20 h chez nous', homeH: 20,
+    france: 'Il est 8 h du soir : un bisou, et au dodo !' },
+  { id: 'lever-la-bas', emoji: '🌅', label: 'Le soleil se lève là-bas', sub: 'chez l’invité',
+    sunriseAt: true, france: null },
 ];

@@ -1,9 +1,10 @@
 // Câblage de l'interface : boucle d'animation, curseur du temps, recherche de
-// lieux (hors-ligne), vol du globe, cartes-horloges dynamiques, scénarios,
-// plein écran.
+// lieux (hors-ligne, deux moteurs synchronisés), vol du globe, deux
+// cartes-horloges (la France et le lieu choisi), scénarios racontés, plein écran.
 
-import { TAU, DEG, PLACES, SCENARIOS, wrap24, localClock, formatHM, periodWord,
-         activityFor, dayBadge, placeAngle } from './model.js';
+import { TAU, DEG, PLACES, HOME, SCENARIOS, wrap24, localClock, formatHM,
+         periodWord, activityFor, dayBadge, placeAngle, sunriseHomeH,
+         placePhrase, offsetDiffText } from './model.js';
 import { MapView, SkyView, buildClock } from './views.js';
 import { Globe3D } from './view3d.js';
 import { searchPlaces, flagEmoji } from './places.js';
@@ -23,17 +24,24 @@ const globe3d = new Globe3D($('globe3d-view'));
 const map = new MapView($('map-view'));
 let cameraTween = null;   // vol de la caméra vers un lieu cherché
 
-// ---- les lieux affichés : le trio du récit + un invité (la recherche) ----
+// ---- le lieu choisi (la Guadeloupe par défaut, en attendant une recherche) ----
 
-let guest = null;
+const FRANCE = PLACES[1];
 
-function displayedPlaces() {
-  const list = [PLACES[1], PLACES[0], PLACES[2]]; // la France d'abord (chez nous)
-  if (guest) list.splice(1, 0, guest);
-  return list;
+function defaultSelected() {
+  const g = PLACES[0];
+  return {
+    id: 'selected', selectable: true, isDefault: true,
+    name: g.name, emoji: g.emoji, scene: g.scene,
+    lonDeg: g.lonDeg, latDeg: g.latDeg, utcOffset: g.utcOffset,
+    color: '#ffcf5c', iso: null,
+  };
 }
+let selected = defaultSelected();
 
-// ---- cartes-horloges (reconstruites quand l'invité change) ----
+function displayedPlaces() { return [FRANCE, selected]; }
+
+// ---- les deux cartes-horloges ----
 
 const cardsBox = $('cards');
 let cards = [];
@@ -63,12 +71,12 @@ function buildCards() {
     badge.id = 'badge-' + place.id;
     badge.hidden = true;
     head.appendChild(badge);
-    if (place.guest) {
+    if (place.selectable && !place.isDefault) {
       const close = document.createElement('button');
       close.className = 'card-close';
       close.textContent = '✕';
-      close.setAttribute('aria-label', 'Retirer ' + place.name);
-      close.addEventListener('click', () => { guest = null; buildCards(); });
+      close.setAttribute('aria-label', 'Retirer ' + place.name + ' et revenir à la Guadeloupe');
+      close.addEventListener('click', () => { selected = defaultSelected(); buildCards(); });
       head.appendChild(close);
     }
 
@@ -102,69 +110,14 @@ function buildCards() {
       digital: digital, period: period, activity: activity, badge: badge, cache: {},
     };
   });
+  frameCache.name = null; // le cadre du globe se resynchronise
 }
 
-// ---- la recherche de lieux (tout est embarqué, aucun appel réseau) ----
-
-const searchInput = $('place-search');
-const resultsBox = $('search-results');
-let results = [];
-
-function hideResults() { resultsBox.hidden = true; resultsBox.innerHTML = ''; results = []; }
-
-function showResults(list) {
-  resultsBox.innerHTML = '';
-  results = list;
-  if (!list.length) {
-    const none = document.createElement('div');
-    none.className = 'none';
-    none.textContent = 'Pas trouvé… essaie une grande ville ou un pays !';
-    resultsBox.appendChild(none);
-  }
-  for (const e of list) {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    const flag = document.createElement('span');
-    flag.textContent = flagEmoji(e.iso);
-    const nm = document.createElement('span');
-    nm.textContent = e.n;
-    const sub = document.createElement('span');
-    sub.className = 'sub';
-    sub.textContent = e.pays ? 'pays' : (e.c || '');
-    btn.appendChild(flag); btn.appendChild(nm); btn.appendChild(sub);
-    btn.addEventListener('mousedown', (ev) => ev.preventDefault()); // garde le focus
-    btn.addEventListener('click', () => choosePlace(e));
-    resultsBox.appendChild(btn);
-  }
-  resultsBox.hidden = false;
-}
-
-searchInput.addEventListener('input', () => {
-  const v = searchInput.value;
-  if (v.trim().length < 2) { hideResults(); return; }
-  showResults(searchPlaces(v, 7));
-});
-searchInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && results.length) choosePlace(results[0]);
-  if (e.key === 'Escape') { hideResults(); searchInput.blur(); }
-});
-searchInput.addEventListener('blur', () => { setTimeout(hideResults, 150); });
-
-// quelques idées de voyage prêtes à cliquer
-const chipsBox = $('search-chips');
-for (const idea of ['Tokyo', 'New York', 'Sydney', 'La Réunion', 'Papeete', 'Inde']) {
-  const found = searchPlaces(idea, 1);
-  if (!found.length) continue;
-  const b = document.createElement('button');
-  b.type = 'button';
-  b.textContent = flagEmoji(found[0].iso) + ' ' + found[0].n;
-  b.addEventListener('click', () => choosePlace(found[0]));
-  chipsBox.appendChild(b);
-}
+// ---- la recherche de lieux : deux moteurs synchronisés, zéro appel réseau ----
 
 function choosePlace(entry) {
-  guest = {
-    id: 'guest', guest: true,
+  selected = {
+    id: 'selected', selectable: true, isDefault: false,
     name: entry.n,
     emoji: flagEmoji(entry.iso),
     lonDeg: entry.lon, latDeg: entry.lat,
@@ -172,10 +125,66 @@ function choosePlace(entry) {
     color: '#ffcf5c',
     iso: entry.pays ? entry.iso : null, // seul un pays est surligné sur les cartes
   };
-  searchInput.value = '';
-  hideResults();
   buildCards();
   flyTo(entry.lon, entry.lat);
+}
+
+function wireSearch(inputId, resultsId) {
+  const input = $(inputId);
+  const box = $(resultsId);
+  let results = [];
+  const hide = () => { box.hidden = true; box.innerHTML = ''; results = []; };
+  const show = (list) => {
+    box.innerHTML = '';
+    results = list;
+    if (!list.length) {
+      const none = document.createElement('div');
+      none.className = 'none';
+      none.textContent = 'Pas trouvé… essaie une grande ville ou un pays !';
+      box.appendChild(none);
+    }
+    for (const e of list) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      const flag = document.createElement('span');
+      flag.textContent = flagEmoji(e.iso);
+      const nm = document.createElement('span');
+      nm.textContent = e.n;
+      const sub = document.createElement('span');
+      sub.className = 'sub';
+      sub.textContent = e.pays ? 'pays' : (e.c || '');
+      btn.appendChild(flag); btn.appendChild(nm); btn.appendChild(sub);
+      btn.addEventListener('mousedown', (ev) => ev.preventDefault()); // garde le focus
+      btn.addEventListener('click', () => { input.value = ''; hide(); choosePlace(e); });
+      box.appendChild(btn);
+    }
+    box.hidden = false;
+  };
+  input.addEventListener('input', () => {
+    const v = input.value;
+    if (v.trim().length < 2) { hide(); return; }
+    show(searchPlaces(v, 7));
+  });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && results.length) { input.value = ''; const r = results[0]; hide(); choosePlace(r); }
+    if (e.key === 'Escape') { hide(); input.blur(); }
+  });
+  input.addEventListener('blur', () => { setTimeout(hide, 150); });
+}
+wireSearch('place-search', 'search-results');
+wireSearch('place-search-map', 'search-results-map');
+
+// quelques idées de voyage prêtes à cliquer
+const chipsBox = $('search-chips');
+for (const idea of ['Guadeloupe', 'Bali', 'Tokyo', 'New York', 'Sydney', 'La Réunion',
+  'Nouméa', 'Thaïlande']) {
+  const found = searchPlaces(idea, 1);
+  if (!found.length) continue;
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.textContent = flagEmoji(found[0].iso) + ' ' + found[0].n;
+  b.addEventListener('click', () => choosePlace(found[0]));
+  chipsBox.appendChild(b);
 }
 
 // La caméra vole jusqu'au lieu (le temps, lui, ne change pas).
@@ -354,9 +363,6 @@ function setActiveScenario(id) {
   }
 }
 
-const placeById = {};
-for (const p of PLACES) placeById[p.id] = p;
-
 function renderInvite() {
   const box = $('story');
   box.innerHTML = '';
@@ -366,16 +372,22 @@ function renderInvite() {
   box.appendChild(p);
 }
 
-function renderStory(scn) {
+// L'histoire du moment : la France (texte écrit) + le lieu choisi (phrase générée).
+function renderStory(scn, atH) {
   const box = $('story');
   box.innerHTML = '';
-  for (const line of scn.story) {
-    const p = placeById[line.place];
+  const lines = [
+    { cls: 'story-chip-france', chip: FRANCE.emoji + ' ' + FRANCE.name,
+      text: scn.france || placePhrase(atH, FRANCE) },
+    { cls: 'story-chip-selected', chip: selected.emoji + ' ' + selected.name,
+      text: placePhrase(atH, selected) },
+  ];
+  for (const line of lines) {
     const row = document.createElement('div');
     row.className = 'story-line';
     const chip = document.createElement('span');
-    chip.className = 'story-chip story-chip-' + p.id;
-    chip.textContent = p.emoji + ' ' + p.name;
+    chip.className = 'story-chip ' + line.cls;
+    chip.textContent = line.chip;
     const txt = document.createElement('p');
     txt.className = 'story-text';
     txt.textContent = line.text;
@@ -386,17 +398,18 @@ function renderStory(scn) {
 
 // La Terre tourne en douceur (toujours vers l'avant, son vrai sens) jusqu'au moment choisi.
 function runScenario(scn) {
+  const atH = scn.sunriseAt ? sunriseHomeH(selected.lonDeg) : scn.homeH;
   setPlaying(false);
   setActiveScenario(scn.id);
-  renderStory(scn);
-  const delta = wrap24(scn.homeH - sim.homeH);
+  renderStory(scn, atH);
+  const delta = wrap24(atH - sim.homeH);
   if (reduceMotion || delta < 0.02) {
     sim.tween = null;
-    sim.homeH = scn.homeH;
+    sim.homeH = atH;
     return;
   }
   sim.tween = {
-    from: sim.homeH, delta: delta, target: scn.homeH,
+    from: sim.homeH, delta: delta, target: atH,
     start: performance.now(), dur: Math.min(2600, 700 + delta * 90),
   };
 }
@@ -407,6 +420,21 @@ function setText(cache, key, el, value) {
   if (cache[key] === value) return;
   cache[key] = value;
   el.textContent = value;
+}
+
+// le cadre posé sur le globe : l'heure ici, l'heure là-bas, et l'écart
+const frameCache = { name: null };
+
+function updateFrame() {
+  const selHm = formatHM(localClock(sim.homeH, selected).hours);
+  setText(frameCache, 'home', $('frame-home-time'), formatHM(sim.homeH).text);
+  setText(frameCache, 'sel', $('frame-sel-time'), selHm.text);
+  if (frameCache.name !== selected.name) {
+    frameCache.name = selected.name;
+    $('frame-sel-flag').textContent = selected.emoji;
+    $('frame-sel-name').textContent = selected.name;
+    $('frame-diff').textContent = offsetDiffText(selected);
+  }
 }
 
 function updateCards() {
@@ -428,9 +456,9 @@ function updateCards() {
     }
     card.sky.draw(sim.homeH);
   }
-  const homeHm = formatHM(sim.homeH);
-  setText(sim, '_homeText', $('home-time'), homeHm.text);
+  setText(sim, '_homeText', $('home-time'), formatHM(sim.homeH).text);
   setText(sim, '_homePeriod', $('home-period'), periodWord(sim.homeH));
+  updateFrame();
   if (!sliderHeld) slider.value = sim.homeH;
 }
 
@@ -463,8 +491,8 @@ function frame(ms) {
       }
     }
     const places = displayedPlaces();
-    globe3d.draw(sim.homeH, places, guest ? guest.iso : null, guest ? guest.color : null);
-    map.draw(sim.homeH, places, guest ? guest.iso : null, guest ? guest.color : null);
+    globe3d.draw(sim.homeH, places, selected.iso, selected.color);
+    map.draw(sim.homeH, places, selected.iso, selected.color);
     updateCards();
   } finally {
     // la boucle survit à un raté de rendu ponctuel (canvas en cours de layout…)

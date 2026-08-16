@@ -38,7 +38,20 @@
           <div class="search-chips" id="search-chips" aria-label="Quelques idées de voyage"></div>
         </div>
         <div class="canvas-wrap ratio-square">
-          <canvas id="globe3d-view" aria-label="La Terre en trois dimensions, éclairée d’un seul côté par le Soleil. Les vrais continents et pays sont dessinés, la France est surlignée en rose, et les 24 fuseaux horaires apparaissent en tranches. Faites glisser pour tourner autour du globe et découvrir le côté nuit."></canvas>
+          <canvas id="globe3d-view" aria-label="La Terre en trois dimensions, éclairée d’un seul côté par le Soleil, toujours visible à côté du globe. Les vrais continents et pays sont dessinés, la France est surlignée en rose, et les 24 fuseaux horaires apparaissent en tranches. Faites glisser pour tourner autour du globe et découvrir le côté nuit."></canvas>
+          <div class="globe-frame" id="globe-frame">
+            <div class="frame-row frame-row-home">
+              <span class="frame-flag">🏠</span>
+              <span class="frame-name">France</span>
+              <strong id="frame-home-time">12 h 00</strong>
+            </div>
+            <div class="frame-row frame-row-sel">
+              <span class="frame-flag" id="frame-sel-flag">🏝️</span>
+              <span class="frame-name" id="frame-sel-name">Guadeloupe</span>
+              <strong id="frame-sel-time">7 h 00</strong>
+            </div>
+            <div class="frame-diff" id="frame-diff">5 h de retard sur nous</div>
+          </div>
           <div class="drag-hint" id="drag-hint">👆 Fais le tour de la Terre — va voir la nuit !</div>
         </div>
         <div class="time-control">
@@ -64,6 +77,14 @@
     <div class="panel canvas-panel map-panel">
       <div class="canvas-title">La même chose, à plat — chaque bande debout est un
         <strong>fuseau horaire</strong>, avec son heure</div>
+      <div class="search-row">
+        <div class="search-box">
+          <input type="search" id="place-search-map" autocomplete="off" spellcheck="false"
+            placeholder="🔎 Cherche une ville ou un pays…"
+            aria-label="Chercher une ville ou un pays (même recherche que sur le globe)">
+          <div id="search-results-map" class="search-results" hidden></div>
+        </div>
+      </div>
       <div class="canvas-wrap ratio-map">
         <canvas id="map-view" aria-label="Carte du monde avec les vrais continents. Les 24 fuseaux horaires apparaissent en bandes verticales, chacune avec son heure ; la moitié plongée dans la nuit est assombrie et se déplace quand l’heure change. Faites glisser horizontalement pour changer l’heure."></canvas>
       </div>

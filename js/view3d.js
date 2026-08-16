@@ -6,6 +6,7 @@
 
 import { TAU, DEG, GREENWICH_LON, placeAngle } from './model.js';
 import { COUNTRIES, LAKES, ICE_ISOS, FRANCE_ISO, ANTILLES, SPECKS } from './geo.js';
+import { DECOR } from './places.js';
 import { fitCanvas, drawStars, label } from './views.js';
 
 const COL3D = {
@@ -50,7 +51,7 @@ export class Globe3D {
     drawStars(this, ctx, w, h, 150);
 
     const S = Math.min(w, h);
-    const cx = 0.5 * w, cy = 0.5 * h, R = 0.44 * S;
+    const cx = 0.5 * w, cy = 0.5 * h, R = 0.31 * S;
     this.layout = { cx: cx, cy: cy, R: R };
     this._spin = placeAngle(homeH, GREENWICH_LON);
     this._ct = Math.cos(this.pitch); this._st = Math.sin(this.pitch);
@@ -60,17 +61,37 @@ export class Globe3D {
     const sun = [Math.cos(sl), Math.sin(sl) * this._ct, Math.sin(sl) * this._st];
     const sunScreen = norm([sun[0], -sun[2], 0]);
 
-    // halo du Soleil au bord de l'écran, seulement s'il est de notre côté
-    const facing = Math.max(0, -sun[1] + 0.25);
-    if (facing > 0.05) {
-      const gx = cx + sunScreen[0] * R * 1.45, gy = cy + sunScreen[1] * R * 1.45;
-      const g = ctx.createRadialGradient(gx, gy, 2, gx, gy, R * 0.9);
-      g.addColorStop(0, 'rgba(255, 247, 214, ' + Math.min(1, facing) + ')');
-      g.addColorStop(0.25, 'rgba(255, 207, 92, ' + 0.55 * Math.min(1, facing) + ')');
-      g.addColorStop(1, 'rgba(255, 159, 28, 0)');
-      ctx.fillStyle = g;
-      ctx.beginPath(); ctx.arc(gx, gy, R * 0.9, 0, TAU); ctx.fill();
+    // le Soleil est TOUJOURS visible : un vrai petit astre posé dans la
+    // direction d'où vient la lumière (derrière le globe quand on regarde la
+    // nuit, devant quand on regarde le jour)
+    const m = Math.sqrt(sun[0] * sun[0] + sun[2] * sun[2]);
+    if (m > 0.12 || !this._sunDir) {
+      this._sunDir = m > 1e-6 ? [sun[0] / m, -sun[2] / m] : [0.9, -0.35];
     }
+    const sunX = cx + this._sunDir[0] * R * 1.38;
+    const sunY = cy + this._sunDir[1] * R * 1.38;
+    const sunBehind = sun[1] > 0;
+    const drawSunStar = () => {
+      const rS = 0.15 * R;
+      const g = ctx.createRadialGradient(sunX, sunY, 1, sunX, sunY, rS * 2.6);
+      g.addColorStop(0, '#fff7d6'); g.addColorStop(0.3, '#ffcf5c');
+      g.addColorStop(0.65, 'rgba(255, 159, 28, 0.25)'); g.addColorStop(1, 'rgba(255, 159, 28, 0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(sunX, sunY, rS * 2.6, 0, TAU); ctx.fill();
+      ctx.strokeStyle = '#ffcf5c'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+      for (let i = 0; i < 8; i++) {
+        const a = i * TAU / 8 + 0.39;
+        ctx.beginPath();
+        ctx.moveTo(sunX + rS * 1.25 * Math.cos(a), sunY + rS * 1.25 * Math.sin(a));
+        ctx.lineTo(sunX + rS * 1.7 * Math.cos(a), sunY + rS * 1.7 * Math.sin(a));
+        ctx.stroke();
+      }
+      ctx.fillStyle = '#ffcf5c';
+      ctx.beginPath(); ctx.arc(sunX, sunY, rS, 0, TAU); ctx.fill();
+      label(ctx, 'le Soleil', sunX, sunY + rS * 2.1 + 8,
+        { align: 'center', size: 11, alpha: 0.85, color: '#ffcf5c', clampW: w, clampH: h });
+    };
+    if (sunBehind) drawSunStar();
 
     // atmosphère : un fin halo bleuté autour du disque
     const atm = ctx.createRadialGradient(cx, cy, R * 0.94, cx, cy, R * 1.1);
@@ -114,10 +135,16 @@ export class Globe3D {
       for (const ring of country.rings) this.shape(ctx, ring, cx, cy, R, hl, edge);
     }
 
-    // les 24 fuseaux : un méridien tous les 15°, Greenwich en pointillé + équateur
+    // les 24 fuseaux : une bande sur deux teintée + méridiens bien visibles
+    for (let bandM = -12; bandM < 12; bandM++) {
+      if (((bandM % 2) + 2) % 2 !== 0) continue;
+      this.shape(ctx, [[15 * bandM - 7.5, -88], [15 * bandM - 7.5, 88],
+        [15 * bandM + 7.5, 88], [15 * bandM + 7.5, -88]], cx, cy, R,
+        'rgba(255, 255, 255, 0.08)');
+    }
     for (let k = 0; k < 24; k++) {
       const lon = -180 + 7.5 + k * 15;
-      this.arc(ctx, (t) => [lon, t * 168 - 84], 'rgba(255, 255, 255, 0.1)', [], cx, cy, R);
+      this.arc(ctx, (t) => [lon, t * 168 - 84], 'rgba(255, 255, 255, 0.26)', [], cx, cy, R);
     }
     this.arc(ctx, (t) => [t * 360 - 180, 0], 'rgba(255, 255, 255, 0.16)', [], cx, cy, R);
     this.arc(ctx, (t) => [GREENWICH_LON, t * 170 - 85], 'rgba(255, 255, 255, 0.5)', [5, 6], cx, cy, R);
@@ -140,11 +167,11 @@ export class Globe3D {
     // jour / nuit en toutes lettres, aux points face au Soleil et à l'opposé
     if (-sun[1] > 0.35) {
       label(ctx, 'jour', cx + R * 0.55 * sun[0], cy - R * 0.55 * sun[2],
-        { align: 'center', size: Math.round(0.09 * R), color: 'rgba(255, 255, 255, 0.4)' });
+        { align: 'center', size: Math.round(0.13 * R), color: 'rgba(255, 255, 255, 0.4)' });
     }
     if (sun[1] > 0.35) {
       label(ctx, 'nuit', cx - R * 0.55 * sun[0], cy + R * 0.55 * sun[2],
-        { align: 'center', size: Math.round(0.09 * R), color: 'rgba(157, 185, 255, 0.5)' });
+        { align: 'center', size: Math.round(0.13 * R), color: 'rgba(157, 185, 255, 0.5)' });
     }
 
     ctx.restore();
@@ -152,6 +179,24 @@ export class Globe3D {
     // contour du disque
     ctx.strokeStyle = 'rgba(150, 180, 240, 0.45)'; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
+
+    if (!sunBehind) drawSunStar();
+
+    // villes-décor : de petits points nommés pour que le globe ne soit jamais vide
+    for (const d of DECOR) {
+      let near = false;
+      for (const p of places) {
+        if (Math.abs(p.lonDeg - d.lon) < 4 && Math.abs(p.latDeg - d.lat) < 4) near = true;
+      }
+      if (near) continue;
+      const v = this.point(d.lon, d.lat);
+      if (-v[1] < 0.1) continue;
+      const x = cx + R * v[0], y = cy - R * v[2];
+      ctx.beginPath(); ctx.arc(x, y, 2.6, 0, TAU);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)'; ctx.fill();
+      label(ctx, d.n, x, y - 8,
+        { align: 'center', size: 9, alpha: 0.6, weight: 400, clampW: w, clampH: h });
+    }
 
     // les maisons — seulement du côté qu'on regarde
     for (const p of places) {

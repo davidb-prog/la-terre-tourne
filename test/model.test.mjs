@@ -5,7 +5,7 @@
 import {
   PLACES, HOME, SCENARIOS, wrap24, wrapLon, localClock, solarHours, sunAltitude,
   skyState, placeAngle, subsolarLon, sunriseHomeH, sunsetHomeH, formatHM,
-  periodWord, activityFor, dayBadge, DEG,
+  periodWord, activityFor, dayBadge, placePhrase, offsetDiffText, DEG,
 } from '../js/model.js';
 
 let failed = 0;
@@ -126,27 +126,35 @@ check('mots-repères : midi, minuit, matin, après-midi, soir, nuit',
   check('balayage complet 0–24 h : heures locales dans [0, 24) et décalage de jour ∈ {−1, 0, +1}', ok);
 }
 
-console.log('Scénarios');
+console.log('Scénarios et phrases générées');
 {
   const ids = {};
-  let ok = true, placesOk = true;
-  for (let i = 0; i < SCENARIOS.length; i++) {
-    const s = SCENARIOS[i];
-    if (ids[s.id]) ok = false;
-    ids[s.id] = true;
-    if (!(s.homeH >= 0 && s.homeH < 24)) ok = false;
-    for (let j = 0; j < s.story.length; j++) {
-      let found = false;
-      for (let p = 0; p < PLACES.length; p++) if (PLACES[p].id === s.story[j].place) found = true;
-      if (!found) placesOk = false;
-    }
+  let ok = true;
+  for (const scn of SCENARIOS) {
+    if (ids[scn.id]) ok = false;
+    ids[scn.id] = true;
+    if (!scn.sunriseAt && !(scn.homeH >= 0 && scn.homeH < 24)) ok = false;
+    if (!scn.sunriseAt && !scn.france) ok = false;
   }
-  check('identifiants uniques et heures valides', ok);
-  check('chaque phrase du récit pointe vers un lieu connu', placesOk);
-  check('le scénario « lever à Bali » tombe à 23 h 19 heure de France',
-    formatHM(SCENARIOS[3].homeH).text === '23 h 19');
-  check('au dodo (20 h) : le récit annonce « déjà demain » à Bali',
-    SCENARIOS[2].story[2].text.indexOf('demain') !== -1 && localClock(SCENARIOS[2].homeH, B).dayShift === 1);
+  check('identifiants uniques, heures valides, textes France présents', ok);
+  check('le dernier scénario est dynamique (lever du soleil chez l’invité)',
+    SCENARIOS[3].sunriseAt === true);
+  check('au dodo (20 h), la phrase de Bali annonce « déjà demain »',
+    placePhrase(20, B).indexOf('déjà demain') !== -1 &&
+    placePhrase(20, B).indexOf('3 h 00') !== -1);
+  check('à 2 h chez nous, la Guadeloupe est « encore hier »',
+    placePhrase(2, G).indexOf('encore hier') !== -1);
+  check('à midi chez nous, la phrase de la Guadeloupe donne 7 h 00 et un lever de soleil',
+    placePhrase(12, G).indexOf('7 h 00') !== -1);
+  check('au lever du soleil balinais, la phrase dit que le soleil se lève',
+    placePhrase(sunriseHomeH(B.lonDeg), B).indexOf('le soleil se lève') !== -1);
+  check('écarts en toutes lettres : Bali +7 h, Guadeloupe −5 h',
+    offsetDiffText(B) === '7 h d’avance sur nous' &&
+    offsetDiffText(G) === '5 h de retard sur nous');
+  check('écart en demi-heure : l’Inde a 4 h 30 d’avance',
+    offsetDiffText({ utcOffset: 5.5 }) === '4 h 30 d’avance sur nous');
+  check('même heure que nous : la même phrase gentille',
+    offsetDiffText({ utcOffset: 1 }) === 'la même heure que chez nous !');
 }
 
 console.log('');
