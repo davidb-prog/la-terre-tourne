@@ -382,11 +382,22 @@ button:focus-visible, input:focus-visible, a:focus-visible {
   .globe-panel:fullscreen .canvas-wrap, .globe-panel.fs-fallback .canvas-wrap { aspect-ratio: auto; }
 }
 /* sur grand écran, le plein écran garde le cadre et les pastilles en
-   incrustation (comportement par défaut du globe : rien à forcer). Sur un
-   mobile en plein écran, ils restent rangés sous le disque (voir la bascule
-   ≤ 640 px) et on efface les suggestions de voyage pour que le globe respire
-   — la recherche reste là pour changer de destination. */
+   incrustation (comportement par défaut du globe : rien à forcer). */
 @media (max-width: 640px) {
+  /* Sur un mobile en plein écran, on N'étire PAS la scène (flex:1 + min-height
+     nul la ferait déborder et son contenu — les pastilles — viendrait
+     recouvrir l'heure juste dessous). On empile normalement : le globe prend
+     une belle hauteur fixe, le cadre et les pastilles se rangent dessous, et
+     la page défile si tout ne tient pas. Les suggestions de voyage s'effacent
+     pour laisser le globe respirer (la recherche reste là). */
+  .globe-panel:fullscreen,
+  .globe-panel.fs-fallback { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .globe-panel:fullscreen .globe-stage,
+  .globe-panel.fs-fallback .globe-stage { flex: none; }
+  .globe-panel:fullscreen .canvas-wrap,
+  .globe-panel.fs-fallback .canvas-wrap {
+    flex: none; height: min(88vw, 58vh); min-height: 300px;
+  }
   .globe-panel:fullscreen .search-chips,
   .globe-panel.fs-fallback .search-chips { display: none; }
 }
