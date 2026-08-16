@@ -265,8 +265,31 @@ function ringPath(ctx, ring, X, Y) {
   ctx.closePath();
 }
 
+// Un point (lon, lat) est-il dans l'anneau ? (lancer de rayon)
+export function pointInRing(lon, lat, ring) {
+  let c = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const xi = ring[i][0], yi = ring[i][1], xj = ring[j][0], yj = ring[j][1];
+    if (((yi > lat) !== (yj > lat)) &&
+        (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi)) c = !c;
+  }
+  return c;
+}
+
 export class MapView {
   constructor(canvas) { this.canvas = canvas; this.layout = null; }
+
+  // Convertit un clic (coordonnées canvas CSS) en longitude/latitude, ou null
+  // hors du planisphère.
+  hitTest(x, y) {
+    if (!this.layout) return null;
+    const L = this.layout;
+    if (x < L.ox || x > L.ox + L.W || y < L.oy || y > L.oy + L.H) return null;
+    return {
+      lonDeg: (x - L.ox) / L.W * 360 - 180,
+      latDeg: 90 - (y - L.oy) / L.H * 180,
+    };
+  }
 
   draw(homeH, places, highlightIso, highlightColor) {
     const { ctx, w, h } = fitCanvas(this.canvas);

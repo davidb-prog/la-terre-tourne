@@ -51,7 +51,7 @@ export class Globe3D {
     drawStars(this, ctx, w, h, 150);
 
     const S = Math.min(w, h);
-    const cx = 0.5 * w, cy = 0.5 * h, R = 0.31 * S;
+    const cx = 0.40 * w, cy = 0.5 * h, R = 0.34 * S;
     this.layout = { cx: cx, cy: cy, R: R };
     this._spin = placeAngle(homeH, GREENWICH_LON);
     this._ct = Math.cos(this.pitch); this._st = Math.sin(this.pitch);
@@ -61,37 +61,37 @@ export class Globe3D {
     const sun = [Math.cos(sl), Math.sin(sl) * this._ct, Math.sin(sl) * this._st];
     const sunScreen = norm([sun[0], -sun[2], 0]);
 
-    // le Soleil est TOUJOURS visible : un vrai petit astre posé dans la
-    // direction d'où vient la lumière (derrière le globe quand on regarde la
-    // nuit, devant quand on regarde le jour)
-    const m = Math.sqrt(sun[0] * sun[0] + sun[2] * sun[2]);
-    if (m > 0.12 || !this._sunDir) {
-      this._sunDir = m > 1e-6 ? [sun[0] / m, -sun[2] / m] : [0.9, -0.35];
+    // le Soleil est FIXE, posé à droite du globe (la caméra ne tourne plus
+    // autour : c'est la Terre qu'on fait tourner, comme avec le curseur)
+    const rS = 0.14 * R;
+    const sunX = cx + R * 1.55, sunY = cy - R * 0.06;
+    const g = ctx.createRadialGradient(sunX, sunY, 1, sunX, sunY, rS * 2.6);
+    g.addColorStop(0, '#fff7d6'); g.addColorStop(0.3, '#ffcf5c');
+    g.addColorStop(0.65, 'rgba(255, 159, 28, 0.25)'); g.addColorStop(1, 'rgba(255, 159, 28, 0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(sunX, sunY, rS * 2.6, 0, TAU); ctx.fill();
+    ctx.strokeStyle = '#ffcf5c'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+    for (let i = 0; i < 8; i++) {
+      const a = i * TAU / 8 + 0.39;
+      ctx.beginPath();
+      ctx.moveTo(sunX + rS * 1.25 * Math.cos(a), sunY + rS * 1.25 * Math.sin(a));
+      ctx.lineTo(sunX + rS * 1.7 * Math.cos(a), sunY + rS * 1.7 * Math.sin(a));
+      ctx.stroke();
     }
-    const sunX = cx + this._sunDir[0] * R * 1.38;
-    const sunY = cy + this._sunDir[1] * R * 1.38;
-    const sunBehind = sun[1] > 0;
-    const drawSunStar = () => {
-      const rS = 0.15 * R;
-      const g = ctx.createRadialGradient(sunX, sunY, 1, sunX, sunY, rS * 2.6);
-      g.addColorStop(0, '#fff7d6'); g.addColorStop(0.3, '#ffcf5c');
-      g.addColorStop(0.65, 'rgba(255, 159, 28, 0.25)'); g.addColorStop(1, 'rgba(255, 159, 28, 0)');
-      ctx.fillStyle = g;
-      ctx.beginPath(); ctx.arc(sunX, sunY, rS * 2.6, 0, TAU); ctx.fill();
-      ctx.strokeStyle = '#ffcf5c'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
-      for (let i = 0; i < 8; i++) {
-        const a = i * TAU / 8 + 0.39;
-        ctx.beginPath();
-        ctx.moveTo(sunX + rS * 1.25 * Math.cos(a), sunY + rS * 1.25 * Math.sin(a));
-        ctx.lineTo(sunX + rS * 1.7 * Math.cos(a), sunY + rS * 1.7 * Math.sin(a));
-        ctx.stroke();
+    ctx.fillStyle = '#ffcf5c';
+    ctx.beginPath(); ctx.arc(sunX, sunY, rS, 0, TAU); ctx.fill();
+    label(ctx, 'le Soleil', sunX, sunY + rS * 2.1 + 8,
+      { align: 'center', size: 11, alpha: 0.85, color: '#ffcf5c', clampW: w, clampH: h });
+    // rayons parallèles, flèches vers la Terre
+    ctx.strokeStyle = 'rgba(255, 207, 92, 0.5)'; ctx.lineWidth = 2;
+    for (const dy of [-0.5 * R, 0, 0.5 * R]) {
+      const y = cy + dy, x1 = sunX - rS * 2.2, x2 = cx + Math.sqrt(Math.max(0.1, 1 - (dy / R) * (dy / R))) * R + 14;
+      if (x1 > x2 + 12) {
+        ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x2, y); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x2, y); ctx.lineTo(x2 + 7, y - 4);
+        ctx.moveTo(x2, y); ctx.lineTo(x2 + 7, y + 4); ctx.stroke();
       }
-      ctx.fillStyle = '#ffcf5c';
-      ctx.beginPath(); ctx.arc(sunX, sunY, rS, 0, TAU); ctx.fill();
-      label(ctx, 'le Soleil', sunX, sunY + rS * 2.1 + 8,
-        { align: 'center', size: 11, alpha: 0.85, color: '#ffcf5c', clampW: w, clampH: h });
-    };
-    if (sunBehind) drawSunStar();
+    }
 
     // atmosphère : un fin halo bleuté autour du disque
     const atm = ctx.createRadialGradient(cx, cy, R * 0.94, cx, cy, R * 1.1);
@@ -180,8 +180,6 @@ export class Globe3D {
     ctx.strokeStyle = 'rgba(150, 180, 240, 0.45)'; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
 
-    if (!sunBehind) drawSunStar();
-
     // villes-décor : de petits points nommés pour que le globe ne soit jamais vide
     for (const d of DECOR) {
       let near = false;
@@ -225,6 +223,23 @@ export class Globe3D {
       }
       this.pulse.k -= 0.02;
     }
+  }
+
+  // Convertit un clic (coordonnées canvas CSS) en longitude/latitude sur la
+  // face visible de la sphère, ou null hors du disque.
+  hitTest(x, y) {
+    if (!this.layout) return null;
+    const px = (x - this.layout.cx) / this.layout.R;
+    const pz = -(y - this.layout.cy) / this.layout.R;
+    const rr = px * px + pz * pz;
+    if (rr > 1) return null;
+    const py = -Math.sqrt(1 - rr);
+    // rotation inverse du tangage, puis retrait de la rotation de la Terre
+    const y0 = py * this._ct + pz * this._st;
+    const z0 = -py * this._st + pz * this._ct;
+    const lam = Math.atan2(y0, px) - this._spin - this.yaw;
+    const phi = Math.asin(Math.max(-1, Math.min(1, z0)));
+    return { lonDeg: ((lam / DEG + 180) % 360 + 360) % 360 - 180, latDeg: phi / DEG };
   }
 
   // Petit disque (îlot) si le point regarde vers nous.

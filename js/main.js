@@ -5,9 +5,10 @@
 import { TAU, DEG, PLACES, HOME, SCENARIOS, wrap24, localClock, formatHM,
          periodWord, activityFor, dayBadge, placeAngle, sunriseHomeH,
          placePhrase, offsetDiffText } from './model.js';
-import { MapView, SkyView, buildClock } from './views.js';
+import { MapView, SkyView, buildClock, pointInRing } from './views.js';
 import { Globe3D } from './view3d.js';
-import { searchPlaces, flagEmoji } from './places.js';
+import { GAZETTEER, DECOR, searchPlaces, flagEmoji } from './places.js';
+import { COUNTRIES } from './geo.js';
 
 const $ = (id) => document.getElementById(id);
 const wrapPi = (a) => ((a + Math.PI) % TAU + TAU) % TAU - Math.PI;
@@ -126,7 +127,8 @@ function choosePlace(entry) {
     iso: entry.pays ? entry.iso : null, // seul un pays est surligné sur les cartes
   };
   buildCards();
-  flyTo(entry.lon, entry.lat);
+  globe3d.pulse = { lonDeg: entry.lon, latDeg: entry.lat, k: 1 };
+  tiltTo(entry.lat);
 }
 
 function wireSearch(inputId, resultsId) {
@@ -187,21 +189,14 @@ for (const idea of ['Guadeloupe', 'Bali', 'Tokyo', 'New York', 'Sydney', 'La Ré
   chipsBox.appendChild(b);
 }
 
-// La caméra vole jusqu'au lieu (le temps, lui, ne change pas).
-function flyTo(lonDeg, latDeg) {
-  const targetYaw = globe3d.yaw + wrapPi(-Math.PI / 2 - placeAngle(sim.homeH, lonDeg) - globe3d.yaw);
-  const targetPitch = Math.max(-50 * DEG, Math.min(50 * DEG, latDeg * DEG * 0.7));
-  if (reduceMotion) {
-    globe3d.yaw = targetYaw;
-    globe3d.pitch = targetPitch;
-    globe3d.pulse = { lonDeg: lonDeg, latDeg: latDeg, k: 1 };
-    return;
-  }
-  cameraTween = {
-    yaw0: globe3d.yaw, dyaw: targetYaw - globe3d.yaw,
-    pitch0: globe3d.pitch, dpitch: targetPitch - globe3d.pitch,
-    start: performance.now(), dur: 1200, lonDeg: lonDeg, latDeg: latDeg,
-  };
+// Le Soleil (et la caméra) sont fixes : choisir un lieu penche juste le globe
+// vers sa latitude et fait pulser son marqueur — s'il est du côté nuit, on le
+// voit arriver en faisant tourner la Terre.
+function tiltTo(latDeg) {
+  const target = Math.max(-50 * DEG, Math.min(50 * DEG, latDeg * DEG * 0.7));
+  if (reduceMotion) { globe3d.pitch = target; return; }
+  cameraTween = { pitch0: globe3d.pitch, dpitch: target - globe3d.pitch,
+    start: performance.now(), dur: 900 };
 }
 
 // ---- lecture / pause et curseur ----
@@ -284,54 +279,120 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// ---- glisser sur le globe : on ORBITE (le temps continue de tourner) ----
+// ---- cliquer sur un pays ou une ville : il devient le lieu observé ----
 
-function wireOrbitDrag(canvas) {
-  let dragging = false, lastX = 0, lastY = 0;
+const COUNTRY_ENTRY = {};
+for (const e of GAZETTEER) {
+  if (e.pays && e.iso && !COUNTRY_ENTRY[e.iso]) COUNTRY_ENTRY[e.iso] = e;
+}
+function cityEntryByName(name) {
+  for (const e of GAZETTEER) if (!e.pays && e.n === name) return e;
+  return null;
+}
+
+// (lon, lat) cliqué → l'entrée du répertoire : ville-décor proche, sinon pays.
+function resolveHit(ll) {
+  if (!ll) return null;
+  let best = null, bestD = 5; // ~5° de tolérance autour des villes nommées
+  for (const d of DECOR) {
+    const dLon = Math.abs(((d.lon - ll.lonDeg + 540) % 360) - 180);
+    const dist = Math.max(dLon * Math.cos(ll.latDeg * DEG), Math.abs(d.lat - ll.latDeg));
+    if (dist < bestD) { bestD = dist; best = d; }
+  }
+  if (best) {
+    const e = cityEntryByName(best.n);
+    if (e) return e;
+  }
+  for (const c of COUNTRIES) {
+    if (!c.iso || !COUNTRY_ENTRY[c.iso]) continue;
+    for (const ring of c.rings) {
+      if (pointInRing(ll.lonDeg, ll.latDeg, ring)) {
+        const e = COUNTRY_ENTRY[c.iso];
+        return e.n === 'France' ? null : e; // la France est déjà « chez nous »
+      }
+    }
+  }
+  return null;
+}
+
+// ---- glisser sur le globe : horizontalement on TOURNE LA TERRE (l'heure
+// change, le Soleil ne bouge pas), verticalement on la penche ; un petit clic
+// choisit le pays ou la ville sous le doigt ----
+
+function wireEarthDrag(canvas) {
+  let dragging = false, lastX = 0, lastY = 0, downX = 0, moved = 0, downT = 0;
+  let timeUnlocked = false;
   canvas.addEventListener('pointerdown', (e) => {
     if (!globe3d.layout) return;
     dragging = true;
+    timeUnlocked = false;
     cameraTween = null;
     lastX = e.clientX; lastY = e.clientY;
+    downX = e.clientX; moved = 0; downT = performance.now();
     if (canvas.setPointerCapture) canvas.setPointerCapture(e.pointerId);
     hideHint();
     e.preventDefault();
   });
   canvas.addEventListener('pointermove', (e) => {
     if (!dragging) return;
-    const R = globe3d.layout.R;
-    globe3d.yaw += (e.clientX - lastX) / R;
-    globe3d.pitch = Math.max(-1.2, Math.min(1.2, globe3d.pitch + (e.clientY - lastY) / R));
+    const dx = e.clientX - lastX, dy = e.clientY - lastY;
+    moved += Math.abs(dx) + Math.abs(dy);
+    if (moved > 6) {
+      if (!timeUnlocked && Math.abs(e.clientX - downX) > 8) {
+        timeUnlocked = true;
+        stopAuto();
+      }
+      if (timeUnlocked) {
+        sim.homeH = wrap24(sim.homeH + dx / globe3d.layout.R * 24 / TAU);
+      }
+      globe3d.pitch = Math.max(-1.1, Math.min(1.1, globe3d.pitch + dy / globe3d.layout.R));
+    }
     lastX = e.clientX; lastY = e.clientY;
   });
-  const end = () => { dragging = false; };
-  canvas.addEventListener('pointerup', end);
-  canvas.addEventListener('pointercancel', end);
+  canvas.addEventListener('pointerup', (e) => {
+    if (dragging && moved <= 6 && performance.now() - downT < 600) {
+      const rect = canvas.getBoundingClientRect();
+      const hit = resolveHit(globe3d.hitTest(e.clientX - rect.left, e.clientY - rect.top));
+      if (hit) choosePlace(hit);
+    }
+    dragging = false;
+  });
+  canvas.addEventListener('pointercancel', () => { dragging = false; });
 }
 
 // ---- glisser sur la carte : là, on déplace la nuit (donc l'heure) ----
 
 function wireMapDrag(canvas) {
-  let dragging = false, lastX = 0;
+  let dragging = false, lastX = 0, moved = 0, downT = 0;
   canvas.addEventListener('pointerdown', (e) => {
     if (!map.layout) return;
     dragging = true;
-    lastX = e.clientX;
+    lastX = e.clientX; moved = 0; downT = performance.now();
     if (canvas.setPointerCapture) canvas.setPointerCapture(e.pointerId);
-    stopAuto();
     e.preventDefault();
   });
   canvas.addEventListener('pointermove', (e) => {
     if (!dragging) return;
-    sim.homeH = wrap24(sim.homeH - (e.clientX - lastX) / map.layout.W * 24);
+    const dx = e.clientX - lastX;
+    moved += Math.abs(dx);
+    if (moved > 6) {
+      if (sim.playing || sim.tween) stopAuto();
+      sim.homeH = wrap24(sim.homeH - dx / map.layout.W * 24);
+    }
     lastX = e.clientX;
   });
-  const end = () => { dragging = false; };
-  canvas.addEventListener('pointerup', end);
-  canvas.addEventListener('pointercancel', end);
+  canvas.addEventListener('pointerup', (e) => {
+    if (dragging && moved <= 6 && performance.now() - downT < 600) {
+      const rect = canvas.getBoundingClientRect();
+      const hit = resolveHit(map.hitTest(e.clientX - rect.left, e.clientY - rect.top));
+      if (hit) choosePlace(hit);
+    }
+    dragging = false;
+  });
+  canvas.addEventListener('pointercancel', () => { dragging = false; });
 }
 
-wireOrbitDrag($('globe3d-view'));
+wireEarthDrag($('globe3d-view'));
 wireMapDrag($('map-view'));
 
 // ---- les boutons-scénarios ----
@@ -482,13 +543,8 @@ function frame(ms) {
     if (cameraTween) {
       const cw = cameraTween;
       const k = Math.min(1, (ms - cw.start) / cw.dur);
-      const e = easeInOut(k);
-      globe3d.yaw = cw.yaw0 + cw.dyaw * e;
-      globe3d.pitch = cw.pitch0 + cw.dpitch * e;
-      if (k >= 1) {
-        globe3d.pulse = { lonDeg: cw.lonDeg, latDeg: cw.latDeg, k: 1 };
-        cameraTween = null;
-      }
+      globe3d.pitch = cw.pitch0 + cw.dpitch * easeInOut(k);
+      if (k >= 1) cameraTween = null;
     }
     const places = displayedPlaces();
     globe3d.draw(sim.homeH, places, selected.iso, selected.color);
@@ -498,6 +554,52 @@ function frame(ms) {
     // la boucle survit à un raté de rendu ponctuel (canvas en cours de layout…)
     requestAnimationFrame(frame);
   }
+}
+
+// ---- « Écouter l'histoire » : la boîte des fuseaux lue à voix haute,
+// par la synthèse vocale du navigateur (hors-ligne, voix française si dispo) ----
+
+const listenBtn = $('btn-listen');
+if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
+  listenBtn.hidden = false;
+  let speaking = false;
+  const resetListen = () => {
+    speaking = false;
+    listenBtn.textContent = '🔊 Écouter l’histoire';
+    listenBtn.setAttribute('aria-pressed', 'false');
+  };
+  listenBtn.addEventListener('click', () => {
+    if (speaking) { window.speechSynthesis.cancel(); resetListen(); return; }
+    window.speechSynthesis.cancel();
+    const voices = window.speechSynthesis.getVoices();
+    let voice = null;
+    for (const v of voices) {
+      const lang = (v.lang || '').replace('_', '-');
+      if (lang.indexOf('fr') === 0 && (!voice || lang === 'fr-FR')) voice = v;
+    }
+    // une phrase par bulle : les longs textes d'une traite se font couper
+    const sentences = [];
+    const paras = $('explain-text').querySelectorAll('p');
+    for (const para of paras) {
+      const bits = para.textContent.replace(/\s+/g, ' ').match(/[^.!?…]+[.!?…]*/g) || [];
+      for (const b of bits) { if (b.trim()) sentences.push(b.trim()); }
+    }
+    let done = 0;
+    for (const sentence of sentences) {
+      const u = new SpeechSynthesisUtterance(sentence);
+      u.lang = 'fr-FR';
+      if (voice) u.voice = voice;
+      u.rate = 0.92;  // tout doucement, pour les petites oreilles
+      u.pitch = 1.05;
+      u.onend = () => { done++; if (done >= sentences.length) resetListen(); };
+      u.onerror = resetListen;
+      window.speechSynthesis.speak(u);
+    }
+    speaking = true;
+    listenBtn.textContent = '⏹ Arrêter';
+    listenBtn.setAttribute('aria-pressed', 'true');
+  });
+  window.addEventListener('pagehide', () => { window.speechSynthesis.cancel(); });
 }
 
 buildCards();

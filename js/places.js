@@ -284,6 +284,7 @@ export const GAZETTEER = [
   { n: 'Lorient', c: 'France', iso: 'FR', lat: 47.75, lon: -3.37, tz: 1 },
   { n: 'Vannes', c: 'France', iso: 'FR', lat: 47.66, lon: -2.76, tz: 1 },
   { n: 'Saint-Malo', c: 'France', iso: 'FR', lat: 48.65, lon: -2.01, tz: 1 },
+  { n: 'Valence', c: 'France', iso: 'FR', lat: 44.93, lon: 4.89, tz: 1 },
   { n: 'Cherbourg', c: 'France', iso: 'FR', lat: 49.64, lon: -1.62, tz: 1 },
   { n: 'Ajaccio', c: 'France', iso: 'FR', lat: 41.93, lon: 8.74, tz: 1 },
   { n: 'Bastia', c: 'France', iso: 'FR', lat: 42.7, lon: 9.45, tz: 1 },

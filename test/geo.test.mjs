@@ -83,6 +83,10 @@ console.log('Le répertoire de recherche');
     searchPlaces('inde', 1)[0].tz === 5.5 && searchPlaces('nepal', 3)[0].tz === 5.75);
   check('chaque pays cherché a son polygone à surligner',
     ['JP', 'AU', 'BR', 'IN', 'MA'].every((iso) => byIso[iso] && byIso[iso].rings.length > 0));
+  check('Paris, Saint-Malo et Valence (France) sont trouvables',
+    searchPlaces('paris', 1)[0].n === 'Paris' &&
+    searchPlaces('saint malo', 1)[0].n === 'Saint-Malo' &&
+    searchPlaces('valence', 2)[0].n === 'Valence');
   check('drapeaux émoji', flagEmoji('FR').length > 0 && flagEmoji('') === '📍');
   check('normalisation : accents et tirets neutralisés',
     normalize('Île-de-Fràn ce') === 'ile de fran ce');

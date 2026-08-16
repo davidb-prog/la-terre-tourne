@@ -24,7 +24,7 @@
     <div class="sim-grid">
       <div class="panel canvas-panel globe-panel" id="globe-panel">
         <div class="canvas-title">
-          <span>🌍 La Terre <span class="hint">(glisse dessus pour en faire le tour)</span></span>
+          <span>🌍 La Terre <span class="hint">(glisse pour la tourner · clique sur un pays pour l’observer)</span></span>
           <button id="btn-spin" class="spin-btn" aria-pressed="true">⏸ Pause</button>
           <button id="fs-toggle" class="spin-btn" aria-label="Basculer le globe en plein écran">⛶ Plein écran</button>
         </div>
@@ -38,7 +38,7 @@
           <div class="search-chips" id="search-chips" aria-label="Quelques idées de voyage"></div>
         </div>
         <div class="canvas-wrap ratio-square">
-          <canvas id="globe3d-view" aria-label="La Terre en trois dimensions, éclairée d’un seul côté par le Soleil, toujours visible à côté du globe. Les vrais continents et pays sont dessinés, la France est surlignée en rose, et les 24 fuseaux horaires apparaissent en tranches. Faites glisser pour tourner autour du globe et découvrir le côté nuit."></canvas>
+          <canvas id="globe3d-view" aria-label="La Terre en trois dimensions, éclairée par le Soleil, fixe à droite. Les vrais continents et pays sont dessinés, la France est surlignée en rose, et les 24 fuseaux horaires apparaissent en tranches. Faites glisser horizontalement pour faire tourner la Terre et changer l’heure, verticalement pour la pencher, et cliquez sur un pays ou une ville pour l’observer."></canvas>
           <div class="globe-frame" id="globe-frame">
             <div class="frame-row frame-row-home">
               <span class="frame-flag">🏠</span>
@@ -52,7 +52,7 @@
             </div>
             <div class="frame-diff" id="frame-diff">5 h de retard sur nous</div>
           </div>
-          <div class="drag-hint" id="drag-hint">👆 Fais le tour de la Terre — va voir la nuit !</div>
+          <div class="drag-hint" id="drag-hint">👆 Attrape la Terre et fais-la tourner !</div>
         </div>
         <div class="time-control">
           <div class="time-readout">Chez nous, en France, il est
@@ -72,6 +72,29 @@
       <div class="scenario-title">🎲 Joue avec la Terre :</div>
       <div class="scenario-buttons" id="scenario-buttons" role="group" aria-label="Choisir un moment de la journée"></div>
       <div id="story" class="story" aria-live="polite"></div>
+    </div>
+
+    <div class="panel explain-panel">
+      <div class="explain-head">
+        <h2>🍊 Pourquoi les fuseaux horaires ?</h2>
+        <button id="btn-listen" class="listen-btn" hidden>🔊 Écouter l’histoire</button>
+      </div>
+      <div id="explain-text" class="explain-text">
+        <p>La Terre est une grande boule qui tourne sur elle-même, comme une toupie très lente.
+          Elle met 24 heures, un jour entier, pour faire un tour complet.</p>
+        <p>Le Soleil, lui, ne bouge pas. Il éclaire toujours un seul côté de la Terre.
+          Du côté du Soleil, c’est le jour. De l’autre côté, c’est la nuit.</p>
+        <p>Quand tu prends ton petit-déjeuner, le soleil se lève chez toi. Au même moment,
+          de l’autre côté de la Terre, des enfants le regardent se coucher : ils vont bientôt
+          aller dormir.</p>
+        <p>Alors, les grands ont eu une idée. Ils ont découpé la Terre en 24 grandes tranches,
+          comme une orange. Ces tranches s’appellent les <strong>fuseaux horaires</strong>.
+          Dans chaque tranche, tout le monde lit la même heure sur son horloge. Et quand tu
+          passes dans la tranche d’à côté, l’horloge change d’une heure. Juste une !</p>
+        <p>Grâce à elles, partout sur la Terre, il est midi quand le soleil est haut dans le
+          ciel, et la nuit tombe quand il fait sombre. C’est bien pratique. Et quand c’est
+          l’heure du dodo chez toi… quelque part, très loin, des enfants se réveillent !</p>
+      </div>
     </div>
 
     <div class="panel canvas-panel map-panel">
