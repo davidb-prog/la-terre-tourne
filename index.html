@@ -37,8 +37,11 @@
           </div>
           <div class="search-chips" id="search-chips" aria-label="Quelques idées de voyage"></div>
         </div>
-        <div class="canvas-wrap ratio-square">
-          <canvas id="globe3d-view" aria-label="La Terre en trois dimensions, éclairée par le Soleil posé du côté d’où vient la lumière — quand on regarde la face nuit, il se glisse derrière la Terre et les villes s’allument. Les vrais continents et pays sont dessinés, la France est surlignée en rose, et les 24 fuseaux horaires apparaissent en tranches. Faites glisser horizontalement pour faire tourner la Terre et changer l’heure, verticalement pour la pencher, et cliquez sur un pays ou une ville pour l’observer."></canvas>
+        <div class="globe-stage">
+          <div class="canvas-wrap ratio-square">
+            <canvas id="globe3d-view" aria-label="La Terre en trois dimensions, éclairée par le Soleil posé du côté d’où vient la lumière — quand on regarde la face nuit, il se glisse derrière la Terre et les villes s’allument. Les vrais continents et pays sont dessinés, la France est surlignée en rose, et les 24 fuseaux horaires apparaissent en tranches. Faites glisser horizontalement pour faire tourner la Terre et changer l’heure, verticalement pour la pencher, et cliquez sur un pays ou une ville pour l’observer."></canvas>
+            <div class="drag-hint" id="drag-hint">👆 Attrape la Terre et fais-la tourner !</div>
+          </div>
           <div class="globe-frame" id="globe-frame">
             <div class="frame-row frame-row-home">
               <span class="frame-flag">🏠</span>
@@ -52,7 +55,6 @@
             </div>
             <div class="frame-diff" id="frame-diff">5 h de retard sur nous</div>
           </div>
-          <div class="drag-hint" id="drag-hint">👆 Attrape la Terre et fais-la tourner !</div>
           <div class="view-chips" role="group" aria-label="Choisir la vue du globe (la caméra pivote, l’heure ne change pas)">
             <button id="view-ville" class="view-chip active" aria-pressed="true"
               aria-label="Recadrer la vue sur ma destination, le lieu observé">📍 ma destination</button>
