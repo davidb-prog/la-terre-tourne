@@ -73,7 +73,9 @@ export class Globe3D {
     }
     const side = this._sunSide;
     const rS = 0.15 * R;
-    const sunBehind = sun[1] > 0; // le Soleil est de l'autre côté de la Terre
+    // le Soleil est de l'autre côté de la Terre ? (petite marge : pile sur le
+    // côté — vue lever/coucher, sin(π) ≈ 1e-16 — il doit rester entier devant)
+    const sunBehind = sun[1] > 0.02;
     const sunX = cx + side * R * (sunBehind ? 1.06 : 1.6);
     const sunY = cy - R * 0.06;
     const drawSunDisc = () => {

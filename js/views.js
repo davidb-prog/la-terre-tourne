@@ -360,11 +360,11 @@ export class MapView {
       for (const ring of country.rings) { ringPath(ctx, ring, X, Y); ctx.fill(); ctx.stroke(); }
     }
 
-    // méridien de Greenwich
+    // méridien de Greenwich (son nom s'écrit en haut, sous « UTC », pour ne
+    // pas avoir l'air d'étiqueter l'Antarctique)
     ctx.setLineDash([4, 6]); ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)'; ctx.lineWidth = 1.3;
     ctx.beginPath(); ctx.moveTo(X(0), oy); ctx.lineTo(X(0), oy + H); ctx.stroke();
     ctx.setLineDash([]);
-    label(ctx, 'Greenwich', X(0) + 5, oy + H - 10, { size: 9.5, alpha: 0.75, weight: 400 });
 
     // la nuit : 180° de large, du coucher (à l'ouest) au lever (à l'est),
     // avec 18° de crépuscule tout doux de chaque côté
@@ -406,22 +406,23 @@ export class MapView {
     }
     ctx.globalAlpha = 1;
 
-    // la bande qui vit midi s'illumine d'un voile doré : le midi se partage
-    // par fuseau entier, pas en un seul point — à 12 h chez nous, la bande
-    // dorée est celle dont la France a adopté l'heure, juste à côté d'elle
+    // un halo doré suit le soleil : autour de cette longitude, c'est midi.
+    // Il est centré sur le vrai midi solaire (pas collé à la grille des
+    // bandes) : à 12 h 30 chez nous, la France baigne dedans — elle vit à
+    // l'heure du méridien de 15° Est, un cran à l'est de chez elle
     {
-      const bm = Math.round(sub / 15) * 15;
-      ctx.strokeStyle = 'rgba(255, 207, 92, 0.35)'; ctx.lineWidth = 1.2;
-      for (const shift of [0, -360, 360]) {
-        const a = X(bm - 7.5 + shift), b = X(bm + 7.5 + shift);
-        const xa = Math.max(a, ox), xb = Math.min(b, ox + W);
-        if (xb <= xa) continue;
-        ctx.fillStyle = 'rgba(255, 207, 92, 0.13)';
-        ctx.fillRect(xa, oy, xb - xa, H);
-        for (const x of [a, b]) {
-          if (x < ox || x > ox + W) continue;
-          ctx.beginPath(); ctx.moveTo(x, oy); ctx.lineTo(x, oy + H); ctx.stroke();
-        }
+      const u = X(wrapLon(sub));
+      const d8 = W * 8 / 360, d18 = W * 18 / 360;
+      for (const shift of [0, -W, W]) {
+        const x0 = u + shift - d18, x1 = u + shift + d18;
+        if (x1 <= ox || x0 >= ox + W) continue;
+        const g = ctx.createLinearGradient(x0, 0, x1, 0);
+        g.addColorStop(0, 'rgba(255, 207, 92, 0)');
+        g.addColorStop((d18 - d8) / (2 * d18), 'rgba(255, 207, 92, 0.17)');
+        g.addColorStop((d18 + d8) / (2 * d18), 'rgba(255, 207, 92, 0.17)');
+        g.addColorStop(1, 'rgba(255, 207, 92, 0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(Math.max(x0, ox), oy, Math.min(x1, ox + W) - Math.max(x0, ox), H);
       }
     }
 
@@ -436,6 +437,8 @@ export class MapView {
       label(ctx, txt, x, oy + 10,
         { align: 'center', size: 9.5, alpha: 0.85, weight: 400, color: 'rgba(225, 234, 252, 0.95)' });
     }
+    label(ctx, 'Greenwich', X(0), oy + 23,
+      { align: 'center', size: 9, alpha: 0.7, weight: 400, color: 'rgba(225, 234, 252, 0.9)' });
 
     // petit soleil « il est midi ici » et petite lune « il est minuit ici »
     const both = (lon, fn) => {

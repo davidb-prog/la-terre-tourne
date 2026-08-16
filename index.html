@@ -55,7 +55,7 @@
           <div class="drag-hint" id="drag-hint">👆 Attrape la Terre et fais-la tourner !</div>
           <div class="view-chips" role="group" aria-label="Choisir la vue du globe (la caméra pivote, l’heure ne change pas)">
             <button id="view-ville" class="view-chip active" aria-pressed="true"
-              aria-label="Recadrer la vue sur le lieu observé">🏠 la ville</button>
+              aria-label="Recadrer la vue sur ma destination, le lieu observé">📍 ma destination</button>
             <button id="view-terminateur" class="view-chip" aria-pressed="false"
               aria-label="Voir la limite jour-nuit, le Soleil entier sur le côté">🌗 lever/coucher</button>
             <button id="view-jour" class="view-chip" aria-pressed="false"
@@ -112,9 +112,12 @@
     </div>
 
     <div class="panel canvas-panel map-panel">
-      <div class="canvas-title">La même chose, à plat — chaque bande debout est un
-        <strong>fuseau horaire</strong> : + ou − quelques heures par rapport à UTC,
-        l’heure de Greenwich</div>
+      <div class="canvas-title">
+        <span>La même chose, à plat — chaque bande debout est un
+          <strong>fuseau horaire</strong> : + ou − quelques heures par rapport à UTC,
+          l’heure de Greenwich</span>
+        <button id="btn-spin-map" class="spin-btn" aria-pressed="true">⏸ Pause</button>
+      </div>
       <div class="search-row">
         <div class="search-box">
           <input type="search" id="place-search-map" autocomplete="off" spellcheck="false"

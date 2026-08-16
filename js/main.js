@@ -180,15 +180,18 @@ function wireSearch(inputId, resultsId) {
 wireSearch('place-search', 'search-results');
 wireSearch('place-search-map', 'search-results-map');
 
-// quelques idées de voyage prêtes à cliquer
+// quelques idées de voyage prêtes à cliquer (Tahiti affiche le nom de l'île,
+// même si le répertoire pointe sur Papeete)
 const chipsBox = $('search-chips');
-for (const idea of ['Guadeloupe', 'Bali', 'Tokyo', 'New York', 'Sydney', 'La Réunion',
-  'Nouméa', 'Thaïlande']) {
-  const found = searchPlaces(idea, 1);
+for (const idea of ['Guadeloupe', 'Bali', { q: 'tahiti', label: 'Tahiti' }, 'Tokyo',
+  'New York', 'Sydney', 'La Réunion', 'Nouméa', 'Thaïlande']) {
+  const q = typeof idea === 'string' ? idea : idea.q;
+  const found = searchPlaces(q, 1);
   if (!found.length) continue;
   const b = document.createElement('button');
   b.type = 'button';
-  b.textContent = flagEmoji(found[0].iso) + ' ' + found[0].n;
+  b.textContent = flagEmoji(found[0].iso) + ' ' +
+    (typeof idea === 'string' ? found[0].n : idea.label);
   b.addEventListener('click', () => choosePlace(found[0]));
   chipsBox.appendChild(b);
 }
@@ -245,9 +248,13 @@ let sliderHeld = false;
 
 function setPlaying(p) {
   sim.playing = p;
-  const btn = $('btn-spin');
-  btn.textContent = p ? '⏸ Pause' : '▶ Elle tourne toute seule';
-  btn.setAttribute('aria-pressed', p ? 'true' : 'false');
+  const txt = p ? '⏸ Pause' : '▶ Elle tourne toute seule';
+  for (const id of ['btn-spin', 'btn-spin-map']) { // deux boutons jumeaux
+    const btn = $(id);
+    if (!btn) continue;
+    btn.textContent = txt;
+    btn.setAttribute('aria-pressed', p ? 'true' : 'false');
+  }
 }
 
 function stopAuto() {
@@ -276,6 +283,7 @@ function toggleSpin() {
   setPlaying(!sim.playing);
 }
 $('btn-spin').addEventListener('click', toggleSpin);
+$('btn-spin-map').addEventListener('click', toggleSpin);
 document.addEventListener('keydown', (e) => {
   if (e.code === 'Space' && !e.target.closest('button, input, a, summary')) {
     e.preventDefault();
