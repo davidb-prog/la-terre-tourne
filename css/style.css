@@ -147,7 +147,8 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 .time-control { margin-top: 12px; padding: 0 4px 2px; }
 .time-readout { font-size: 1.05rem; margin-bottom: 4px; }
 .time-readout strong {
-  font-size: 1.55rem; color: var(--sun); font-variant-numeric: tabular-nums;
+  /* rose comme tout ce qui est « France » (cadre, carte, vignette) */
+  font-size: 1.55rem; color: var(--rose); font-variant-numeric: tabular-nums;
   margin: 0 2px 0 4px;
 }
 .period { color: var(--muted); }
