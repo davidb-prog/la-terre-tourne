@@ -75,7 +75,8 @@ console.log('Le répertoire de recherche');
     GAZETTEER.length + ' lieux');
   check('« tokyo » trouve Tokyo', searchPlaces('tokyo', 3)[0].n === 'Tokyo');
   check('« reunion » (sans accent) trouve La Réunion', searchPlaces('reunion', 3)[0].n === 'La Réunion');
-  check('« tahiti » trouve Papeete', searchPlaces('tahiti', 3)[0].n === 'Papeete');
+  check('« tahiti » trouve l’île de Tahiti', searchPlaces('tahiti', 3)[0].n === 'Tahiti');
+  check('« papeete » trouve Papeete', searchPlaces('papeete', 3)[0].n === 'Papeete');
   check('« new » propose New York et New Delhi',
     searchPlaces('new', 8).map((e) => e.n).join('|').indexOf('New York') !== -1 &&
     searchPlaces('new', 8).map((e) => e.n).join('|').indexOf('New Delhi') !== -1);

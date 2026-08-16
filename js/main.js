@@ -180,18 +180,15 @@ function wireSearch(inputId, resultsId) {
 wireSearch('place-search', 'search-results');
 wireSearch('place-search-map', 'search-results-map');
 
-// quelques idées de voyage prêtes à cliquer (Tahiti affiche le nom de l'île,
-// même si le répertoire pointe sur Papeete)
+// quelques idées de voyage prêtes à cliquer
 const chipsBox = $('search-chips');
-for (const idea of ['Guadeloupe', 'Bali', { q: 'tahiti', label: 'Tahiti' }, 'Tokyo',
-  'New York', 'Sydney', 'La Réunion', 'Nouméa', 'Thaïlande']) {
-  const q = typeof idea === 'string' ? idea : idea.q;
-  const found = searchPlaces(q, 1);
+for (const idea of ['Guadeloupe', 'Bali', 'Tahiti', 'Tokyo', 'New York', 'Sydney',
+  'La Réunion', 'Nouméa', 'Thaïlande']) {
+  const found = searchPlaces(idea, 1);
   if (!found.length) continue;
   const b = document.createElement('button');
   b.type = 'button';
-  b.textContent = flagEmoji(found[0].iso) + ' ' +
-    (typeof idea === 'string' ? found[0].n : idea.label);
+  b.textContent = flagEmoji(found[0].iso) + ' ' + found[0].n;
   b.addEventListener('click', () => choosePlace(found[0]));
   chipsBox.appendChild(b);
 }
