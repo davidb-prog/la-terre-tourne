@@ -5,7 +5,9 @@ horaires à une enfant de 5 ans (le parent lit à voix haute). Français uniquem
 garde son nom de travail `la-terre-tourne` (le refrain de la série) ; le titre affiché est
 « Quelle heure est-il là-bas ? ». L'épisode 1 fait référence pour l'identité visuelle et le
 niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisode 2
-(« Où va le Soleil la nuit ? », lever/coucher) est en préparation dans un dépôt à part.
+(« Où va le Soleil la nuit ? », lever/coucher) est en ligne :
+<https://davidb-prog.github.io/ou-va-le-soleil/> (dépôt
+<https://github.com/davidb-prog/ou-va-le-soleil>).
 
 ## Contraintes
 
