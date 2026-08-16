@@ -360,6 +360,20 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 .frame-name { color: var(--text); max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .frame-diff { color: var(--muted); font-size: .76rem; text-align: center; border-top: 1px dashed var(--border); padding-top: 4px; }
 
+/* sur la carte à plat, le même cadre se pose en bas à gauche (le haut porte
+   les étiquettes UTC des bandes) ; sur petit écran il glisse sous la carte,
+   pour ne pas la recouvrir à moitié */
+.map-panel { position: relative; }
+.frame-low { top: auto; left: 22px; bottom: 22px; }
+@media (max-width: 640px) {
+  .frame-low {
+    position: static; margin: 10px 2px 0;
+    background: #0d1531;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
 /* puce du lieu choisi dans l'histoire */
 .story-chip-selected { background: rgba(255, 207, 92, .14); color: var(--sun); border: 1px solid rgba(255, 207, 92, .5); }
 
@@ -382,5 +396,12 @@ button:focus-visible, input:focus-visible, a:focus-visible {
   color: var(--sun);
 }
 .listen-btn[aria-pressed="true"] { background: #243158; border-color: #3b4c86; color: var(--text); }
+.voice-pick {
+  font-family: inherit; font-size: .85rem; font-weight: 600;
+  color: var(--muted); background: #131c3f;
+  border: 1px solid var(--border); border-radius: 999px;
+  padding: 7px 12px; max-width: 230px;
+}
+.voice-pick:focus { outline: 2px solid var(--sun-deep); }
 .explain-text p { margin: .55em 0; color: #c9d2ea; font-size: 1.02rem; line-height: 1.7; }
 .explain-text strong { color: var(--text); }

@@ -3,7 +3,7 @@
 // aucune tuile externe, aucune bibliothèque.
 
 import { TAU, DEG, PLACES, GREENWICH_LON, placeAngle, subsolarLon, solarHours,
-         sunAltitude, wrapLon, wrap24, utcHours } from './model.js';
+         sunAltitude, wrapLon } from './model.js';
 import { COUNTRIES, LAKES, ICE_ISOS, FRANCE_ISO, ANTILLES, SPECKS } from './geo.js';
 import { DECOR } from './places.js';
 
@@ -304,7 +304,6 @@ export class MapView {
     const X = (lon) => ox + (lon + 180) / 360 * W;
     const Y = (lat) => oy + (90 - lat) / 180 * H;
     const sub = subsolarLon(homeH);
-    const utc = utcHours(homeH);
 
     ctx.save();
     roundRectPath(ctx, ox, oy, W, H, 12);
@@ -407,12 +406,15 @@ export class MapView {
     }
     ctx.globalAlpha = 1;
 
-    // l'heure de chaque bande, en haut de la carte (par-dessus la nuit)
+    // le décalage de chaque bande par rapport à UTC, en haut (par-dessus la
+    // nuit) — les demi-bandes ±12, collées au bord, restent muettes ; sur les
+    // petits écrans on abrège (« +2 » sans le « h ») pour que rien ne se touche
     const step = W >= 640 ? 1 : 2;
-    for (let m = -11; m <= 12; m += step) {
-      const x = Math.max(ox + 14, Math.min(ox + W - 14, X(15 * m)));
-      const bh = Math.floor(wrap24(utc + m));
-      label(ctx, bh + ' h', x, oy + 10,
+    for (let m = step === 2 ? -10 : -11; m <= 11; m += step) {
+      const x = Math.max(ox + 16, Math.min(ox + W - 16, X(15 * m)));
+      const txt = m === 0 ? 'UTC'
+        : (m > 0 ? '+' : '−') + Math.abs(m) + (step === 1 ? ' h' : '');
+      label(ctx, txt, x, oy + 10,
         { align: 'center', size: 9.5, alpha: 0.85, weight: 400, color: 'rgba(225, 234, 252, 0.95)' });
     }
 

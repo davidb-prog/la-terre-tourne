@@ -23,7 +23,6 @@ const sim = {
 
 const globe3d = new Globe3D($('globe3d-view'));
 const map = new MapView($('map-view'));
-let cameraTween = null;   // vol de la caméra vers un lieu cherché
 
 // ---- le lieu choisi (la Guadeloupe par défaut, en attendant une recherche) ----
 
@@ -128,7 +127,7 @@ function choosePlace(entry) {
   };
   buildCards();
   globe3d.pulse = { lonDeg: entry.lon, latDeg: entry.lat, k: 1 };
-  tiltTo(entry.lat);
+  centerCameraOn(entry.lon, entry.lat);
 }
 
 function wireSearch(inputId, resultsId) {
@@ -189,14 +188,12 @@ for (const idea of ['Guadeloupe', 'Bali', 'Tokyo', 'New York', 'Sydney', 'La Ré
   chipsBox.appendChild(b);
 }
 
-// Le Soleil (et la caméra) sont fixes : choisir un lieu penche juste le globe
-// vers sa latitude et fait pulser son marqueur — s'il est du côté nuit, on le
-// voit arriver en faisant tourner la Terre.
-function tiltTo(latDeg) {
-  const target = Math.max(-50 * DEG, Math.min(50 * DEG, latDeg * DEG * 0.7));
-  if (reduceMotion) { globe3d.pitch = target; return; }
-  cameraTween = { pitch0: globe3d.pitch, dpitch: target - globe3d.pitch,
-    start: performance.now(), dur: 900 };
+// Choisir un lieu ne fait pas bouger la Terre (l'heure ne change pas d'un
+// poil) : c'est la caméra qui se recale d'un coup, lieu au centre du disque —
+// et le Soleil retrouve sa place sur l'axe, du côté d'où vient la lumière.
+function centerCameraOn(lonDeg, latDeg) {
+  globe3d.yaw = -Math.PI / 2 - placeAngle(sim.homeH, lonDeg);
+  globe3d.pitch = Math.max(-50 * DEG, Math.min(50 * DEG, latDeg * DEG * 0.7));
 }
 
 // ---- lecture / pause et curseur ----
@@ -326,7 +323,6 @@ function wireEarthDrag(canvas) {
     if (!globe3d.layout) return;
     dragging = true;
     timeUnlocked = false;
-    cameraTween = null;
     lastX = e.clientX; lastY = e.clientY;
     downX = e.clientX; moved = 0; downT = performance.now();
     if (canvas.setPointerCapture) canvas.setPointerCapture(e.pointerId);
@@ -483,18 +479,24 @@ function setText(cache, key, el, value) {
   el.textContent = value;
 }
 
-// le cadre posé sur le globe : l'heure ici, l'heure là-bas, et l'écart
+// les cadres posés sur le globe et sur la carte : l'heure ici, l'heure
+// là-bas, et l'écart — même contenu aux deux endroits, mis à jour ensemble
+const FRAME_IDS = ['', '-map'];
 const frameCache = { name: null };
 
 function updateFrame() {
-  const selHm = formatHM(localClock(sim.homeH, selected).hours);
-  setText(frameCache, 'home', $('frame-home-time'), formatHM(sim.homeH).text);
-  setText(frameCache, 'sel', $('frame-sel-time'), selHm.text);
-  if (frameCache.name !== selected.name) {
-    frameCache.name = selected.name;
-    $('frame-sel-flag').textContent = selected.emoji;
-    $('frame-sel-name').textContent = selected.name;
-    $('frame-diff').textContent = offsetDiffText(selected);
+  const homeText = formatHM(sim.homeH).text;
+  const selText = formatHM(localClock(sim.homeH, selected).hours).text;
+  const nameChanged = frameCache.name !== selected.name;
+  if (nameChanged) frameCache.name = selected.name;
+  for (const sfx of FRAME_IDS) {
+    setText(frameCache, 'home' + sfx, $('frame-home-time' + sfx), homeText);
+    setText(frameCache, 'sel' + sfx, $('frame-sel-time' + sfx), selText);
+    if (nameChanged) {
+      $('frame-sel-flag' + sfx).textContent = selected.emoji;
+      $('frame-sel-name' + sfx).textContent = selected.name;
+      $('frame-diff' + sfx).textContent = offsetDiffText(selected);
+    }
   }
 }
 
@@ -540,12 +542,6 @@ function frame(ms) {
     } else if (sim.playing) {
       sim.homeH = wrap24(sim.homeH + sim.spinSpeed * dt);
     }
-    if (cameraTween) {
-      const cw = cameraTween;
-      const k = Math.min(1, (ms - cw.start) / cw.dur);
-      globe3d.pitch = cw.pitch0 + cw.dpitch * easeInOut(k);
-      if (k >= 1) cameraTween = null;
-    }
     const places = displayedPlaces();
     globe3d.draw(sim.homeH, places, selected.iso, selected.color);
     map.draw(sim.homeH, places, selected.iso, selected.color);
@@ -556,27 +552,92 @@ function frame(ms) {
   }
 }
 
-// ---- « Écouter l'histoire » : la boîte des fuseaux lue à voix haute,
-// par la synthèse vocale du navigateur (hors-ligne, voix française si dispo) ----
+// ---- « Écouter l'histoire » : la boîte des fuseaux lue à voix haute par la
+// synthèse vocale du navigateur (hors-ligne, rien n'est envoyé nulle part).
+// Les voix installées varient énormément d'un appareil à l'autre : on note
+// chaque voix française et on prend d'office la plus douce — français de
+// France et voix « naturelles » d'abord, voix robotiques et accents lointains
+// en dernier — et un petit menu laisse les parents en changer. ----
 
 const listenBtn = $('btn-listen');
+const voiceSel = $('voice-pick');
 if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
   listenBtn.hidden = false;
   let speaking = false;
+  let frVoices = [];
+  let chosenURI = null;
+  try { chosenURI = window.localStorage.getItem('ltt-voice'); } catch (e) { /* mode privé */ }
+
+  const voiceScore = (v) => {
+    const lang = (v.lang || '').replace('_', '-').toLowerCase();
+    const name = (v.name || '').toLowerCase();
+    let s = 0;
+    if (lang.indexOf('fr-fr') === 0) s += 60;      // le français de France d'abord
+    else if (lang.indexOf('fr') === 0) s += 20;
+    if (lang.indexOf('fr-ca') === 0) s -= 30;      // l'accent québécois surprend ici
+    // les voix neurales (Edge, Google…) et « premium » sont bien plus naturelles
+    if (/natural|neural|online|premium|enhanced|am[ée]lior[ée]e|siri/.test(name)) s += 30;
+    if (name.indexOf('google') !== -1) s += 24;
+    if (/audrey|thomas|aur[ée]lie|marie|denise|henri|[ée]lo[ïi]se|vivienne|r[ée]my|jacqueline|charline|coralie|hortense/.test(name)) s += 12;
+    if (!v.localService) s += 6;
+    // les moteurs d'appoint et les voix rigolotes, très robotiques, en dernier
+    if (/espeak|eloquence|compact|robot/.test(name)) s -= 50;
+    if (/eddy|\bflo\b|grandma|grandpa|\breed\b|rocko|sandy|shelley|jester|bells|organ|superstar|trinoids|whisper|zarvox|bad news|bahh|boing|bubbles|cellos|wobble/.test(name)) s -= 40;
+    return s;
+  };
+
+  const prettyName = (v) => {
+    let n = v.name.replace(/^microsoft\s+/i, '')
+      .replace(/\s*[-–—]\s*(french|fran[çc]ais).*$/i, '')
+      .replace(/\s*\((french|fran[çc]ais)[^)]*\)\s*$/i, '');
+    const lang = (v.lang || '').replace('_', '-');
+    if (lang && lang.toLowerCase().indexOf('fr-fr') !== 0) n += ' · ' + lang;
+    return n;
+  };
+
+  const refreshVoices = () => {
+    const all = window.speechSynthesis.getVoices();
+    frVoices = [];
+    for (const v of all) {
+      if ((v.lang || '').replace('_', '-').toLowerCase().indexOf('fr') === 0) frVoices.push(v);
+    }
+    frVoices.sort((a, b) => voiceScore(b) - voiceScore(a));
+    if (voiceSel) {
+      voiceSel.innerHTML = '';
+      for (const v of frVoices) {
+        const opt = document.createElement('option');
+        opt.value = v.voiceURI;
+        opt.textContent = prettyName(v);
+        voiceSel.appendChild(opt);
+      }
+      let known = false;
+      for (const v of frVoices) { if (v.voiceURI === chosenURI) known = true; }
+      if (known) voiceSel.value = chosenURI;
+      voiceSel.hidden = frVoices.length < 2;
+    }
+  };
+  refreshVoices();
+  if ('onvoiceschanged' in window.speechSynthesis) {
+    window.speechSynthesis.onvoiceschanged = refreshVoices;
+  }
+
+  const pickVoice = () => {
+    for (const v of frVoices) { if (v.voiceURI === chosenURI) return v; }
+    return frVoices.length ? frVoices[0] : null;
+  };
+
   const resetListen = () => {
     speaking = false;
     listenBtn.textContent = '🔊 Écouter l’histoire';
     listenBtn.setAttribute('aria-pressed', 'false');
   };
-  listenBtn.addEventListener('click', () => {
-    if (speaking) { window.speechSynthesis.cancel(); resetListen(); return; }
+
+  let gen = 0; // ignore les onend/onerror des lectures annulées
+  const startReading = () => {
+    gen++;
+    const myGen = gen;
     window.speechSynthesis.cancel();
-    const voices = window.speechSynthesis.getVoices();
-    let voice = null;
-    for (const v of voices) {
-      const lang = (v.lang || '').replace('_', '-');
-      if (lang.indexOf('fr') === 0 && (!voice || lang === 'fr-FR')) voice = v;
-    }
+    const voice = pickVoice();
     // une phrase par bulle : les longs textes d'une traite se font couper
     const sentences = [];
     const paras = $('explain-text').querySelectorAll('p');
@@ -587,22 +648,36 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
     let done = 0;
     for (const sentence of sentences) {
       const u = new SpeechSynthesisUtterance(sentence);
-      u.lang = 'fr-FR';
+      u.lang = voice ? voice.lang : 'fr-FR';
       if (voice) u.voice = voice;
-      u.rate = 0.92;  // tout doucement, pour les petites oreilles
-      u.pitch = 1.05;
-      u.onend = () => { done++; if (done >= sentences.length) resetListen(); };
-      u.onerror = resetListen;
+      u.rate = 0.95;  // tout doucement, pour les petites oreilles
+      u.pitch = 1.0;
+      u.onend = () => { if (myGen !== gen) return; done++; if (done >= sentences.length) resetListen(); };
+      u.onerror = () => { if (myGen === gen) resetListen(); };
       window.speechSynthesis.speak(u);
     }
     speaking = true;
     listenBtn.textContent = '⏹ Arrêter';
     listenBtn.setAttribute('aria-pressed', 'true');
+  };
+
+  listenBtn.addEventListener('click', () => {
+    if (speaking) { gen++; window.speechSynthesis.cancel(); resetListen(); return; }
+    refreshVoices(); // certaines listes de voix n'arrivent qu'après le chargement
+    startReading();
   });
+  if (voiceSel) {
+    voiceSel.addEventListener('change', () => {
+      chosenURI = voiceSel.value;
+      try { window.localStorage.setItem('ltt-voice', chosenURI); } catch (e) { /* tant pis */ }
+      if (speaking) startReading(); // on réécoute tout de suite avec la nouvelle voix
+    });
+  }
   window.addEventListener('pagehide', () => { window.speechSynthesis.cancel(); });
 }
 
 buildCards();
 renderInvite();
 setPlaying(sim.playing);
+centerCameraOn(selected.lonDeg, selected.latDeg); // on ouvre cadré sur la Guadeloupe
 requestAnimationFrame(frame);

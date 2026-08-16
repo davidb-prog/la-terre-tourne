@@ -78,6 +78,8 @@
       <div class="explain-head">
         <h2>🍊 Pourquoi les fuseaux horaires ?</h2>
         <button id="btn-listen" class="listen-btn" hidden>🔊 Écouter l’histoire</button>
+        <select id="voice-pick" class="voice-pick" hidden
+          aria-label="Choisir la voix qui lit l’histoire"></select>
       </div>
       <div id="explain-text" class="explain-text">
         <p>La Terre est une grande boule qui tourne sur elle-même, comme une toupie très lente.
@@ -99,7 +101,8 @@
 
     <div class="panel canvas-panel map-panel">
       <div class="canvas-title">La même chose, à plat — chaque bande debout est un
-        <strong>fuseau horaire</strong>, avec son heure</div>
+        <strong>fuseau horaire</strong> : + ou − quelques heures par rapport à UTC,
+        l’heure de Greenwich</div>
       <div class="search-row">
         <div class="search-box">
           <input type="search" id="place-search-map" autocomplete="off" spellcheck="false"
@@ -109,7 +112,20 @@
         </div>
       </div>
       <div class="canvas-wrap ratio-map">
-        <canvas id="map-view" aria-label="Carte du monde avec les vrais continents. Les 24 fuseaux horaires apparaissent en bandes verticales, chacune avec son heure ; la moitié plongée dans la nuit est assombrie et se déplace quand l’heure change. Faites glisser horizontalement pour changer l’heure."></canvas>
+        <canvas id="map-view" aria-label="Carte du monde avec les vrais continents. Les 24 fuseaux horaires apparaissent en bandes verticales, chacune avec son décalage en heures par rapport à UTC ; la moitié plongée dans la nuit est assombrie et se déplace quand l’heure change. Faites glisser horizontalement pour changer l’heure, et cliquez sur un pays ou une ville pour l’observer."></canvas>
+      </div>
+      <div class="globe-frame frame-low" id="globe-frame-map">
+        <div class="frame-row frame-row-home">
+          <span class="frame-flag">🏠</span>
+          <span class="frame-name">France</span>
+          <strong id="frame-home-time-map">12 h 00</strong>
+        </div>
+        <div class="frame-row frame-row-sel">
+          <span class="frame-flag" id="frame-sel-flag-map">🏝️</span>
+          <span class="frame-name" id="frame-sel-name-map">Guadeloupe</span>
+          <strong id="frame-sel-time-map">7 h 00</strong>
+        </div>
+        <div class="frame-diff" id="frame-diff-map">5 h de retard sur nous</div>
       </div>
     </div>
   </section>
@@ -129,9 +145,16 @@
         l’heure du voisin — la France vit d’ailleurs à l’heure de Berlin, pas à celle de
         Greenwich juste à côté. Et certains pays choisissent la demi-heure : cherche l’Inde
         (+5 h 30) ou le Népal (+5 h 45) !</li>
+      <li><strong>UTC, l’heure de référence.</strong> En haut de la carte à plat, chaque bande
+        affiche son décalage par rapport à UTC, le temps universel du méridien de Greenwich :
+        la France d’hiver vit à UTC+1, la Guadeloupe à UTC−4, Bali à UTC+8.</li>
       <li><strong>La recherche fonctionne sans Internet</strong> : environ 220 villes et pays
         sont embarqués dans la page, en heure standard. Un petit village ne sera pas trouvé —
         les suggestions montrent ce qui existe.</li>
+      <li><strong>La voix qui lit l’histoire</strong> est celle de votre appareil (rien ne part
+        sur Internet), et sa qualité varie beaucoup d’un téléphone à l’autre. Le site choisit
+        la voix française la plus naturelle qu’il trouve ; si l’accent surprend, le petit menu
+        à côté du bouton 🔊 permet d’en essayer une autre.</li>
       <li><strong>Les cartes</strong> viennent de Natural Earth (domaine public), simplifiées ;
         seules les frontières des pays sont tracées, pas les régions. Bali et la Guadeloupe ont
         12 h d’écart pile : quand le soleil se lève sur l’une, il se couche sur l’autre.</li>

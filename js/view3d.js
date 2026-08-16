@@ -28,7 +28,7 @@ const norm = (v) => {
 export class Globe3D {
   constructor(canvas) {
     this.canvas = canvas;
-    this.yaw = -55 * DEG;  // caméra : l'Europe au centre au chargement (midi)
+    this.yaw = -55 * DEG;  // azimut caméra — main.js le recale sur le lieu observé
     this.pitch = 16 * DEG; // pôle Nord légèrement penché vers nous
     this.layout = null;
     this.pulse = null;     // { lonDeg, latDeg, k } — anneau après un vol
@@ -51,7 +51,7 @@ export class Globe3D {
     drawStars(this, ctx, w, h, 150);
 
     const S = Math.min(w, h);
-    const cx = 0.40 * w, cy = 0.5 * h, R = 0.34 * S;
+    const cx = 0.5 * w, cy = 0.5 * h, R = 0.27 * S;
     this.layout = { cx: cx, cy: cy, R: R };
     this._spin = placeAngle(homeH, GREENWICH_LON);
     this._ct = Math.cos(this.pitch); this._st = Math.sin(this.pitch);
@@ -61,37 +61,49 @@ export class Globe3D {
     const sun = [Math.cos(sl), Math.sin(sl) * this._ct, Math.sin(sl) * this._st];
     const sunScreen = norm([sun[0], -sun[2], 0]);
 
-    // le Soleil est FIXE, posé à droite du globe (la caméra ne tourne plus
-    // autour : c'est la Terre qu'on fait tourner, comme avec le curseur)
-    const rS = 0.14 * R;
-    const sunX = cx + R * 1.55, sunY = cy - R * 0.06;
-    const g = ctx.createRadialGradient(sunX, sunY, 1, sunX, sunY, rS * 2.6);
-    g.addColorStop(0, '#fff7d6'); g.addColorStop(0.3, '#ffcf5c');
-    g.addColorStop(0.65, 'rgba(255, 159, 28, 0.25)'); g.addColorStop(1, 'rgba(255, 159, 28, 0)');
-    ctx.fillStyle = g;
-    ctx.beginPath(); ctx.arc(sunX, sunY, rS * 2.6, 0, TAU); ctx.fill();
-    ctx.strokeStyle = '#ffcf5c'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
-    for (let i = 0; i < 8; i++) {
-      const a = i * TAU / 8 + 0.39;
-      ctx.beginPath();
-      ctx.moveTo(sunX + rS * 1.25 * Math.cos(a), sunY + rS * 1.25 * Math.sin(a));
-      ctx.lineTo(sunX + rS * 1.7 * Math.cos(a), sunY + rS * 1.7 * Math.sin(a));
-      ctx.stroke();
+    // le Soleil se pose sur l'axe horizontal, à gauche ou à droite selon le
+    // côté d'où vient la lumière pour la vue en cours. La caméra ne bougeant
+    // qu'au moment où on choisit un lieu, il reste ensuite parfaitement immobile
+    // (l'inclinaison du globe ne le déplace pas non plus).
+    if (Math.abs(Math.cos(sl)) > 0.05 || !this._sunSide) {
+      this._sunSide = Math.cos(sl) >= 0 ? 1 : -1;
     }
-    ctx.fillStyle = '#ffcf5c';
-    ctx.beginPath(); ctx.arc(sunX, sunY, rS, 0, TAU); ctx.fill();
-    label(ctx, 'le Soleil', sunX, sunY + rS * 2.1 + 8,
-      { align: 'center', size: 11, alpha: 0.85, color: '#ffcf5c', clampW: w, clampH: h });
-    // rayons parallèles, flèches vers la Terre
-    ctx.strokeStyle = 'rgba(255, 207, 92, 0.5)'; ctx.lineWidth = 2;
-    for (const dy of [-0.5 * R, 0, 0.5 * R]) {
-      const y = cy + dy, x1 = sunX - rS * 2.2, x2 = cx + Math.sqrt(Math.max(0.1, 1 - (dy / R) * (dy / R))) * R + 14;
-      if (x1 > x2 + 12) {
-        ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x2, y); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(x2, y); ctx.lineTo(x2 + 7, y - 4);
-        ctx.moveTo(x2, y); ctx.lineTo(x2 + 7, y + 4); ctx.stroke();
+    const side = this._sunSide;
+    const rS = 0.15 * R;
+    const sunX = cx + side * R * 1.6, sunY = cy - R * 0.06;
+    const sunBehind = sun[1] > 0; // le Soleil est derrière la Terre (on regarde la nuit)
+    const drawSunStar = () => {
+      const g = ctx.createRadialGradient(sunX, sunY, 1, sunX, sunY, rS * 2.6);
+      g.addColorStop(0, '#fff7d6'); g.addColorStop(0.3, '#ffcf5c');
+      g.addColorStop(0.65, 'rgba(255, 159, 28, 0.25)'); g.addColorStop(1, 'rgba(255, 159, 28, 0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(sunX, sunY, rS * 2.6, 0, TAU); ctx.fill();
+      ctx.strokeStyle = '#ffcf5c'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+      for (let i = 0; i < 8; i++) {
+        const a = i * TAU / 8 + 0.39;
+        ctx.beginPath();
+        ctx.moveTo(sunX + rS * 1.25 * Math.cos(a), sunY + rS * 1.25 * Math.sin(a));
+        ctx.lineTo(sunX + rS * 1.7 * Math.cos(a), sunY + rS * 1.7 * Math.sin(a));
+        ctx.stroke();
       }
-    }
+      ctx.fillStyle = '#ffcf5c';
+      ctx.beginPath(); ctx.arc(sunX, sunY, rS, 0, TAU); ctx.fill();
+      label(ctx, 'le Soleil', sunX, sunY + rS * 2.1 + 8,
+        { align: 'center', size: 11, alpha: 0.85, color: '#ffcf5c', clampW: w, clampH: h });
+      // rayons parallèles, flèches vers la Terre
+      ctx.strokeStyle = 'rgba(255, 207, 92, 0.5)'; ctx.lineWidth = 2;
+      for (const dy of [-0.5 * R, 0, 0.5 * R]) {
+        const y = cy + dy;
+        const x1 = sunX - side * rS * 2.2;
+        const x2 = cx + side * (Math.sqrt(Math.max(0.1, 1 - (dy / R) * (dy / R))) * R + 14);
+        if (side * (x1 - x2) > 12) {
+          ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x2, y); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(x2, y); ctx.lineTo(x2 + side * 7, y - 4);
+          ctx.moveTo(x2, y); ctx.lineTo(x2 + side * 7, y + 4); ctx.stroke();
+        }
+      }
+    };
+    if (sunBehind) drawSunStar();
 
     // atmosphère : un fin halo bleuté autour du disque
     const atm = ctx.createRadialGradient(cx, cy, R * 0.94, cx, cy, R * 1.1);
@@ -179,6 +191,8 @@ export class Globe3D {
     // contour du disque
     ctx.strokeStyle = 'rgba(150, 180, 240, 0.45)'; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
+
+    if (!sunBehind) drawSunStar();
 
     // villes-décor : de petits points nommés pour que le globe ne soit jamais vide
     for (const d of DECOR) {
