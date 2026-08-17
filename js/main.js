@@ -80,6 +80,7 @@ function buildCards() {
       close.addEventListener('click', () => {
         selected = defaultSelected();
         buildCards();
+        pole.pulse = { lonDeg: selected.lonDeg, home: false, k: 1 };
         globe3d.pulse = { lonDeg: selected.lonDeg, latDeg: selected.latDeg, k: 1 };
         centerCameraOn(selected.lonDeg, selected.latDeg); // on recadre aussi
       });
@@ -132,6 +133,7 @@ function choosePlace(entry) {
     iso: entry.pays ? entry.iso : null, // seul un pays est surligné sur les cartes
   };
   buildCards();
+  pole.pulse = { lonDeg: entry.lon, home: false, k: 1 };
   globe3d.pulse = { lonDeg: entry.lon, latDeg: entry.lat, k: 1 };
   centerCameraOn(entry.lon, entry.lat);
 }
@@ -271,7 +273,7 @@ let sliderHeld = false;
 function setPlaying(p) {
   sim.playing = p;
   const txt = p ? '⏸ Pause' : '▶ Elle tourne toute seule';
-  for (const id of ['btn-spin', 'btn-spin-map']) { // deux boutons jumeaux
+  for (const id of ['btn-spin', 'btn-spin-globe', 'btn-spin-map']) { // boutons jumeaux
     const btn = $(id);
     if (!btn) continue;
     btn.textContent = txt;
@@ -305,6 +307,7 @@ function toggleSpin() {
   setPlaying(!sim.playing);
 }
 $('btn-spin').addEventListener('click', toggleSpin);
+$('btn-spin-globe').addEventListener('click', toggleSpin);
 $('btn-spin-map').addEventListener('click', toggleSpin);
 document.addEventListener('keydown', (e) => {
   if (e.code === 'Space' && !e.target.closest('button, input, a, summary')) {
@@ -461,6 +464,46 @@ function wireMapDrag(canvas) {
   canvas.addEventListener('pointercancel', () => { dragging = false; });
 }
 
+// ---- glisser sur la vue du pôle : on attrape le disque et on le fait
+// tourner — l'angle du doigt autour du centre devient directement l'heure,
+// dans le vrai sens (vers l'est, sens inverse des aiguilles vu du pôle) ----
+
+function wirePoleDrag(canvas) {
+  let dragging = false, lastA = null;
+  const angleAt = (e) => {
+    const l = pole.layout;
+    if (!l) return null;
+    const rect = canvas.getBoundingClientRect();
+    const dx = (e.clientX - rect.left) - l.cx, dy = l.cy - (e.clientY - rect.top);
+    // trop près du centre, l'angle s'affole : on ignore ces positions
+    if (dx * dx + dy * dy < 0.18 * 0.18 * l.R * l.R) return null;
+    return Math.atan2(dy, dx);
+  };
+  canvas.addEventListener('pointerdown', (e) => {
+    if (!pole.layout) return;
+    dragging = true;
+    lastA = angleAt(e);
+    if (canvas.setPointerCapture) canvas.setPointerCapture(e.pointerId);
+    hideHint();
+    e.preventDefault();
+  });
+  canvas.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    const a = angleAt(e);
+    if (a === null || lastA === null) { lastA = a; return; }
+    const dA = wrapPi(a - lastA);
+    if (dA) {
+      if (sim.playing || sim.tween) stopAuto();
+      sim.homeH = wrap24(sim.homeH + dA / TAU * 24);
+    }
+    lastA = a;
+  });
+  const stopDrag = () => { dragging = false; lastA = null; };
+  canvas.addEventListener('pointerup', stopDrag);
+  canvas.addEventListener('pointercancel', stopDrag);
+}
+
+wirePoleDrag($('pole-view'));
 wireEarthDrag($('globe3d-view'));
 wireMapDrag($('map-view'));
 
@@ -552,9 +595,9 @@ function setText(cache, key, el, value) {
   el.textContent = value;
 }
 
-// les cadres posés sur le globe et sur la carte : l'heure ici, l'heure
-// là-bas, et l'écart — même contenu aux deux endroits, mis à jour ensemble
-const FRAME_IDS = ['', '-map'];
+// les cadres posés sur la vue du pôle, sur le globe du jeu et sur la carte :
+// l'heure ici, l'heure là-bas, et l'écart — même contenu partout
+const FRAME_IDS = ['', '-globe', '-map'];
 const frameCache = { name: null };
 
 function updateFrame() {

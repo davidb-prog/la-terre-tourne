@@ -51,8 +51,11 @@ export class Globe3D {
     ctx.fillStyle = COL3D.bg; ctx.fillRect(0, 0, w, h);
     drawStars(this, ctx, w, h, 150);
 
+    // sur petit écran (téléphone), la Terre prend plus de place et le Soleil
+    // se rapproche du disque (ses rayons-flèches s'effacent, faute de room)
     const S = Math.min(w, h);
-    const cx = 0.5 * w, cy = 0.5 * h, R = 0.27 * S;
+    const compact = S < 520;
+    const cx = 0.5 * w, cy = 0.5 * h, R = (compact ? 0.315 : 0.28) * S;
     this.layout = { cx: cx, cy: cy, R: R };
     this._spin = placeAngle(homeH, GREENWICH_LON);
     this._ct = Math.cos(this.pitch); this._st = Math.sin(this.pitch);
@@ -74,11 +77,11 @@ export class Globe3D {
       this._sunSide = Math.cos(sl) >= 0 ? 1 : -1;
     }
     const side = this._sunSide;
-    const rS = 0.15 * R;
+    const rS = (compact ? 0.12 : 0.15) * R;
     // le Soleil est de l'autre côté de la Terre ? (petite marge : pile sur le
     // côté — vue lever/coucher, sin(π) ≈ 1e-16 — il doit rester entier devant)
     const sunBehind = sun[1] > 0.02;
-    const sunX = cx + side * R * (sunBehind ? 1.06 : 1.6);
+    const sunX = cx + side * R * (sunBehind ? 1.06 : (compact ? 1.31 : 1.55));
     const sunY = cy - R * 0.06;
     const drawSunDisc = () => {
       const g = ctx.createRadialGradient(sunX, sunY, 1, sunX, sunY, rS * 2.6);

@@ -12,38 +12,23 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
 *(Le dépôt garde son nom de travail `la-terre-tourne` — c'est le refrain de la série — comme
 `eclipse-explorer` affiche « La mécanique des éclipses ».)*
 
-![Capture d'écran du site : le globe 3D, le cadre des deux heures et les cartes-horloges](docs/screenshot.png)
+![Capture d'écran du site : la Terre vue du pôle Nord, le cadre des deux heures et les cartes-horloges](docs/screenshot.png)
 
 ## Fonctionnalités
 
-- **Le globe en 3D** : la Terre avec ses vrais continents et les frontières des ~180 pays
-  (Natural Earth, embarqué dans `js/geo.js` — aucune tuile, aucune bibliothèque), la France
-  surlignée en rose, la destination en doré, les 24 fuseaux en tranches, l'équateur et le
-  méridien de Greenwich. Projection orthographique maison en canvas 2D, comme la vue 3D de
-  l'épisode 1 : toujours zéro dépendance.
-- **On attrape la Terre** : glisser horizontalement la fait tourner (l'heure change, le Soleil
-  ne bouge pas), glisser verticalement la penche. Un clic sur un pays ou une ville-décor en
-  fait la destination observée.
-- **Le Soleil reste à sa place, et l'image reste lisible.** Il se pose sur l'axe horizontal,
-  du côté d'où vient la lumière, ses rayons vers la Terre — et le cadrage garde **toujours la
-  limite jour/nuit à l'écran** : jamais la face éclairée pile en face (le Soleil dessiné sur le
-  côté semblerait mal placé), jamais le Soleil coincé derrière la Terre. Un lieu en pleine nuit
-  s'affiche vers le bord sombre, à l'opposé du Soleil, et les villes de la face nuit
-  **allument leurs petites lumières**.
-
-![Bali en pleine nuit : la limite jour/nuit à l'écran, le Soleil visible sur son côté](docs/screenshot-3d.png)
-
-- **Choisir une destination ne fait pas bouger la Terre** : les horloges ne bronchent pas d'une
-  seconde, c'est la caméra qui **vole en douceur** jusqu'au nouveau lieu (et contourne par la
-  face nuit quand le Soleil doit changer de côté — on le voit glisser derrière la Terre puis
-  ressortir). Deux **boutons de lieux** sous le globe : 🏠 *chez nous* et la destination, à son
-  nom (🌺 *Bali*…) — on appuie, le globe pivote jusqu'au lieu, l'heure ne change jamais. C'est
-  aussi la sortie de secours quand on s'est perdu en glissant : un appui et tout se recale.
+- **La vue principale : la Terre vue de tout en haut** (au-dessus du pôle Nord) — le dessin
+  des manuels, en grand et en vivant : un disque découpé en **24 tranches comme une orange**
+  (une par heure), le Soleil fixe à droite qui n'éclaire que la moitié qui lui fait face, la
+  France et la destination posées chacune sur son cercle, qui tournent avec l'heure et passent
+  du jour à la nuit. **On attrape le disque et on le fait tourner au doigt** (glisser
+  rotatif) : l'heure suit le mouvement, dans le vrai sens de rotation de la Terre.
 - **La recherche fonctionne sans Internet** : ≈ 220 villes et pays embarqués (accents ignorés,
   demi-fuseaux compris — cherche l'Inde !), 9 idées de voyage prêtes à cliquer (Guadeloupe,
-  Bali, Tahiti, Tokyo…). Deux moteurs synchronisés, sur le globe et sur la carte à plat.
-- **Le cadre des deux heures**, posé sur le globe et répliqué sur la carte : l'heure en France,
-  l'heure là-bas, et l'écart en toutes lettres (« 8 h d'avance sur nous »).
+  Bali, Tahiti, Tokyo…). Deux moteurs synchronisés, en haut de page et sur la carte à plat ;
+  choisir un lieu fait pulser son point sur le disque, sans jamais changer l'heure.
+- **Le cadre des deux heures**, posé sur la vue du pôle et répliqué sur le globe 3D et la
+  carte : l'heure en France, l'heure là-bas, et l'écart en toutes lettres (« 8 h d'avance sur
+  nous »).
 - **Deux cartes-horloges** (France + destination) : horloge analogique, grosse heure digitale,
   mot-repère (« midi ! », « la nuit »…), activité du moment, badge « **déjà demain !** » /
   « **encore hier !** », et le ciel local dessiné en continu — nuit étoilée, aube rose, grand
@@ -67,12 +52,29 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
   ou à **écouter** — la synthèse vocale du navigateur la raconte phrase à phrase, sur un ton de
   conteur (pauses, exclamations, suspens). Le site choisit d'office la voix française la plus
   naturelle de l'appareil, un menu 🗣 permet d'en changer (choix retenu), et un conseil
-  s'affiche quand l'appareil n'a que des voix robotiques. Sous le texte, un petit **schéma de
-  la Terre vue du pôle Nord** — le dessin des manuels : 24 tranches comme une orange, le Soleil
-  qui éclaire toujours la même moitié, la France et la destination qui tournent avec l'heure.
+  s'affiche quand l'appareil n'a que des voix robotiques.
+- **Le jeu « Amuse-toi à trouver l'heure qu'il est dans les pays que tu connais ! »**, après
+  l'histoire : le **globe en 3D** puis la **carte à plat**. Le globe montre les vrais
+  continents et les frontières des ~180 pays (Natural Earth, embarqué dans `js/geo.js` —
+  aucune tuile, aucune bibliothèque), la France surlignée en rose, la destination en doré, les
+  24 fuseaux en tranches. Glisser horizontalement le fait tourner (l'heure change), un clic
+  sur un pays ou une ville-décor l'observe, et son heure s'affiche dans le cadre. Sur petit
+  écran, la Terre occupe davantage le cadre pour rester lisible.
+- **Le Soleil du globe reste à sa place, et l'image reste lisible.** Il se pose sur l'axe
+  horizontal, du côté d'où vient la lumière — et le cadrage garde **toujours la limite
+  jour/nuit à l'écran** : jamais la face éclairée pile en face, jamais le Soleil coincé
+  derrière la Terre. Un lieu en pleine nuit s'affiche vers le bord sombre, et les villes de la
+  face nuit **allument leurs petites lumières**.
+
+![Bali en pleine nuit : la limite jour/nuit à l'écran, le Soleil visible sur son côté](docs/screenshot-3d.png)
+
+- **Choisir une destination ne fait jamais bouger l'heure** : sur le globe du jeu, c'est la
+  caméra qui **vole en douceur** jusqu'au lieu (et contourne par la face nuit quand le Soleil
+  doit changer de côté). Deux **boutons de lieux** sous le globe : 🏠 *chez nous* et la
+  destination, à son nom (🌺 *Bali*…) — la sortie de secours quand on s'est perdu en glissant.
 - **Plein écran** du globe (API native, repli maison pour iOS), et une mise en page mobile
-  dédiée : sous 640 px, le cadre des heures et les boutons de lieux se rangent sous le globe
-  pour ne jamais le recouvrir.
+  dédiée : sous 640 px, le cadre des heures et les boutons de lieux se rangent sous les vues
+  pour ne jamais les recouvrir.
 - Accessible : aria-labels sur tous les canvas, `prefers-reduced-motion` respecté (rien ne
   bouge tout seul), curseur utilisable au clavier, espace = pause.
 
@@ -112,10 +114,10 @@ milieu du Pacifique dans l'océan, Bali/La Réunion/Tahiti ont leur île, la rec
 « reunion » sans accent, chaque pays du répertoire a son polygone…
 
 Le site est aussi vérifié en navigateur (Playwright/Chromium, desktop + mobile 390 px) : zéro
-erreur de console, heures conformes sur tous les scénarios, sélection sans bouger la Terre,
-cadres jumeaux, boutons de lieux, glissers, plein écran (natif **et** repli iOS), sondes de
-pixels sur le halo de midi, sur la position du Soleil et sur le croissant de nuit (jamais de
-« plein jour » plein cadre), schéma du pôle Nord qui tourne avec l'heure.
+erreur de console, structure de la page (vue du pôle en vedette, jeu après l'histoire),
+glisser rotatif du disque (un quart de tour ≈ 6 h), sélection sans changer l'heure, cadres
+jumeaux, boutons de lieux, sondes de pixels sur la position du Soleil et le croissant de nuit
+(jamais de « plein jour » plein cadre, Soleil entier même rapproché sur mobile).
 
 ## Déployer sur GitHub Pages
 
@@ -158,10 +160,9 @@ Tout est dans [`js/model.js`](js/model.js) (aucun accès DOM, toutes les constan
   et ne laisse jamais le Soleil caché derrière la Terre : la limite jour/nuit reste toujours à
   l'écran. Une destination en pleine nuit s'affiche donc vers le bord sombre, à l'opposé du
   Soleil, plutôt qu'au centre d'un écran tout noir.
-- **La Terre vue du pôle Nord.** Sur le petit schéma rond de la boîte « Pourquoi les fuseaux
-  horaires ? », tous les lieux sont posés sur le même disque — même ceux de l'hémisphère sud
-  (Bali…), invisibles en vrai depuis le pôle Nord. Ce qui compte ici, c'est la tranche où
-  chacun se trouve, donc son heure.
+- **La Terre vue du pôle Nord.** Sur la grande vue ronde en haut de page, tous les lieux sont
+  posés sur le même disque — même ceux de l'hémisphère sud (Bali…), invisibles en vrai depuis
+  le pôle Nord. Ce qui compte ici, c'est la tranche où chacun se trouve, donc son heure.
 - **Les cartes** viennent de Natural Earth 110m (domaine public), simplifiées ; seules les
   frontières des pays sont tracées, pas les régions ; Bali, La Réunion, Tahiti et les Antilles
   sont redessinées à la main (trop petites pour cette résolution).
@@ -174,8 +175,9 @@ Tout est dans [`js/model.js`](js/model.js) (aucun accès DOM, toutes les constan
 ## Structure
 
 ```
-index.html            page unique (globe 3D, recherche, cadres, vignettes, scénarios,
-                      carte à plat, boîte des fuseaux à écouter, note aux parents)
+index.html            page unique (Terre vue du pôle + recherche, cadres, vignettes,
+                      scénarios, boîte des fuseaux à écouter, jeu : globe 3D + carte à plat,
+                      note aux parents)
 css/style.css         thème sombre de la série, responsive (bascule mobile ≤ 640 px), aucune lib
 js/model.js           logique horaire pure (lieux, horloges, soleil, scénarios) — testable sous Node
 js/geo.js             GÉNÉRÉ — contours lon/lat Natural Earth 110m (pays, lacs) + îles à la main

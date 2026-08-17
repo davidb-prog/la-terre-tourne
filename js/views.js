@@ -595,23 +595,29 @@ function temple(ctx, x, horizon, lit) {
 }
 
 // ------------------------------------------------------ La Terre vue du pôle
-// Le petit schéma de la boîte « Pourquoi les fuseaux horaires ? » : la Terre
-// vue de tout en haut (au-dessus du pôle Nord), découpée en 24 tranches comme
-// une orange. Le Soleil est posé à droite et n'éclaire que la moitié qui lui
-// fait face ; la Terre tourne avec l'heure dans le sens trigonométrique —
-// placeAngle (model.js) est littéralement l'angle de ce dessin. Schéma
-// assumé : tous les lieux sont posés sur le même disque, même ceux de
-// l'hémisphère sud (voir la note aux parents).
+// La vue pédagogique principale du site : la Terre vue de tout en haut
+// (au-dessus du pôle Nord), découpée en 24 tranches comme une orange. Le
+// Soleil est posé à droite et n'éclaire que la moitié qui lui fait face ; la
+// Terre tourne avec l'heure dans le sens trigonométrique — placeAngle
+// (model.js) est littéralement l'angle de ce dessin, et on la fait tourner au
+// doigt (glisser rotatif câblé dans main.js via `layout`). Schéma assumé :
+// tous les lieux sont posés sur le même disque, même ceux de l'hémisphère sud
+// (voir la note aux parents).
 
 export class PoleView {
-  constructor(canvas) { this.canvas = canvas; }
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.layout = null;
+    this.pulse = null; // { lonDeg, home, k } — anneau quand on choisit un lieu
+  }
 
   draw(homeH, places) {
     const { ctx, w, h } = fitCanvas(this.canvas);
     ctx.fillStyle = COL.bg; ctx.fillRect(0, 0, w, h);
-    drawStars(this, ctx, w, h, 60);
-    const R = Math.min(0.34 * h, 0.24 * w);
-    const cx = 0.40 * w, cy = 0.52 * h;
+    drawStars(this, ctx, w, h, 120);
+    const R = Math.min(0.3 * h, 0.3 * Math.min(w, h));
+    const cx = 0.46 * w, cy = 0.54 * h;
+    this.layout = { cx: cx, cy: cy, R: R };
 
     // l'océan, éclairé du côté du Soleil (à droite)
     const oc = ctx.createRadialGradient(cx + R * 0.45, cy, R * 0.1, cx, cy, R * 1.02);
@@ -683,9 +689,10 @@ export class PoleView {
     label(ctx, 'elle tourne', cx + R * 0.95, cy - R * 1.28,
       { align: 'center', size: 10, weight: 400, alpha: 0.7, clampW: w });
 
-    // le Soleil, fixe à droite, avec ses rayons vers la Terre
+    // le Soleil, fixe à droite, avec ses rayons vers la Terre (rapproché du
+    // disque quand la largeur manque — petits écrans)
     const rS = 0.14 * R;
-    const sunX = cx + R * 1.62, sunY = cy;
+    const sunX = Math.min(cx + R * 1.62, w - 8 - rS * 1.8), sunY = cy;
     const g = ctx.createRadialGradient(sunX, sunY, 1, sunX, sunY, rS * 2.6);
     g.addColorStop(0, COL.sunCore); g.addColorStop(0.3, COL.sun);
     g.addColorStop(0.65, 'rgba(255, 159, 28, 0.25)'); g.addColorStop(1, 'rgba(255, 159, 28, 0)');
@@ -730,7 +737,18 @@ export class PoleView {
       ctx.beginPath(); ctx.arc(x, y, 4.5, 0, TAU);
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)'; ctx.lineWidth = 1.8; ctx.stroke();
       label(ctx, p.name, x, y - 11,
-        { align: 'center', size: 10.5, color: p.color, clampW: w, clampH: h });
+        { align: 'center', size: 11.5, color: p.color, clampW: w, clampH: h });
+    }
+
+    // petit anneau qui pulse quand on vient de choisir un lieu
+    if (this.pulse && this.pulse.k > 0) {
+      const rp = R * (this.pulse.home ? 0.58 : 0.82);
+      const a = placeAngle(homeH, this.pulse.lonDeg);
+      const x = cx + rp * Math.cos(a), y = cy - rp * Math.sin(a);
+      ctx.strokeStyle = 'rgba(255, 207, 92, ' + (0.9 * this.pulse.k) + ')';
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(x, y, 8 + (1 - this.pulse.k) * 30, 0, TAU); ctx.stroke();
+      this.pulse.k -= 0.02;
     }
   }
 }

@@ -71,19 +71,17 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 .canvas-wrap { position: relative; border-radius: 12px; overflow: hidden; background: #070b17; }
 .ratio-square { aspect-ratio: 1 / 1; }
 .ratio-map { aspect-ratio: 2 / 1; }
-.pole-wrap { aspect-ratio: 6 / 5; }
 @media (max-width: 700px) { .ratio-map { aspect-ratio: 16 / 10; } }
 /* repli pour navigateurs sans aspect-ratio (Safari iOS < 15) : hauteurs fixes */
 @supports not (aspect-ratio: 1 / 1) {
   .ratio-square { height: min(92vw, 620px); }
   .ratio-map { height: min(46vw, 520px); }
-  .pole-wrap { height: min(70vw, 320px); }
   @media (max-width: 700px) { .ratio-map { height: min(58vw, 300px); } }
 }
 .canvas-wrap canvas { position: absolute; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: 100%; display: block; }
 
-#globe3d-view, #map-view { touch-action: none; cursor: grab; }
-#globe3d-view:active, #map-view:active { cursor: grabbing; }
+#pole-view, #globe3d-view, #map-view { touch-action: none; cursor: grab; }
+#pole-view:active, #globe3d-view:active, #map-view:active { cursor: grabbing; }
 
 .hidden { display: none; }
 
@@ -477,9 +475,9 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 .explain-text p { margin: .55em 0; color: #c9d2ea; font-size: 1.02rem; line-height: 1.7; }
 .explain-text strong { color: var(--text); }
 
-/* le petit schéma « la Terre vue du pôle Nord », sous le texte de la boîte */
-.pole-figure { margin: 18px auto 4px; max-width: 400px; }
-.pole-figure figcaption {
-  margin: 8px 4px 0; font-size: .84rem; line-height: 1.55;
-  color: var(--muted); text-align: center;
+/* l'en-tête du jeu : trouver l'heure dans les pays qu'on connaît */
+.game-head { margin: 22px 4px 12px; }
+.game-head h2 {
+  margin: 0 0 4px; font-size: 1.15rem; color: var(--sun);
 }
+.game-head .hint { display: block; font-size: .88rem; }
