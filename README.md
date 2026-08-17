@@ -71,11 +71,12 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
   continents et les frontières des ~180 pays (Natural Earth, embarqué dans `js/geo.js` —
   aucune tuile, aucune bibliothèque), la France surlignée en rose, la destination en doré, les
   24 fuseaux en tranches. Glisser horizontalement le fait tourner (l'heure change), un clic
-  sur un pays ou une ville-décor l'observe, et son heure s'affiche dans le cadre. Sur
-  ordinateur, le globe et la carte s'affichent **côte à côte, sur un seul écran** ; sur
-  téléphone, l'enchaînement est globe 3D → cadre des heures et boutons de lieux → carte à
-  plat — **les deux vues tiennent ensemble sur l'écran** (titre et recherche de la carte
-  passent dessous), et la Terre occupe davantage le cadre pour rester lisible.
+  sur un pays ou une ville-décor l'observe, et son heure s'affiche dans le cadre. Les deux
+  **boutons de lieux** (🏠 chez nous / la destination) sont posés dans le ciel étoilé, juste
+  sous la Terre. Sur ordinateur, le globe et la carte s'affichent **côte à côte, sur un seul
+  écran** ; sur téléphone, l'enchaînement est globe 3D → cadre des heures → carte à plat —
+  **les deux vues tiennent ensemble sur l'écran** (titre et recherche de la carte passent
+  dessous), et la Terre occupe davantage le cadre pour rester lisible.
 - **Le Soleil du globe reste à sa place, et l'image reste lisible.** Il se pose sur l'axe
   horizontal, du côté d'où vient la lumière — et le cadrage garde **toujours la limite
   jour/nuit à l'écran** : jamais la face éclairée pile en face, jamais le Soleil coincé
