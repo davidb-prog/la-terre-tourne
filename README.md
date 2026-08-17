@@ -29,8 +29,8 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
   demi-fuseaux compris — cherche l'Inde !), 9 idées de voyage prêtes à cliquer (Guadeloupe,
   Bali, Tahiti, Tokyo…). Deux moteurs synchronisés, en haut de page et sur la carte à plat ;
   choisir un lieu fait pulser son point sur le disque, sans jamais changer l'heure.
-- **Le cadre des deux heures**, posé sur la vue du pôle et répliqué sur le globe 3D et la
-  carte : l'heure en France, l'heure là-bas, et l'écart en toutes lettres (« 8 h d'avance sur
+- **Le cadre des deux heures**, posé sur la vue du pôle et répliqué sous le globe du jeu :
+  l'heure en France, l'heure là-bas, et l'écart en toutes lettres (« 8 h d'avance sur
   nous »).
 - **Deux cartes-horloges** (France + destination) : horloge analogique, grosse heure digitale,
   mot-repère (« midi ! », « la nuit »…), activité du moment, badge « **déjà demain !** » /
@@ -42,10 +42,13 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
 - **Quatre boutons-scénarios** : « Quand je me réveille (7 h) », « Quand je déjeune (midi) »,
   « Quand je vais au dodo (20 h) », « Le soleil se lève là-bas ». La Terre tourne en douceur —
   toujours vers l'est, son vrai sens ! — puis une petite histoire compare la France et la
-  destination. Un bouton 🔇/🔊 active la **version sonore** : à chaque moment choisi, le
+  destination. Si la destination vit sur le **même fuseau que la France** (Allemagne,
+  Italie…), la phrase célèbre la coïncidence (« c'est la même heure que chez nous ! ») au
+  lieu de répéter l'heure. Et si on **change de destination**, l'histoire affichée se met à
+  jour toute seule. Un bouton 🔇/🔊 active la **version sonore** : à chaque moment choisi, le
   conteur dit ce qui se passe chez nous et là-bas — même voix et même ton que l'histoire des
-  fuseaux, avec les enchaînements ajoutés pour l'oral (« Chez nous, en France… Et pendant ce
-  temps, à Bali… »), la bonne préposition pour chaque lieu (« en Guadeloupe », « au Japon »,
+  fuseaux, avec les enchaînements ajoutés pour l'oral (« Chez nous… Et pendant ce temps, à
+  Bali… »), la bonne préposition pour chaque lieu (« en Guadeloupe », « au Japon »,
   « aux Fidji », « au Caire »… — `placeLocative`, testée) et sans les émojis, imprononçables.
   Le choix est retenu.
 - **La carte du monde à plat** (mêmes contours que le globe) : les 24 fuseaux en bandes
@@ -81,9 +84,9 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
   caméra qui **vole en douceur** jusqu'au lieu (et contourne par la face nuit quand le Soleil
   doit changer de côté). Deux **boutons de lieux** sous le globe : 🏠 *chez nous* et la
   destination, à son nom (🌺 *Bali*…) — la sortie de secours quand on s'est perdu en glissant.
-- **Plein écran** du globe (API native, repli maison pour iOS), et une mise en page mobile
-  dédiée : sous 640 px, le cadre des heures et les boutons de lieux se rangent sous les vues
-  pour ne jamais les recouvrir.
+- **Rien ne recouvre jamais les vues** : dans le jeu, le cadre des heures et les boutons de
+  lieux sont rangés sous le globe à toutes les tailles d'écran, et sous 640 px le cadre de la
+  vue du pôle descend lui aussi sous le disque.
 - Accessible : aria-labels sur tous les canvas, `prefers-reduced-motion` respecté (rien ne
   bouge tout seul), curseur utilisable au clavier, espace = pause.
 
@@ -110,7 +113,7 @@ sans navigateur :
 node test/model.test.mjs && node test/geo.test.mjs
 ```
 
-**62 vérifications horaires**, dont les données exactes du récit : 12 h en France (hiver) → 7 h
+**63 vérifications horaires**, dont les données exactes du récit : 12 h en France (hiver) → 7 h
 en Guadeloupe et 19 h à Bali ; l'ordre des levers de soleil Bali → France → Guadeloupe ;
 l'effet « déjà demain » (20 h chez nous = 3 h le lendemain à Bali) ; « encore hier » au petit
 matin ; le miroir Bali/Guadeloupe (lever sur l'une ≈ coucher sur l'autre) ; les phrases
@@ -197,7 +200,7 @@ js/view3d.js          globe 3D (projection orthographique maison, découpe à l'
                       en calottes, Soleil ancré sur l'axe horizontal)
 js/main.js            boucle d'animation + interactions (curseur, glissers, sélection,
                       boutons de lieux, vol de caméra, scénarios, plein écran, voix)
-test/model.test.mjs   tests Node du modèle horaire (62 vérifications)
+test/model.test.mjs   tests Node du modèle horaire (63 vérifications)
 test/geo.test.mjs     tests Node de la géographie et de la recherche (25 vérifications)
 ```
 

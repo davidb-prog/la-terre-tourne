@@ -55,15 +55,16 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
   heures) ; frise du temps pleine largeur (`time-panel`, curseur 0–24 h) ; scénarios +
   histoire (bouton 🔇/🔊 `btn-scn-voice` de version sonore) ; boîte « Pourquoi les fuseaux
   horaires ? » à écouter (menu de voix) ; **jeu** « Amuse-toi à trouver l'heure… »
-  (`.game-head` puis `.game-grid` : globe 3D — cadre jumeau `-globe`, 2 boutons de lieux 🏠
-  chez nous / destination — et carte à plat — recherche jumelle, cadre jumeau `-map` — côte à
-  côte dès 961 px) ; note aux parents
-- `css/style.css` — thème sombre de la série ; **bascule mobile ≤ 640 px** : le cadre et les
-  boutons de lieux quittent l'incrustation et se rangent sous le globe (idem pour le cadre de
-  la carte) ; en plein écran mobile (repli `.fs-fallback`, le cas réel iOS), la scène ne
-  s'étire pas et les suggestions s'effacent
+  (`.game-head` puis `.game-grid` : globe 3D avec, rangés dessous, le cadre jumeau `-globe`
+  et les 2 boutons de lieux 🏠 chez nous / destination, puis carte à plat avec sa recherche
+  jumelle — côte à côte dès 961 px, pas de plein écran) ; note aux parents
+- `css/style.css` — thème sombre de la série ; sur la vue du pôle, le cadre des heures est
+  incrusté (il se range dessous en **mobile ≤ 640 px**) ; dans le jeu (`.game-grid`), le cadre
+  et les boutons de lieux sont **toujours** rangés sous le globe, à toutes les tailles — rien
+  ne mord sur les vues
 - `js/model.js` — logique horaire pure (lieux, horloges locales, report de jour, heure solaire,
-  hauteur du soleil, scénarios et phrases générées, écarts en toutes lettres, cadrage caméra
+  hauteur du soleil, scénarios et phrases générées — dont le cas « même fuseau que la
+  France » —, écarts en toutes lettres, prépositions de lieu `placeLocative`, cadrage caméra
   borné `cameraFrame`)
 - `js/geo.js` — GÉNÉRÉ : ~177 pays Natural Earth 110m avec ISO (~10 700 points), lacs, glaces
   (AQ/GL), arc des Antilles et petites îles (`SPECKS` : Bali, La Réunion, Tahiti…) à la main
@@ -87,13 +88,15 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
   l'heure, clic = choisir), `centerCameraOn` + `flyCameraTo` (vol animé vers le cadrage
   `cameraFrame`, contournement par la face nuit si le Soleil change de côté, saut sec en
   `prefers-reduced-motion`), boutons de lieux (🏠 chez nous / destination à son nom),
-  recherche jumelle, scénarios, cadres jumeaux (`''`/`-globe`/`-map`), plein écran, et le
-  **conteur** `narrator` : un seul moteur de synthèse vocale (score des voix françaises, ton
-  conteur phrase à phrase, menu 🗣, choix retenu en localStorage) partagé entre l'histoire
-  des fuseaux et la **version sonore des scénarios** (bouton 🔇/🔊, choix retenu ; on ne lit
-  pas les bulles telles quelles — enchaînements « Chez nous… / Et pendant ce temps… » ajoutés
-  à l'oral, émojis retirés)
-- `test/model.test.mjs` — 62 vérifications ; `test/geo.test.mjs` — 25 vérifications
+  recherche jumelle, scénarios (le scénario actif `activeScn` se rejoue quand la destination
+  change : l'histoire suit sans re-clic ; il s'efface dès qu'on reprend la main), cadres
+  jumeaux (`''`/`-globe`), et le **conteur** `narrator` : un seul moteur de synthèse vocale
+  (score des voix françaises, ton conteur phrase à phrase, menu 🗣, choix retenu en
+  localStorage) partagé entre l'histoire des fuseaux et la **version sonore des scénarios**
+  (bouton 🔇/🔊, choix retenu ; on ne lit pas les bulles telles quelles — enchaînements
+  « Chez nous… / Et pendant ce temps, [préposition `placeLocative`] … » ajoutés à l'oral,
+  émojis retirés, espace recollé avant le point final sinon lu « point »)
+- `test/model.test.mjs` — 63 vérifications ; `test/geo.test.mjs` — 25 vérifications
 
 ## Vérification navigateur
 

@@ -1,6 +1,6 @@
 // Câblage de l'interface : boucle d'animation, curseur du temps, recherche de
 // lieux (hors-ligne, deux moteurs synchronisés), vol du globe, deux
-// cartes-horloges (la France et le lieu choisi), scénarios racontés, plein écran.
+// cartes-horloges (la France et le lieu choisi), scénarios racontés.
 
 import { TAU, DEG, PLACES, HOME, SCENARIOS, wrap24, localClock, formatHM,
          periodWord, activityFor, dayBadge, sunriseHomeH,
@@ -20,6 +20,7 @@ const sim = {
   spinSpeed: 24 / 80,
   tween: null,            // { from, delta, target, start, dur } pendant un scénario
 };
+let activeScn = null; // le scénario affiché : { scn, atH } — nul dès qu'on reprend la main
 
 const globe3d = new Globe3D($('globe3d-view'));
 const map = new MapView($('map-view'));
@@ -83,6 +84,7 @@ function buildCards() {
         pole.pulse = { lonDeg: selected.lonDeg, home: false, k: 1 };
         globe3d.pulse = { lonDeg: selected.lonDeg, latDeg: selected.latDeg, k: 1 };
         centerCameraOn(selected.lonDeg, selected.latDeg); // on recadre aussi
+        if (activeScn) runScenario(activeScn.scn); // l'histoire suit
       });
       head.appendChild(close);
     }
@@ -137,6 +139,9 @@ function choosePlace(entry) {
   pole.pulse = { lonDeg: entry.lon, home: false, k: 1 };
   globe3d.pulse = { lonDeg: entry.lon, latDeg: entry.lat, k: 1 };
   centerCameraOn(entry.lon, entry.lat);
+  // si un moment est affiché dans « Joue avec la Terre », son histoire (et sa
+  // version sonore) suit la nouvelle destination sans attendre un re-clic
+  if (activeScn) runScenario(activeScn.scn);
 }
 
 function wireSearch(inputId, resultsId) {
@@ -284,6 +289,7 @@ function setPlaying(p) {
 
 function stopAuto() {
   sim.tween = null;
+  activeScn = null;
   if (sim.playing) setPlaying(false);
   setActiveScenario(null);
 }
@@ -304,6 +310,7 @@ window.addEventListener('pointercancel', () => { sliderHeld = false; });
 
 function toggleSpin() {
   sim.tween = null;
+  activeScn = null;
   setActiveScenario(null);
   setPlaying(!sim.playing);
 }
@@ -314,41 +321,6 @@ document.addEventListener('keydown', (e) => {
   if (e.code === 'Space' && !e.target.closest('button, input, a, summary')) {
     e.preventDefault();
     toggleSpin();
-  }
-});
-
-// ---- plein écran du globe (API native, repli CSS pour iOS) ----
-
-const globePanel = $('globe-panel');
-const fsBtn = $('fs-toggle');
-
-function setFsUi(active) {
-  fsBtn.textContent = active ? '✕ Quitter le plein écran' : '⛶ Plein écran';
-}
-fsBtn.addEventListener('click', () => {
-  if (document.fullscreenElement === globePanel) { document.exitFullscreen(); return; }
-  if (globePanel.classList.contains('fs-fallback')) {
-    globePanel.classList.remove('fs-fallback');
-    setFsUi(false);
-    return;
-  }
-  if (globePanel.requestFullscreen) {
-    const p = globePanel.requestFullscreen();
-    if (p && p.then) {
-      p.then(null, () => { globePanel.classList.add('fs-fallback'); setFsUi(true); });
-    }
-    return;
-  }
-  globePanel.classList.add('fs-fallback');
-  setFsUi(true);
-});
-document.addEventListener('fullscreenchange', () => {
-  setFsUi(document.fullscreenElement === globePanel);
-});
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && globePanel.classList.contains('fs-fallback')) {
-    globePanel.classList.remove('fs-fallback');
-    setFsUi(false);
   }
 });
 
@@ -554,7 +526,7 @@ function renderStory(scn, atH) {
     { cls: 'story-chip-france', chip: FRANCE.emoji + ' ' + FRANCE.name,
       text: scn.france || placePhrase(atH, FRANCE) },
     { cls: 'story-chip-selected', chip: selected.emoji + ' ' + selected.name,
-      text: placePhrase(atH, selected) },
+      text: placePhrase(atH, selected, selected.utcOffset === FRANCE.utcOffset) },
   ];
   for (const line of lines) {
     const row = document.createElement('div');
@@ -576,7 +548,7 @@ function runScenario(scn) {
   setPlaying(false);
   setActiveScenario(scn.id);
   renderStory(scn, atH);
-  lastTold = { scn: scn, atH: atH };
+  activeScn = { scn: scn, atH: atH };
   tellScenario(); // la version sonore, si le parent l'a activée
   const delta = wrap24(atH - sim.homeH);
   if (reduceMotion || delta < 0.02) {
@@ -598,9 +570,9 @@ function setText(cache, key, el, value) {
   el.textContent = value;
 }
 
-// les cadres posés sur la vue du pôle, sur le globe du jeu et sur la carte :
-// l'heure ici, l'heure là-bas, et l'écart — même contenu partout
-const FRAME_IDS = ['', '-globe', '-map'];
+// les cadres posés sur la vue du pôle et sous le globe du jeu : l'heure ici,
+// l'heure là-bas, et l'écart — même contenu aux deux endroits
+const FRAME_IDS = ['', '-globe'];
 const frameCache = { name: null };
 
 function updateFrame() {
@@ -860,7 +832,6 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
 const scnVoiceBtn = $('btn-scn-voice');
 let scnVoiceOn = false;
 try { scnVoiceOn = window.localStorage.getItem('ltt-scn-voice') === '1'; } catch (e) { /* mode privé */ }
-let lastTold = null; // le scénario affiché à l'écran : { scn, atH }
 
 function setScnVoiceUi() {
   scnVoiceBtn.textContent = scnVoiceOn ? '🔊 la voix raconte' : '🔇 sans la voix';
@@ -882,16 +853,17 @@ function spokenStory(scn, atH) {
   // « . » isolé se fait lire « point » par certaines voix : on le recolle
   const clean = (t) => t.replace(EMOJI_RE, '').replace(/\s+/g, ' ')
     .replace(/\s+\./g, '.').trim();
-  const chunks = [{ text: 'Chez nous, en France…', endPara: false }];
+  const chunks = [{ text: 'Chez nous…', endPara: false }];
   for (const c of sentenceChunks(clean(scn.france || placePhrase(atH, FRANCE)), true)) chunks.push(c);
   chunks.push({ text: 'Et pendant ce temps, ' + placeLocative(selected) + '…', endPara: false });
-  for (const c of sentenceChunks(clean(placePhrase(atH, selected)), true)) chunks.push(c);
+  const same = selected.utcOffset === FRANCE.utcOffset;
+  for (const c of sentenceChunks(clean(placePhrase(atH, selected, same)), true)) chunks.push(c);
   return chunks;
 }
 
 function tellScenario() {
-  if (narrator && scnVoiceOn && lastTold) {
-    narrator.speak(spokenStory(lastTold.scn, lastTold.atH));
+  if (narrator && scnVoiceOn && activeScn) {
+    narrator.speak(spokenStory(activeScn.scn, activeScn.atH));
   }
 }
 

@@ -181,6 +181,9 @@ console.log('Scénarios et phrases générées');
     placePhrase(20, B).indexOf('3 h 00') !== -1);
   check('à 2 h chez nous, la Guadeloupe est « encore hier »',
     placePhrase(2, G).indexOf('encore hier') !== -1);
+  check('même fuseau que la France : la phrase célèbre la coïncidence au lieu de répéter l’heure',
+    placePhrase(12, { utcOffset: 1, lonDeg: 13.4 }, true).indexOf('même heure que chez nous') !== -1 &&
+    placePhrase(12, { utcOffset: 1, lonDeg: 13.4 }, true).indexOf('aussi 12 h 00') !== -1);
   check('à midi chez nous, la phrase de la Guadeloupe donne 7 h 00 et un lever de soleil',
     placePhrase(12, G).indexOf('7 h 00') !== -1);
   check('au lever du soleil balinais, la phrase dit que le soleil se lève',

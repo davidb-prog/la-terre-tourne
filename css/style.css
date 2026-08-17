@@ -90,6 +90,17 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
     .game-grid .ratio-map { height: min(36vw, 430px); }
   }
 }
+/* dans le jeu, le cadre des heures et les boutons de lieux ne mordent jamais
+   sur le globe : ils se rangent dessous, à toutes les tailles d'écran */
+.game-grid .globe-stage > .globe-frame {
+  position: static; z-index: auto; margin: 10px 0 0; pointer-events: auto;
+  background: #0d1531;
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+.game-grid .globe-stage > .view-chips {
+  position: static; -webkit-transform: none; transform: none;
+  margin: 10px 0 2px; max-width: 100%; flex-wrap: wrap; justify-content: center;
+}
 
 .canvas-panel { padding: 12px; }
 .canvas-title { font-size: .88rem; color: var(--muted); margin: 2px 4px 10px; }
@@ -395,45 +406,6 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 }
 .card-close:hover { color: var(--text); }
 
-/* ---------- plein écran du globe ---------- */
-
-.globe-panel:fullscreen {
-  display: flex; flex-direction: column; border-radius: 0; padding: 12px 14px;
-  background: #0b1020;
-}
-.globe-panel:fullscreen .globe-stage,
-.globe-panel.fs-fallback .globe-stage { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-.globe-panel:fullscreen .canvas-wrap { flex: 1; height: auto; min-height: 0; }
-.globe-panel.fs-fallback {
-  position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 60;
-  display: flex; flex-direction: column; border-radius: 0; margin: 0;
-  overflow-y: auto;
-}
-.globe-panel.fs-fallback .canvas-wrap { flex: 1; height: auto; min-height: 220px; }
-@supports (aspect-ratio: 1 / 1) {
-  .globe-panel:fullscreen .canvas-wrap, .globe-panel.fs-fallback .canvas-wrap { aspect-ratio: auto; }
-}
-/* sur grand écran, le plein écran garde le cadre et les pastilles en
-   incrustation (comportement par défaut du globe : rien à forcer). */
-@media (max-width: 640px) {
-  /* Sur un mobile en plein écran, on N'étire PAS la scène (flex:1 + min-height
-     nul la ferait déborder et son contenu — les pastilles — viendrait
-     recouvrir l'heure juste dessous). On empile normalement : le globe prend
-     une belle hauteur fixe, le cadre et les pastilles se rangent dessous, et
-     la page défile si tout ne tient pas. Les suggestions de voyage s'effacent
-     pour laisser le globe respirer (la recherche reste là). */
-  .globe-panel:fullscreen,
-  .globe-panel.fs-fallback { overflow-y: auto; -webkit-overflow-scrolling: touch; }
-  .globe-panel:fullscreen .globe-stage,
-  .globe-panel.fs-fallback .globe-stage { flex: none; }
-  .globe-panel:fullscreen .canvas-wrap,
-  .globe-panel.fs-fallback .canvas-wrap {
-    flex: none; height: min(88vw, 58vh); min-height: 300px;
-  }
-  .globe-panel:fullscreen .search-chips,
-  .globe-panel.fs-fallback .search-chips { display: none; }
-}
-
 /* ---------- cadre des deux heures, posé sur le globe ---------- */
 
 .globe-frame {
@@ -454,20 +426,6 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 .frame-row-sel strong { color: var(--sun); }
 .frame-name { color: var(--text); max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .frame-diff { color: var(--muted); font-size: .76rem; text-align: center; border-top: 1px dashed var(--border); padding-top: 4px; }
-
-/* sur la carte à plat, le même cadre se pose en bas à gauche (le haut porte
-   les étiquettes UTC des bandes) ; sur petit écran il glisse sous la carte,
-   pour ne pas la recouvrir à moitié */
-.map-panel { position: relative; }
-.frame-low { top: auto; left: 22px; bottom: 22px; }
-@media (max-width: 640px) {
-  .frame-low {
-    position: static; margin: 10px 2px 0;
-    background: #0d1531;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
 
 /* puce du lieu choisi dans l'histoire */
 .story-chip-selected { background: rgba(255, 207, 92, .14); color: var(--sun); border: 1px solid rgba(255, 207, 92, .5); }

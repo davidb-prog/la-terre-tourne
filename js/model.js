@@ -145,8 +145,10 @@ export function dayBadge(dayShift) {
 }
 
 // Une phrase courte sur un lieu à cet instant, à lire à voix haute : l'heure,
-// l'état du ciel, l'activité — et le report de jour s'il y en a un.
-export function placePhrase(homeH, place) {
+// l'état du ciel, l'activité — et le report de jour s'il y en a un. Quand le
+// lieu vit sur le même fuseau que la France (sameAsHome), on ne répète pas
+// l'heure platement : on célèbre la coïncidence.
+export function placePhrase(homeH, place, sameAsHome) {
   const c = localClock(homeH, place);
   const hm = formatHM(c.hours);
   const s = skyState(solarHours(homeH, place.lonDeg));
@@ -154,6 +156,10 @@ export function placePhrase(homeH, place) {
     : s === 'dusk' ? 'le soleil se couche' : 'il fait nuit';
   const act = activityFor(c.hours);
   const actTxt = act.text.charAt(0).toLowerCase() + act.text.slice(1);
+  if (sameAsHome) {
+    return 'C’est la même heure que chez nous — il est aussi ' + hm.text + ' : ' +
+      skyTxt + ', ' + actTxt + ' ' + act.emoji + '.';
+  }
   let txt = 'Il est ' + hm.text + ' : ' + skyTxt + ', ' + actTxt + ' ' + act.emoji;
   if (c.dayShift > 0) txt += ' — et c’est déjà demain !';
   else if (c.dayShift < 0) txt += ' — et là-bas, on est encore hier !';
