@@ -75,8 +75,10 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
 - `js/places.js` — répertoire hors-ligne (≈ 220 lieux `{n, c|pays, q, iso, lat, lon, tz}`,
   décalages standard, demi-fuseaux gérés ; les pays multi-fuseaux portent l'heure de leur
   capitale — documenté note aux parents + README), `searchPlaces` (accents ignorés), drapeaux
-  émoji (avec repli 📍 dans main.js quand l'OS ne les rend pas — Windows —, testé par un
-  dessin sur canvas), `DECOR` (9 villes toujours dessinées — la nuit, elles s'allument)
+  émoji (avec repli 📍 dans main.js quand l'OS ne les rend pas — Windows — détecté par
+  **mesure de largeur** : la paire 🇹🇭 se ligature en un glyphe si les drapeaux existent ;
+  surtout pas un test de couleur, les lettres de Windows sont en couleur aussi), `DECOR`
+  (9 villes toujours dessinées — la nuit, elles s'allument)
 - `js/views.js` — `MapView` (planisphère : bandes UTC étiquetées, halo doré du midi solaire,
   nuit qui balaie, Greenwich sous UTC, hitTest), `PoleView` (la **vue principale** : Terre vue
   du pôle Nord, 24 tranches tournantes, moitié nuit fixe, Soleil à droite rapproché si la
