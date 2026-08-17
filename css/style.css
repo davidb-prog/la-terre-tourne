@@ -110,6 +110,11 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
   display: flex; gap: 6px; max-width: 100%; flex-wrap: wrap; justify-content: center;
 }
 @media (max-width: 960px) {
+  /* sur téléphone, le cadre des heures et les boutons s'intercalent entre le
+     globe 3D et la carte à plat — et le tout tient encore sur un écran */
+  .game-grid .globe-panel { order: 1; }
+  .game-grid .game-side { order: 2; }
+  .game-grid .map-panel { order: 3; }
   .map-panel { display: flex; flex-direction: column; }
   .map-panel .canvas-wrap { order: -1; }
   .map-panel .canvas-title { margin: 12px 4px 6px; }
