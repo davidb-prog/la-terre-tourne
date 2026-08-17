@@ -55,11 +55,13 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
   heures) ; frise du temps pleine largeur (`time-panel`, curseur 0–24 h) ; scénarios +
   histoire (bouton 🔇/🔊 `btn-scn-voice` de version sonore) ; boîte « Pourquoi les fuseaux
   horaires ? » à écouter (menu de voix) ; **jeu** « Amuse-toi à trouver l'heure… »
-  (`.game-head` puis `.game-grid` : globe 3D, carte à plat avec sa recherche jumelle, et le
-  bloc `.game-side` — cadre jumeau `-globe` + 2 boutons de lieux 🏠 chez nous / destination.
-  Côte à côte dès 961 px avec `.game-side` sous le globe ; sur mobile l'ordre (par `order`
-  CSS) est globe → `.game-side` → carte, les deux vues tiennent sur un écran, et titre +
-  recherche de la carte passent sous elle. Pas de plein écran) ; note aux parents
+  (`.game-head` puis `.game-grid` : globe 3D avec les 2 boutons de lieux 🏠 chez nous /
+  destination **incrustés dans son ciel, sous la Terre** (toutes tailles ; `width:
+  max-content` sinon l'absolu `left:50%` replie les boutons), carte à plat avec sa recherche
+  jumelle et les 9 idées répliquées (masquées sur mobile), et le bloc `.game-side` — le cadre
+  jumeau `-globe` seul. Côte à côte dès 961 px avec `.game-side` sous le globe ; sur mobile
+  l'ordre (par `order` CSS) est globe → cadre → carte, les deux vues tiennent sur un écran,
+  et titre + recherche de la carte passent sous elle. Pas de plein écran) ; note aux parents
 - `css/style.css` — thème sombre de la série ; sur la vue du pôle, le cadre des heures est
   incrusté (il se range dessous en **mobile ≤ 640 px**) ; dans le jeu (`.game-grid`), le cadre
   et les boutons de lieux sont **toujours** rangés sous le globe, à toutes les tailles — rien
@@ -71,8 +73,10 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
 - `js/geo.js` — GÉNÉRÉ : ~177 pays Natural Earth 110m avec ISO (~10 700 points), lacs, glaces
   (AQ/GL), arc des Antilles et petites îles (`SPECKS` : Bali, La Réunion, Tahiti…) à la main
 - `js/places.js` — répertoire hors-ligne (≈ 220 lieux `{n, c|pays, q, iso, lat, lon, tz}`,
-  décalages standard, demi-fuseaux gérés), `searchPlaces` (accents ignorés), drapeaux émoji,
-  `DECOR` (9 villes toujours dessinées — la nuit, elles s'allument)
+  décalages standard, demi-fuseaux gérés ; les pays multi-fuseaux portent l'heure de leur
+  capitale — documenté note aux parents + README), `searchPlaces` (accents ignorés), drapeaux
+  émoji (avec repli 📍 dans main.js quand l'OS ne les rend pas — Windows —, testé par un
+  dessin sur canvas), `DECOR` (9 villes toujours dessinées — la nuit, elles s'allument)
 - `js/views.js` — `MapView` (planisphère : bandes UTC étiquetées, halo doré du midi solaire,
   nuit qui balaie, Greenwich sous UTC, hitTest), `PoleView` (la **vue principale** : Terre vue
   du pôle Nord, 24 tranches tournantes, moitié nuit fixe, Soleil à droite rapproché si la

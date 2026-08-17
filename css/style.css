@@ -93,21 +93,28 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
     .game-grid .ratio-map { height: min(36vw, 430px); }
   }
 }
-/* le cadre des heures et les boutons de lieux du jeu vivent dans leur propre
-   bloc (.game-side) : sous le globe sur ordinateur, après la carte sur
-   mobile — jamais incrustés, rien ne mord sur les vues. Sur mobile, la carte
-   à plat suit ainsi le globe 3D immédiatement : les deux tiennent sur un
-   écran, et le titre + la recherche de la carte glissent sous elle. */
+/* les boutons de lieux sont posés sous la Terre, dans le ciel étoilé du
+   globe (la place y est, ordinateur comme téléphone) ; le cadre des heures
+   vit dans son bloc .game-side — sous le globe sur ordinateur, entre le
+   globe et la carte sur mobile. Rien ne mord sur les vues. */
+.game-grid .globe-stage > .view-chips {
+  position: absolute; left: 50%; bottom: 10px;
+  -webkit-transform: translateX(-50%); transform: translateX(-50%);
+  margin: 0; flex-wrap: nowrap;
+  /* en absolu, left:50% ne laisse qu'une moitié de largeur au shrink-to-fit :
+     max-content garde les deux boutons sur une seule ligne, bien centrés */
+  width: -webkit-max-content; width: max-content;
+  max-width: calc(100% - 12px);
+}
+.game-grid .globe-stage > .view-chips .view-chip {
+  /* garde-fou pour les très longs noms (« Papouasie… ») : on coupe avec … */
+  max-width: 11em; overflow: hidden; text-overflow: ellipsis;
+}
 .game-side { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 .game-side .globe-frame {
   position: static; z-index: auto; margin: 0; pointer-events: auto;
   background: #0d1531;
   -webkit-backdrop-filter: none; backdrop-filter: none;
-}
-.game-side .view-chips {
-  position: static; left: auto; bottom: auto;
-  -webkit-transform: none; transform: none;
-  display: flex; gap: 6px; max-width: 100%; flex-wrap: wrap; justify-content: center;
 }
 @media (max-width: 960px) {
   /* sur téléphone, le cadre des heures et les boutons s'intercalent entre le
@@ -450,6 +457,10 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 
 /* recherche posée dans le panneau carte */
 .map-panel .search-row { margin: 0 2px 10px; }
+/* les idées de voyage répliquées sous la carte, alignées à droite — sur
+   grand écran seulement (sur téléphone, celles du haut suffisent) */
+.map-panel .search-chips { margin: 10px 2px 0; justify-content: flex-end; }
+@media (max-width: 960px) { .map-panel .search-chips { display: none; } }
 .map-panel .canvas-title { display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap; }
 .map-panel .canvas-title span { flex: 1 1 260px; }
 

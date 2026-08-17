@@ -14,6 +14,26 @@ const $ = (id) => document.getElementById(id);
 const wrapPi = (a) => ((a + Math.PI) % TAU + TAU) % TAU - Math.PI;
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+// Windows n'a pas de drapeaux émoji (Chrome y affiche « TH » pour 🇹🇭) : on
+// dessine un drapeau sur un canvas et on regarde s'il sort en couleur. Sinon,
+// repli 📍 partout où un drapeau devait apparaître.
+const flagsOk = (() => {
+  try {
+    const c = document.createElement('canvas');
+    c.width = 24; c.height = 24;
+    const x = c.getContext('2d');
+    x.textBaseline = 'top'; x.font = '18px sans-serif'; x.fillStyle = '#000';
+    x.fillText('🇹🇭', 0, 0);
+    const d = x.getImageData(0, 0, 24, 24).data;
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i + 3] > 16 &&
+          (Math.abs(d[i] - d[i + 1]) > 16 || Math.abs(d[i + 1] - d[i + 2]) > 16)) return true;
+    }
+    return false; // rendu monochrome : ce sont des lettres, pas un drapeau
+  } catch (e) { return true; } // dans le doute, on garde les drapeaux
+})();
+const flag = (iso) => (flagsOk ? flagEmoji(iso) : '📍');
+
 const sim = {
   homeH: 12,              // on ouvre sur le cas d'école : midi chez nous
   playing: !reduceMotion, // la Terre tourne toute seule (un tour en 80 s)
@@ -128,7 +148,7 @@ function choosePlace(entry) {
   selected = {
     id: 'selected', selectable: true, isDefault: false,
     name: entry.n,
-    emoji: flagEmoji(entry.iso),
+    emoji: flag(entry.iso),
     lonDeg: entry.lon, latDeg: entry.lat,
     utcOffset: entry.tz,
     color: '#ffcf5c',
@@ -161,14 +181,14 @@ function wireSearch(inputId, resultsId) {
     for (const e of list) {
       const btn = document.createElement('button');
       btn.type = 'button';
-      const flag = document.createElement('span');
-      flag.textContent = flagEmoji(e.iso);
+      const fl = document.createElement('span');
+      fl.textContent = flag(e.iso);
       const nm = document.createElement('span');
       nm.textContent = e.n;
       const sub = document.createElement('span');
       sub.className = 'sub';
       sub.textContent = e.pays ? 'pays' : (e.c || '');
-      btn.appendChild(flag); btn.appendChild(nm); btn.appendChild(sub);
+      btn.appendChild(fl); btn.appendChild(nm); btn.appendChild(sub);
       btn.addEventListener('mousedown', (ev) => ev.preventDefault()); // garde le focus
       btn.addEventListener('click', () => { input.value = ''; hide(); choosePlace(e); });
       box.appendChild(btn);
@@ -189,17 +209,21 @@ function wireSearch(inputId, resultsId) {
 wireSearch('place-search', 'search-results');
 wireSearch('place-search-map', 'search-results-map');
 
-// quelques idées de voyage prêtes à cliquer
-const chipsBox = $('search-chips');
-for (const idea of ['Guadeloupe', 'Bali', 'Tahiti', 'Tokyo', 'New York', 'Sydney',
-  'La Réunion', 'Nouméa', 'Thaïlande']) {
-  const found = searchPlaces(idea, 1);
-  if (!found.length) continue;
-  const b = document.createElement('button');
-  b.type = 'button';
-  b.textContent = flagEmoji(found[0].iso) + ' ' + found[0].n;
-  b.addEventListener('click', () => choosePlace(found[0]));
-  chipsBox.appendChild(b);
+// quelques idées de voyage prêtes à cliquer — en haut de page et, sur grand
+// écran, répliquées sous la carte à plat du jeu
+for (const boxId of ['search-chips', 'search-chips-map']) {
+  const chipsBox = $(boxId);
+  if (!chipsBox) continue;
+  for (const idea of ['Guadeloupe', 'Bali', 'Tahiti', 'Tokyo', 'New York', 'Sydney',
+    'La Réunion', 'Nouméa', 'Thaïlande']) {
+    const found = searchPlaces(idea, 1);
+    if (!found.length) continue;
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = flag(found[0].iso) + ' ' + found[0].n;
+    b.addEventListener('click', () => choosePlace(found[0]));
+    chipsBox.appendChild(b);
+  }
 }
 
 // ---- le vol de caméra : la Terre et les horloges ne bougent jamais, seule

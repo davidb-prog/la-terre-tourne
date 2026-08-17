@@ -27,8 +27,10 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
   **frise du temps court sur toute la largeur de la page**.
 - **La recherche fonctionne sans Internet** : ≈ 220 villes et pays embarqués (accents ignorés,
   demi-fuseaux compris — cherche l'Inde !), 9 idées de voyage prêtes à cliquer (Guadeloupe,
-  Bali, Tahiti, Tokyo…). Deux moteurs synchronisés, en haut de page et sur la carte à plat ;
-  choisir un lieu fait pulser son point sur le disque, sans jamais changer l'heure.
+  Bali, Tahiti, Tokyo…) — en haut de page et, sur grand écran, répliquées sous la carte à
+  plat du jeu. Deux moteurs synchronisés ; choisir un lieu fait pulser son point sur le
+  disque, sans jamais changer l'heure. Et sur les appareils sans drapeaux émoji (Windows), un
+  📍 remplace proprement le drapeau au lieu de laisser apparaître « TH ».
 - **Le cadre des deux heures**, posé sur la vue du pôle et répliqué sous le globe du jeu :
   l'heure en France, l'heure là-bas, et l'écart en toutes lettres (« 8 h d'avance sur
   nous »).
@@ -69,11 +71,12 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
   continents et les frontières des ~180 pays (Natural Earth, embarqué dans `js/geo.js` —
   aucune tuile, aucune bibliothèque), la France surlignée en rose, la destination en doré, les
   24 fuseaux en tranches. Glisser horizontalement le fait tourner (l'heure change), un clic
-  sur un pays ou une ville-décor l'observe, et son heure s'affiche dans le cadre. Sur
-  ordinateur, le globe et la carte s'affichent **côte à côte, sur un seul écran** ; sur
-  téléphone, l'enchaînement est globe 3D → cadre des heures et boutons de lieux → carte à
-  plat — **les deux vues tiennent ensemble sur l'écran** (titre et recherche de la carte
-  passent dessous), et la Terre occupe davantage le cadre pour rester lisible.
+  sur un pays ou une ville-décor l'observe, et son heure s'affiche dans le cadre. Les deux
+  **boutons de lieux** (🏠 chez nous / la destination) sont posés dans le ciel étoilé, juste
+  sous la Terre. Sur ordinateur, le globe et la carte s'affichent **côte à côte, sur un seul
+  écran** ; sur téléphone, l'enchaînement est globe 3D → cadre des heures → carte à plat —
+  **les deux vues tiennent ensemble sur l'écran** (titre et recherche de la carte passent
+  dessous), et la Terre occupe davantage le cadre pour rester lisible.
 - **Le Soleil du globe reste à sa place, et l'image reste lisible.** Il se pose sur l'axe
   horizontal, du côté d'où vient la lumière — et le cadrage garde **toujours la limite
   jour/nuit à l'écran** : jamais la face éclairée pile en face, jamais le Soleil coincé
@@ -178,6 +181,10 @@ Tout est dans [`js/model.js`](js/model.js) (aucun accès DOM, toutes les constan
 - **La Terre vue du pôle Nord.** Sur la grande vue ronde en haut de page, tous les lieux sont
   posés sur le même disque — même ceux de l'hémisphère sud (Bali…), invisibles en vrai depuis
   le pôle Nord. Ce qui compte ici, c'est la tranche où chacun se trouve, donc son heure.
+- **Un seul fuseau par pays.** Les grands pays en comptent plusieurs (11 en Russie, 6 aux
+  États-Unis…) : le site affiche celui de la capitale (Moscou, Washington, Brasilia,
+  Canberra…). Pour d'autres régions, on cherche directement une ville (Los Angeles…). Et la
+  Chine, immense, vit officiellement toute entière à l'heure de Pékin.
 - **Les cartes** viennent de Natural Earth 110m (domaine public), simplifiées ; seules les
   frontières des pays sont tracées, pas les régions ; Bali, La Réunion, Tahiti et les Antilles
   sont redessinées à la main (trop petites pour cette résolution).
