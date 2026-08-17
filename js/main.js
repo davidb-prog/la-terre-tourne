@@ -14,22 +14,19 @@ const $ = (id) => document.getElementById(id);
 const wrapPi = (a) => ((a + Math.PI) % TAU + TAU) % TAU - Math.PI;
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// Windows n'a pas de drapeaux émoji (Chrome y affiche « TH » pour 🇹🇭) : on
-// dessine un drapeau sur un canvas et on regarde s'il sort en couleur. Sinon,
-// repli 📍 partout où un drapeau devait apparaître.
+// Windows n'a pas de drapeaux émoji : Chrome y affiche « TH » pour 🇹🇭 — et
+// ces lettres sont EN COULEUR (police émoji), un test de couleur ne suffit
+// donc pas. Le vrai discriminant est la largeur : avec de vrais drapeaux, la
+// paire d'indicateurs se ligature en UN glyphe (≈ la largeur d'un indicateur
+// seul) ; sans, elle s'étale sur deux lettres (≈ le double). Repli 📍 partout
+// où un drapeau devait apparaître.
 const flagsOk = (() => {
   try {
-    const c = document.createElement('canvas');
-    c.width = 24; c.height = 24;
-    const x = c.getContext('2d');
-    x.textBaseline = 'top'; x.font = '18px sans-serif'; x.fillStyle = '#000';
-    x.fillText('🇹🇭', 0, 0);
-    const d = x.getImageData(0, 0, 24, 24).data;
-    for (let i = 0; i < d.length; i += 4) {
-      if (d[i + 3] > 16 &&
-          (Math.abs(d[i] - d[i + 1]) > 16 || Math.abs(d[i + 1] - d[i + 2]) > 16)) return true;
-    }
-    return false; // rendu monochrome : ce sont des lettres, pas un drapeau
+    const x = document.createElement('canvas').getContext('2d');
+    x.font = '32px sans-serif';
+    const pair = x.measureText('🇹🇭').width;
+    const single = x.measureText('🇹').width;
+    return pair > 0 && single > 0 && pair < single * 1.5;
   } catch (e) { return true; } // dans le doute, on garde les drapeaux
 })();
 const flag = (iso) => (flagsOk ? flagEmoji(iso) : '📍');
