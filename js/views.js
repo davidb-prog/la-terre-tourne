@@ -594,6 +594,147 @@ function temple(ctx, x, horizon, lit) {
   }
 }
 
+// ------------------------------------------------------ La Terre vue du pôle
+// Le petit schéma de la boîte « Pourquoi les fuseaux horaires ? » : la Terre
+// vue de tout en haut (au-dessus du pôle Nord), découpée en 24 tranches comme
+// une orange. Le Soleil est posé à droite et n'éclaire que la moitié qui lui
+// fait face ; la Terre tourne avec l'heure dans le sens trigonométrique —
+// placeAngle (model.js) est littéralement l'angle de ce dessin. Schéma
+// assumé : tous les lieux sont posés sur le même disque, même ceux de
+// l'hémisphère sud (voir la note aux parents).
+
+export class PoleView {
+  constructor(canvas) { this.canvas = canvas; }
+
+  draw(homeH, places) {
+    const { ctx, w, h } = fitCanvas(this.canvas);
+    ctx.fillStyle = COL.bg; ctx.fillRect(0, 0, w, h);
+    drawStars(this, ctx, w, h, 60);
+    const R = Math.min(0.34 * h, 0.24 * w);
+    const cx = 0.40 * w, cy = 0.52 * h;
+
+    // l'océan, éclairé du côté du Soleil (à droite)
+    const oc = ctx.createRadialGradient(cx + R * 0.45, cy, R * 0.1, cx, cy, R * 1.02);
+    oc.addColorStop(0, COL.oceanHi); oc.addColorStop(0.7, COL.ocean); oc.addColorStop(1, COL.oceanLo);
+    ctx.fillStyle = oc;
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.fill();
+
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.clip();
+
+    // les 24 tranches, solidaires de la Terre : elles tournent avec l'heure.
+    // Une tranche sur deux est teintée, comme les bandes du globe.
+    for (let bandM = -12; bandM < 12; bandM++) {
+      if (((bandM % 2) + 2) % 2 !== 0) continue;
+      const a0 = placeAngle(homeH, 15 * bandM - 7.5);
+      const a1 = placeAngle(homeH, 15 * bandM + 7.5);
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, R, -a0, -a1, true); // canvas : angles horaires, y vers le bas
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.09)';
+      ctx.fill();
+    }
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.28)'; ctx.lineWidth = 1;
+    for (let k = 0; k < 24; k++) {
+      const a = placeAngle(homeH, -180 + 7.5 + k * 15);
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + R * Math.cos(a), cy - R * Math.sin(a));
+      ctx.stroke();
+    }
+
+    // la nuit : la moitié qui tourne le dos au Soleil, avec un crépuscule doux
+    // (le Soleil ne bouge pas — c'est la Terre et ses tranches qui tournent)
+    for (const cap of [{ pad: 0, alpha: 0.5 }, { pad: 0.09, alpha: 0.36 }]) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, R + 2, Math.PI / 2 + cap.pad, 3 * Math.PI / 2 - cap.pad);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(8, 17, 42, ' + cap.alpha + ')';
+      ctx.fill();
+    }
+
+    // jour / nuit en toutes lettres — ici l'image est cohérente : le Soleil
+    // est bien du côté écrit « jour »
+    label(ctx, 'jour', cx + R * 0.52, cy + R * 0.62,
+      { align: 'center', size: Math.round(0.12 * R), color: 'rgba(255, 255, 255, 0.5)' });
+    label(ctx, 'nuit', cx - R * 0.52, cy + R * 0.62,
+      { align: 'center', size: Math.round(0.12 * R), color: 'rgba(157, 185, 255, 0.6)' });
+    ctx.restore();
+
+    // contour, pôle Nord au centre
+    ctx.strokeStyle = 'rgba(150, 180, 240, 0.45)'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+    ctx.beginPath(); ctx.arc(cx, cy, 2.2, 0, TAU); ctx.fill();
+    label(ctx, 'pôle Nord', cx, cy - 9, { align: 'center', size: 9, weight: 400, alpha: 0.65 });
+
+    // la flèche du sens de rotation, en haut : la Terre tourne vers l'est
+    ctx.strokeStyle = 'rgba(205, 215, 240, 0.7)'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.arc(cx, cy, R * 1.16, -70 * DEG, -35 * DEG);
+    ctx.stroke();
+    const tip = -70 * DEG;
+    const tx = cx + R * 1.16 * Math.cos(tip), ty = cy + R * 1.16 * Math.sin(tip);
+    ctx.beginPath();
+    ctx.moveTo(tx + 8 * Math.cos(tip + 35 * DEG), ty + 8 * Math.sin(tip + 35 * DEG));
+    ctx.lineTo(tx, ty);
+    ctx.lineTo(tx + 8 * Math.cos(tip + 145 * DEG), ty + 8 * Math.sin(tip + 145 * DEG));
+    ctx.stroke();
+    label(ctx, 'elle tourne', cx + R * 0.95, cy - R * 1.28,
+      { align: 'center', size: 10, weight: 400, alpha: 0.7, clampW: w });
+
+    // le Soleil, fixe à droite, avec ses rayons vers la Terre
+    const rS = 0.14 * R;
+    const sunX = cx + R * 1.62, sunY = cy;
+    const g = ctx.createRadialGradient(sunX, sunY, 1, sunX, sunY, rS * 2.6);
+    g.addColorStop(0, COL.sunCore); g.addColorStop(0.3, COL.sun);
+    g.addColorStop(0.65, 'rgba(255, 159, 28, 0.25)'); g.addColorStop(1, 'rgba(255, 159, 28, 0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(sunX, sunY, rS * 2.6, 0, TAU); ctx.fill();
+    ctx.strokeStyle = COL.sun; ctx.lineWidth = 2.2; ctx.lineCap = 'round';
+    for (let i = 0; i < 8; i++) {
+      const a = i * TAU / 8 + 0.39;
+      ctx.beginPath();
+      ctx.moveTo(sunX + rS * 1.25 * Math.cos(a), sunY + rS * 1.25 * Math.sin(a));
+      ctx.lineTo(sunX + rS * 1.7 * Math.cos(a), sunY + rS * 1.7 * Math.sin(a));
+      ctx.stroke();
+    }
+    ctx.fillStyle = COL.sun;
+    ctx.beginPath(); ctx.arc(sunX, sunY, rS, 0, TAU); ctx.fill();
+    label(ctx, 'le Soleil', sunX, sunY + rS * 2.1 + 8,
+      { align: 'center', size: 10.5, alpha: 0.85, color: COL.sun, clampW: w, clampH: h });
+    ctx.strokeStyle = 'rgba(255, 207, 92, 0.5)'; ctx.lineWidth = 2;
+    for (const dy of [-0.5 * R, 0, 0.5 * R]) {
+      const y = cy + dy;
+      const x1 = sunX - rS * 2.1;
+      const x2 = cx + Math.sqrt(Math.max(0.1, 1 - (dy / R) * (dy / R))) * R + 10;
+      if (x1 - x2 > 12) {
+        ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x2, y); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x2, y); ctx.lineTo(x2 + 7, y - 4);
+        ctx.moveTo(x2, y); ctx.lineTo(x2 + 7, y + 4); ctx.stroke();
+      }
+    }
+
+    // les lieux : chacun sur son cercle (pour ne pas se marcher dessus),
+    // tournant avec la Terre — on les voit passer du jour à la nuit
+    for (const p of places) {
+      const rp = R * (p.home ? 0.58 : 0.82);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(cx, cy, rp, 0, TAU); ctx.stroke();
+      const a = placeAngle(homeH, p.lonDeg);
+      const x = cx + rp * Math.cos(a), y = cy - rp * Math.sin(a);
+      ctx.save();
+      ctx.shadowColor = p.color; ctx.shadowBlur = 8;
+      ctx.beginPath(); ctx.arc(x, y, 4.5, 0, TAU); ctx.fillStyle = p.color; ctx.fill();
+      ctx.restore();
+      ctx.beginPath(); ctx.arc(x, y, 4.5, 0, TAU);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)'; ctx.lineWidth = 1.8; ctx.stroke();
+      label(ctx, p.name, x, y - 11,
+        { align: 'center', size: 10.5, color: p.color, clampW: w, clampH: h });
+    }
+  }
+}
+
 // -------------------------------------------------------- Horloges analogiques
 const SVG_NS = 'http://www.w3.org/2000/svg';
 function svgEl(name, attrs) {

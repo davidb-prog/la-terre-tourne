@@ -5,7 +5,8 @@
 import {
   PLACES, HOME, SCENARIOS, wrap24, wrapLon, localClock, solarHours, sunAltitude,
   skyState, placeAngle, subsolarLon, sunriseHomeH, sunsetHomeH, formatHM,
-  periodWord, activityFor, dayBadge, placePhrase, offsetDiffText, DEG,
+  periodWord, activityFor, dayBadge, placePhrase, offsetDiffText, DEG, TAU,
+  cameraFrame, CAM_OFF_NOON_MIN, CAM_OFF_NOON_MAX,
 } from '../js/model.js';
 
 let failed = 0;
@@ -124,6 +125,42 @@ check('mots-repères : midi, minuit, matin, après-midi, soir, nuit',
     }
   }
   check('balayage complet 0–24 h : heures locales dans [0, 24) et décalage de jour ∈ {−1, 0, +1}', ok);
+}
+
+console.log('Cadrage caméra du globe (cameraFrame) — les deux garanties du site');
+{
+  const wrapPi = (a) => ((a + Math.PI) % TAU + TAU) % TAU - Math.PI;
+  let okBand = true, okSun = true, okVisible = true, okCentered = true;
+  for (let h = 0; h < 24; h += 0.5) {
+    for (let lon = -180; lon < 180; lon += 7.5) {
+      const f = cameraFrame(h, lon, 20);
+      const delta = wrapPi(f.yaw + Math.PI / 2); // écart entre centre de vue et midi solaire
+      const m = Math.abs(delta);
+      if (m < CAM_OFF_NOON_MIN - 1e-9 || m > CAM_OFF_NOON_MAX + 1e-9) okBand = false;
+      if (Math.sin(f.yaw) > 1e-9) okSun = false; // sun[1] > 0 ⇔ Soleil derrière la Terre
+      const theta = placeAngle(h, lon);
+      const off = wrapPi(theta + f.yaw + Math.PI / 2); // écart lieu ↔ centre de vue
+      if (Math.abs(off) > Math.PI / 2 + 1e-9) okVisible = false;
+      if (Math.abs(theta) >= CAM_OFF_NOON_MIN && Math.abs(theta) <= CAM_OFF_NOON_MAX &&
+          Math.abs(off) > 1e-9) okCentered = false;
+    }
+  }
+  check('la limite jour/nuit reste à l’écran : le centre de vue est toujours à 50°–90° du midi solaire', okBand);
+  check('le Soleil n’est jamais caché derrière la Terre après un recadrage', okSun);
+  check('le lieu choisi reste sur la face visible du globe', okVisible);
+  check('un lieu entre 50° et 90° du midi solaire est cadré pile au centre', okCentered);
+  const hNoonF = wrap24(12 - F.lonDeg / 15 + HOME.utcOffset); // midi solaire en France
+  check('lieu à midi solaire : la caméra s’écarte de 50° pile, le croissant de nuit reste visible',
+    approx(Math.abs(wrapPi(cameraFrame(hNoonF, F.lonDeg, F.latDeg).yaw + Math.PI / 2)),
+      CAM_OFF_NOON_MIN, 1e-9));
+  const hMidnightF = wrap24(hNoonF + 12); // minuit solaire en France
+  check('lieu à minuit solaire : vue limite jour/nuit (90°), le Soleil entier sur son côté',
+    approx(Math.abs(wrapPi(cameraFrame(hMidnightF, F.lonDeg, F.latDeg).yaw + Math.PI / 2)),
+      CAM_OFF_NOON_MAX, 1e-6));
+  check('le tangage suit la latitude (×0,7), borné à ±50°',
+    approx(cameraFrame(12, 0, 90).pitch, 50 * DEG) &&
+    approx(cameraFrame(12, 0, -90).pitch, -50 * DEG) &&
+    approx(cameraFrame(12, 0, 20).pitch, 14 * DEG));
 }
 
 console.log('Scénarios et phrases générées');

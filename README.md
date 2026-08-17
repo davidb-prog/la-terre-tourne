@@ -24,19 +24,21 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
 - **On attrape la Terre** : glisser horizontalement la fait tourner (l'heure change, le Soleil
   ne bouge pas), glisser verticalement la penche. Un clic sur un pays ou une ville-décor en
   fait la destination observée.
-- **Le Soleil reste à sa place.** Il se pose sur l'axe horizontal, du côté d'où vient la
-  lumière, ses rayons vers la Terre. Et quand la face qu'on regarde est la face nuit, il ne
-  fait pas semblant de l'éclairer : il **passe derrière la Terre**, à moitié caché, ses rayons
-  frôlent le globe, la mention « il éclaire l'autre côté ! » s'affiche — et les villes de la
-  face nuit **allument leurs petites lumières**.
+- **Le Soleil reste à sa place, et l'image reste lisible.** Il se pose sur l'axe horizontal,
+  du côté d'où vient la lumière, ses rayons vers la Terre — et le cadrage garde **toujours la
+  limite jour/nuit à l'écran** : jamais la face éclairée pile en face (le Soleil dessiné sur le
+  côté semblerait mal placé), jamais le Soleil coincé derrière la Terre. Un lieu en pleine nuit
+  s'affiche vers le bord sombre, à l'opposé du Soleil, et les villes de la face nuit
+  **allument leurs petites lumières**.
 
-![La face nuit : Bali au centre, le Soleil passé derrière la Terre](docs/screenshot-3d.png)
+![Bali en pleine nuit : la limite jour/nuit à l'écran, le Soleil visible sur son côté](docs/screenshot-3d.png)
 
 - **Choisir une destination ne fait pas bouger la Terre** : les horloges ne bronchent pas d'une
-  seconde, c'est la caméra qui se recale d'un coup autour du nouveau lieu (en gardant toujours
-  un croissant de jour et la limite jour/nuit à l'écran). Trois **pastilles de vue** sous le
-  globe : 📍 *ma destination*, 🌗 *lever/coucher* (le Soleil entier sur le côté), ☀️ *plein
-  jour* (la face éclairée bien en face) — la caméra pivote, l'heure ne change jamais.
+  seconde, c'est la caméra qui **vole en douceur** jusqu'au nouveau lieu (et contourne par la
+  face nuit quand le Soleil doit changer de côté — on le voit glisser derrière la Terre puis
+  ressortir). Deux **boutons de lieux** sous le globe : 🏠 *chez nous* et la destination, à son
+  nom (🌺 *Bali*…) — on appuie, le globe pivote jusqu'au lieu, l'heure ne change jamais. C'est
+  aussi la sortie de secours quand on s'est perdu en glissant : un appui et tout se recale.
 - **La recherche fonctionne sans Internet** : ≈ 220 villes et pays embarqués (accents ignorés,
   demi-fuseaux compris — cherche l'Inde !), 9 idées de voyage prêtes à cliquer (Guadeloupe,
   Bali, Tahiti, Tokyo…). Deux moteurs synchronisés, sur le globe et sur la carte à plat.
@@ -65,10 +67,12 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
   ou à **écouter** — la synthèse vocale du navigateur la raconte phrase à phrase, sur un ton de
   conteur (pauses, exclamations, suspens). Le site choisit d'office la voix française la plus
   naturelle de l'appareil, un menu 🗣 permet d'en changer (choix retenu), et un conseil
-  s'affiche quand l'appareil n'a que des voix robotiques.
+  s'affiche quand l'appareil n'a que des voix robotiques. Sous le texte, un petit **schéma de
+  la Terre vue du pôle Nord** — le dessin des manuels : 24 tranches comme une orange, le Soleil
+  qui éclaire toujours la même moitié, la France et la destination qui tournent avec l'heure.
 - **Plein écran** du globe (API native, repli maison pour iOS), et une mise en page mobile
-  dédiée : sous 640 px, le cadre des heures et les pastilles se rangent sous le globe pour ne
-  jamais le recouvrir.
+  dédiée : sous 640 px, le cadre des heures et les boutons de lieux se rangent sous le globe
+  pour ne jamais le recouvrir.
 - Accessible : aria-labels sur tous les canvas, `prefers-reduced-motion` respecté (rien ne
   bouge tout seul), curseur utilisable au clavier, espace = pause.
 
@@ -95,12 +99,13 @@ sans navigateur :
 node test/model.test.mjs && node test/geo.test.mjs
 ```
 
-**51 vérifications horaires**, dont les données exactes du récit : 12 h en France (hiver) → 7 h
+**58 vérifications horaires**, dont les données exactes du récit : 12 h en France (hiver) → 7 h
 en Guadeloupe et 19 h à Bali ; l'ordre des levers de soleil Bali → France → Guadeloupe ;
 l'effet « déjà demain » (20 h chez nous = 3 h le lendemain à Bali) ; « encore hier » au petit
 matin ; le miroir Bali/Guadeloupe (lever sur l'une ≈ coucher sur l'autre) ; les phrases
 générées des scénarios et les écarts en toutes lettres (y compris les demi-fuseaux : l'Inde a
-« 4 h 30 d'avance »).
+« 4 h 30 d'avance ») ; et les deux garanties du cadrage caméra (`cameraFrame`) : la limite
+jour/nuit toujours à l'écran, le Soleil jamais caché derrière la Terre après un recadrage.
 
 **25 vérifications géographiques** : Paris tombe dans la France surlignée, Tokyo au Japon, le
 milieu du Pacifique dans l'océan, Bali/La Réunion/Tahiti ont leur île, la recherche trouve
@@ -108,8 +113,9 @@ milieu du Pacifique dans l'océan, Bali/La Réunion/Tahiti ont leur île, la rec
 
 Le site est aussi vérifié en navigateur (Playwright/Chromium, desktop + mobile 390 px) : zéro
 erreur de console, heures conformes sur tous les scénarios, sélection sans bouger la Terre,
-cadres jumeaux, pastilles de vue, glissers, plein écran (natif **et** repli iOS), sondes de
-pixels sur le halo de midi et la position du Soleil, fluidité ≥ 25 images/s.
+cadres jumeaux, boutons de lieux, glissers, plein écran (natif **et** repli iOS), sondes de
+pixels sur le halo de midi, sur la position du Soleil et sur le croissant de nuit (jamais de
+« plein jour » plein cadre), schéma du pôle Nord qui tourne avec l'heure.
 
 ## Déployer sur GitHub Pages
 
@@ -147,9 +153,15 @@ Tout est dans [`js/model.js`](js/model.js) (aucun accès DOM, toutes les constan
 - **Heure civile vs heure solaire.** Les horloges affichent l'heure du fuseau, le ciel suit
   l'heure solaire (continue). D'où de petits écarts réalistes : à « midi » à l'horloge, le
   soleil n'est pas tout à fait au zénith de Paris (il y culmine vers 12 h 50 en hiver).
-- **Le cadrage de la face nuit.** Quand la destination choisie dort en pleine nuit, le globe se
-  cadre en la décalant un peu vers le Soleil, pour qu'un croissant de jour et la limite
-  jour/nuit restent visibles — sinon l'image ne serait que du noir.
+- **Le cadrage du globe est borné.** La caméra ne montre jamais la face éclairée pile en face
+  (tout serait lumineux alors que le Soleil est dessiné sur le côté — image incompréhensible)
+  et ne laisse jamais le Soleil caché derrière la Terre : la limite jour/nuit reste toujours à
+  l'écran. Une destination en pleine nuit s'affiche donc vers le bord sombre, à l'opposé du
+  Soleil, plutôt qu'au centre d'un écran tout noir.
+- **La Terre vue du pôle Nord.** Sur le petit schéma rond de la boîte « Pourquoi les fuseaux
+  horaires ? », tous les lieux sont posés sur le même disque — même ceux de l'hémisphère sud
+  (Bali…), invisibles en vrai depuis le pôle Nord. Ce qui compte ici, c'est la tranche où
+  chacun se trouve, donc son heure.
 - **Les cartes** viennent de Natural Earth 110m (domaine public), simplifiées ; seules les
   frontières des pays sont tracées, pas les régions ; Bali, La Réunion, Tahiti et les Antilles
   sont redessinées à la main (trop petites pour cette résolution).
@@ -168,12 +180,12 @@ css/style.css         thème sombre de la série, responsive (bascule mobile ≤
 js/model.js           logique horaire pure (lieux, horloges, soleil, scénarios) — testable sous Node
 js/geo.js             GÉNÉRÉ — contours lon/lat Natural Earth 110m (pays, lacs) + îles à la main
 js/places.js          répertoire de recherche hors-ligne (≈ 220 lieux), drapeaux, villes-décor
-js/views.js           rendus canvas/SVG maison (carte du monde, ciels, horloges)
+js/views.js           rendus canvas/SVG maison (carte du monde, Terre vue du pôle, ciels, horloges)
 js/view3d.js          globe 3D (projection orthographique maison, découpe à l'horizon, nuit
-                      en calottes, Soleil ancré sur l'axe — derrière la Terre côté nuit)
+                      en calottes, Soleil ancré sur l'axe horizontal)
 js/main.js            boucle d'animation + interactions (curseur, glissers, sélection,
-                      pastilles de vue, scénarios, plein écran, voix)
-test/model.test.mjs   tests Node du modèle horaire (51 vérifications)
+                      boutons de lieux, vol de caméra, scénarios, plein écran, voix)
+test/model.test.mjs   tests Node du modèle horaire (58 vérifications)
 test/geo.test.mjs     tests Node de la géographie et de la recherche (25 vérifications)
 ```
 

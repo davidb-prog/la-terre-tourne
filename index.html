@@ -39,7 +39,7 @@
         </div>
         <div class="globe-stage">
           <div class="canvas-wrap ratio-square">
-            <canvas id="globe3d-view" aria-label="La Terre en trois dimensions, éclairée par le Soleil posé du côté d’où vient la lumière — quand on regarde la face nuit, il se glisse derrière la Terre et les villes s’allument. Les vrais continents et pays sont dessinés, la France est surlignée en rose, et les 24 fuseaux horaires apparaissent en tranches. Faites glisser horizontalement pour faire tourner la Terre et changer l’heure, verticalement pour la pencher, et cliquez sur un pays ou une ville pour l’observer."></canvas>
+            <canvas id="globe3d-view" aria-label="La Terre en trois dimensions, éclairée par le Soleil posé du côté d’où vient la lumière — la limite entre le jour et la nuit reste toujours visible, et côté nuit les villes s’allument. Les vrais continents et pays sont dessinés, la France est surlignée en rose, et les 24 fuseaux horaires apparaissent en tranches. Faites glisser horizontalement pour faire tourner la Terre et changer l’heure, verticalement pour la pencher, et cliquez sur un pays ou une ville pour l’observer."></canvas>
             <div class="drag-hint" id="drag-hint">👆 Attrape la Terre et fais-la tourner !</div>
           </div>
           <div class="globe-frame" id="globe-frame">
@@ -55,13 +55,11 @@
             </div>
             <div class="frame-diff" id="frame-diff">5 h de retard sur nous</div>
           </div>
-          <div class="view-chips" role="group" aria-label="Choisir la vue du globe (la caméra pivote, l’heure ne change pas)">
-            <button id="view-ville" class="view-chip active" aria-pressed="true"
-              aria-label="Recadrer la vue sur ma destination, le lieu observé">📍 ma destination</button>
-            <button id="view-terminateur" class="view-chip" aria-pressed="false"
-              aria-label="Voir la limite jour-nuit, le Soleil entier sur le côté">🌗 lever/coucher</button>
-            <button id="view-jour" class="view-chip" aria-pressed="false"
-              aria-label="Voir la face éclairée, en plein jour">☀️ plein jour</button>
+          <div class="view-chips" role="group" aria-label="Aller voir un lieu : le globe pivote jusqu’à lui, l’heure ne change pas">
+            <button id="view-france" class="view-chip" aria-pressed="false"
+              aria-label="Tourner le globe pour voir la France, chez nous — l’heure ne change pas">🏠 chez nous</button>
+            <button id="view-dest" class="view-chip active" aria-pressed="true"
+              aria-label="Tourner le globe pour revoir la Guadeloupe, la destination — l’heure ne change pas"><span id="view-dest-label">🏝️ Guadeloupe</span></button>
           </div>
         </div>
         <div class="time-control">
@@ -111,6 +109,14 @@
           ciel, et la nuit tombe quand il fait sombre. C’est bien pratique. Et quand c’est
           l’heure du dodo chez toi… quelque part, très loin, des enfants se réveillent !</p>
       </div>
+      <figure class="pole-figure">
+        <div class="canvas-wrap pole-wrap">
+          <canvas id="pole-view" aria-label="La Terre vue de tout en haut, au-dessus du pôle Nord : un cercle découpé en 24 tranches, comme une orange. Le Soleil, posé à droite, éclaire toujours la moitié qui lui fait face ; l’autre moitié est dans la nuit. La France et la destination tournent avec l’heure et passent tour à tour du jour à la nuit."></canvas>
+        </div>
+        <figcaption>La Terre vue de tout en haut, au-dessus du pôle Nord : 24 tranches,
+          une par heure. Le Soleil éclaire toujours la même moitié — c’est la Terre qui
+          tourne, et chacun passe à son tour du jour à la nuit.</figcaption>
+      </figure>
     </div>
 
     <div class="panel canvas-panel map-panel">
@@ -174,9 +180,16 @@
         à côté du bouton 🔊 permet d’en essayer une autre.</li>
       <li><strong>Les cartes</strong> viennent de Natural Earth (domaine public), simplifiées ;
         seules les frontières des pays sont tracées, pas les régions. Bali et la Guadeloupe ont
-        12 h d’écart pile : quand le soleil se lève sur l’une, il se couche sur l’autre.
-        Quand la ville choisie dort en pleine nuit, le globe se cadre en la décalant un peu
-        vers le Soleil, pour que la limite jour/nuit reste visible.</li>
+        12 h d’écart pile : quand le soleil se lève sur l’une, il se couche sur l’autre.</li>
+      <li><strong>Le globe garde toujours la limite jour/nuit à l’écran.</strong> Le cadrage
+        ne montre jamais la face éclairée pile en face (le Soleil, dessiné sur le côté,
+        semblerait mal placé), et le Soleil ne reste jamais caché derrière la Terre : un lieu
+        en pleine nuit s’affiche vers le bord sombre, à l’opposé du Soleil, plutôt qu’au
+        centre d’un écran tout noir.</li>
+      <li><strong>La Terre vue du pôle Nord.</strong> Sur le petit schéma rond de la boîte
+        « Pourquoi les fuseaux horaires ? », tous les lieux sont posés sur le même disque —
+        même ceux de l’hémisphère sud (Bali…), qu’on ne verrait pas vraiment depuis le pôle
+        Nord. Ce qui compte ici, c’est la tranche où chacun se trouve, donc son heure.</li>
     </ul>
   </details>
 </main>

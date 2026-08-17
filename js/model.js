@@ -73,6 +73,27 @@ export function subsolarLon(homeH) {
   return wrapLon((12 - utcHours(homeH)) * 15);
 }
 
+// Cadrage de la caméra du globe 3D quand on vole vers un lieu — pur, testé.
+// Le lieu est aussi centré que possible, mais l'angle entre le centre de la
+// vue et le point face au Soleil reste borné :
+// - au moins CAM_OFF_NOON_MIN : on ne regarde jamais la face jour pile en
+//   face (image incompréhensible : tout est éclairé alors que le Soleil est
+//   dessiné sur le côté) — la limite jour/nuit reste toujours à l'écran ;
+// - au plus CAM_OFF_NOON_MAX : le Soleil ne finit jamais caché derrière la
+//   Terre — un lieu en pleine nuit s'affiche donc vers le bord sombre, à
+//   l'opposé du Soleil, au lieu d'être centré sur un écran tout noir.
+export const CAM_OFF_NOON_MIN = 50 * DEG;
+export const CAM_OFF_NOON_MAX = 90 * DEG;
+export function cameraFrame(homeH, lonDeg, latDeg) {
+  const theta = placeAngle(homeH, lonDeg);
+  const sign = theta >= 0 ? 1 : -1;
+  const mag = Math.min(CAM_OFF_NOON_MAX, Math.max(CAM_OFF_NOON_MIN, Math.abs(theta)));
+  return {
+    yaw: -Math.PI / 2 - sign * mag,
+    pitch: Math.max(-50 * DEG, Math.min(50 * DEG, latDeg * DEG * 0.7)),
+  };
+}
+
 // Heure de France à laquelle le soleil se lève / se couche à la longitude donnée.
 export function sunriseHomeH(lonDeg) { return wrap24(6 - lonDeg / 15 + HOME.utcOffset); }
 export function sunsetHomeH(lonDeg) { return wrap24(18 - lonDeg / 15 + HOME.utcOffset); }

@@ -3,9 +3,9 @@
 // cartes-horloges (la France et le lieu choisi), scénarios racontés, plein écran.
 
 import { TAU, DEG, PLACES, HOME, SCENARIOS, wrap24, localClock, formatHM,
-         periodWord, activityFor, dayBadge, placeAngle, sunriseHomeH,
-         placePhrase, offsetDiffText } from './model.js';
-import { MapView, SkyView, buildClock, pointInRing } from './views.js';
+         periodWord, activityFor, dayBadge, sunriseHomeH,
+         placePhrase, offsetDiffText, cameraFrame } from './model.js';
+import { MapView, SkyView, PoleView, buildClock, pointInRing } from './views.js';
 import { Globe3D } from './view3d.js';
 import { GAZETTEER, DECOR, searchPlaces, flagEmoji } from './places.js';
 import { COUNTRIES } from './geo.js';
@@ -23,6 +23,7 @@ const sim = {
 
 const globe3d = new Globe3D($('globe3d-view'));
 const map = new MapView($('map-view'));
+const pole = new PoleView($('pole-view'));
 
 // ---- le lieu choisi (la Guadeloupe par défaut, en attendant une recherche) ----
 
@@ -193,28 +194,57 @@ for (const idea of ['Guadeloupe', 'Bali', 'Tahiti', 'Tokyo', 'New York', 'Sydney
   chipsBox.appendChild(b);
 }
 
-// Choisir un lieu ne fait pas bouger la Terre (l'heure ne change pas d'un
-// poil) : c'est la caméra qui se recale d'un coup, lieu au centre du disque —
-// et le Soleil retrouve sa place sur l'axe, du côté d'où vient la lumière.
-// Si le lieu dort en pleine nuit, le cadrage glisse un peu vers le Soleil :
-// la ville reste bien en vue, mais un croissant de jour et la limite
-// jour/nuit restent toujours à l'écran (sinon l'image ne serait que du noir).
-function centerCameraOn(lonDeg, latDeg) {
-  const theta = placeAngle(sim.homeH, lonDeg);
-  const away = Math.abs(theta) - 100 * DEG; // au-delà, plus aucun jour visible
-  const bias = away > 0 ? Math.sign(theta) * Math.min(42 * DEG, away) : 0;
-  globe3d.yaw = -Math.PI / 2 - theta + bias;
-  globe3d.pitch = Math.max(-50 * DEG, Math.min(50 * DEG, latDeg * DEG * 0.7));
-  setActiveView('ville');
+// ---- le vol de caméra : la Terre et les horloges ne bougent jamais, seule
+// la caméra pivote, en douceur, jusqu'au cadrage calculé par cameraFrame ----
+
+let camAnim = null; // { y0, dy, p0, dp, start, dur } pendant un vol
+
+function flyCameraTo(target) {
+  camAnim = null;
+  if (reduceMotion) { globe3d.yaw = target.yaw; globe3d.pitch = target.pitch; return; }
+  const y0 = wrapPi(globe3d.yaw), p0 = globe3d.pitch;
+  const d0 = wrapPi(y0 + Math.PI / 2), d1 = wrapPi(target.yaw + Math.PI / 2);
+  let dy = wrapPi(target.yaw - y0);
+  if (d0 * d1 < 0) {
+    // le Soleil doit changer de côté : on contourne par la face nuit (le
+    // Soleil glisse derrière la Terre puis ressort de l'autre côté) plutôt
+    // que de traverser le plein jour — la vue que le site s'interdit
+    const s = d0 >= 0 ? 1 : -1;
+    dy = s * ((((d1 - d0) * s) % TAU + TAU) % TAU);
+  }
+  if (Math.abs(dy) < 0.001 && Math.abs(target.pitch - p0) < 0.001) {
+    globe3d.yaw = target.yaw; globe3d.pitch = target.pitch;
+    return;
+  }
+  camAnim = { y0: y0, dy: dy, p0: p0, dp: target.pitch - p0,
+    start: performance.now(), dur: 500 + 420 * Math.abs(dy) / Math.PI };
 }
 
-// ---- les trois vues du globe : la ville, le lever/coucher, le plein jour —
-// seule la caméra pivote, la Terre et les horloges ne bougent jamais ----
+// Choisir un lieu ne fait pas bouger la Terre (l'heure ne change pas d'un
+// poil) : c'est la caméra qui vole vers lui. Le cadrage borné de cameraFrame
+// garantit deux choses en toutes circonstances : la limite jour/nuit reste à
+// l'écran (jamais la face jour pile en face), et le Soleil reste visible sur
+// son côté (jamais caché derrière la Terre) — un lieu en pleine nuit
+// s'affiche donc vers le bord sombre, à l'opposé du Soleil.
+function centerCameraOn(lonDeg, latDeg, opts) {
+  const o = opts || {};
+  const target = cameraFrame(sim.homeH, lonDeg, latDeg);
+  if (o.jump) {
+    camAnim = null;
+    globe3d.yaw = target.yaw; globe3d.pitch = target.pitch;
+  } else {
+    flyCameraTo(target);
+  }
+  setActiveView(o.chip || 'dest');
+}
+
+// ---- les deux boutons de lieux sous le globe : « chez nous » et la
+// destination — on appuie, le globe pivote jusqu'au lieu, l'heure ne change
+// pas. C'est aussi la sortie de secours si on s'est perdu côté nuit. ----
 
 const viewChips = {
-  ville: $('view-ville'),
-  terminateur: $('view-terminateur'),
-  jour: $('view-jour'),
+  france: $('view-france'),
+  dest: $('view-dest'),
 };
 
 function setActiveView(id) {
@@ -224,18 +254,13 @@ function setActiveView(id) {
   }
 }
 
-viewChips.ville.addEventListener('click', () => {
+viewChips.france.addEventListener('click', () => {
+  globe3d.pulse = { lonDeg: FRANCE.lonDeg, latDeg: FRANCE.latDeg, k: 1 };
+  centerCameraOn(FRANCE.lonDeg, FRANCE.latDeg, { chip: 'france' });
+});
+viewChips.dest.addEventListener('click', () => {
   globe3d.pulse = { lonDeg: selected.lonDeg, latDeg: selected.latDeg, k: 1 };
   centerCameraOn(selected.lonDeg, selected.latDeg);
-});
-viewChips.terminateur.addEventListener('click', () => {
-  // le Soleil entier sur le côté (le plus proche), la limite jour/nuit au milieu
-  globe3d.yaw = Math.abs(wrapPi(globe3d.yaw)) <= Math.PI / 2 ? 0 : Math.PI;
-  setActiveView('terminateur');
-});
-viewChips.jour.addEventListener('click', () => {
-  globe3d.yaw = -Math.PI / 2; // la face éclairée bien en face
-  setActiveView('jour');
 });
 
 // ---- lecture / pause et curseur ----
@@ -381,6 +406,7 @@ function wireEarthDrag(canvas) {
     const dx = e.clientX - lastX, dy = e.clientY - lastY;
     moved += Math.abs(dx) + Math.abs(dy);
     if (moved > 6) {
+      camAnim = null; // la main reprend la caméra : le vol en cours s'arrête
       if (!timeUnlocked && Math.abs(e.clientX - downX) > 8) {
         timeUnlocked = true;
         stopAuto();
@@ -545,6 +571,12 @@ function updateFrame() {
       $('frame-diff' + sfx).textContent = offsetDiffText(selected);
     }
   }
+  if (nameChanged) {
+    // le bouton de la destination porte son nom : « revoir Bali », pas un jargon
+    $('view-dest-label').textContent = selected.emoji + ' ' + selected.name;
+    viewChips.dest.setAttribute('aria-label',
+      'Tourner le globe pour revoir ' + selected.name + ', la destination — l’heure ne change pas');
+  }
 }
 
 function updateCards() {
@@ -589,9 +621,17 @@ function frame(ms) {
     } else if (sim.playing) {
       sim.homeH = wrap24(sim.homeH + sim.spinSpeed * dt);
     }
+    if (camAnim) {
+      const k = Math.min(1, (ms - camAnim.start) / camAnim.dur);
+      const e = easeInOut(k);
+      globe3d.yaw = camAnim.y0 + camAnim.dy * e;
+      globe3d.pitch = camAnim.p0 + camAnim.dp * e;
+      if (k >= 1) camAnim = null;
+    }
     const places = displayedPlaces();
     globe3d.draw(sim.homeH, places, selected.iso, selected.color);
     map.draw(sim.homeH, places, selected.iso, selected.color);
+    pole.draw(sim.homeH, places);
     updateCards();
   } finally {
     // la boucle survit à un raté de rendu ponctuel (canvas en cours de layout…)
@@ -750,5 +790,5 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
 buildCards();
 renderInvite();
 setPlaying(sim.playing);
-centerCameraOn(selected.lonDeg, selected.latDeg); // on ouvre cadré sur la Guadeloupe
+centerCameraOn(selected.lonDeg, selected.latDeg, { jump: true }); // on ouvre cadré sur la Guadeloupe
 requestAnimationFrame(frame);
