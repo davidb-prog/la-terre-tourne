@@ -80,8 +80,8 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 }
 .canvas-wrap canvas { position: absolute; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: 100%; display: block; }
 
-#globe3d-view, #map-view { touch-action: none; cursor: grab; }
-#globe3d-view:active, #map-view:active { cursor: grabbing; }
+#pole-view, #globe3d-view, #map-view { touch-action: none; cursor: grab; }
+#pole-view:active, #globe3d-view:active, #map-view:active { cursor: grabbing; }
 
 .hidden { display: none; }
 
@@ -102,24 +102,26 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 }
 .drag-hint.hide { opacity: 0; }
 
-/* les trois vues du globe, posées sous le disque : la caméra pivote d'un
-   coup, la Terre et les horloges ne bougent pas */
+/* les deux boutons de lieux, posés sous le disque : « chez nous » et la
+   destination — le globe vole vers le lieu, la Terre et les horloges ne
+   bougent pas */
 .view-chips {
   position: absolute; left: 50%; bottom: 10px;
   -webkit-transform: translateX(-50%); transform: translateX(-50%);
   display: flex; gap: 6px; z-index: 6; max-width: calc(100% - 12px);
 }
 .view-chip {
-  border-radius: 999px; padding: 6px 11px; font-size: .8rem; font-weight: 700;
+  border-radius: 999px; padding: 7px 13px; font-size: .82rem; font-weight: 700;
   background: rgba(7, 11, 23, .62);
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
   border: 1px solid var(--border); color: var(--muted);
   white-space: nowrap;
 }
-.view-chip.active { border-color: var(--sun-deep); color: var(--sun); background: rgba(74, 58, 13, .55); }
+/* le lieu qu'on regarde, impossible à rater : pastille pleine dorée */
+.view-chip.active { border-color: var(--sun); color: #241903; background: var(--sun); }
 @media (max-width: 480px) {
-  .view-chip { font-size: .72rem; padding: 5px 8px; }
+  .view-chip { font-size: .76rem; padding: 6px 10px; }
 }
 
 /* sur mobile, on dégage le disque : le cadre des heures et les pastilles de
@@ -135,7 +137,7 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
     position: static; -webkit-transform: none; transform: none;
     margin: 10px 0 2px; max-width: 100%; flex-wrap: wrap; justify-content: center;
   }
-  .globe-stage > .view-chips .view-chip { font-size: .8rem; padding: 7px 12px; }
+  .globe-stage > .view-chips .view-chip { font-size: .82rem; padding: 8px 14px; }
   .globe-stage .drag-hint { bottom: 12px; }
 }
 
@@ -472,3 +474,10 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 .voice-hint { margin: 0 0 8px; font-size: .82rem; color: var(--muted); }
 .explain-text p { margin: .55em 0; color: #c9d2ea; font-size: 1.02rem; line-height: 1.7; }
 .explain-text strong { color: var(--text); }
+
+/* l'en-tête du jeu : trouver l'heure dans les pays qu'on connaît */
+.game-head { margin: 22px 4px 12px; }
+.game-head h2 {
+  margin: 0 0 4px; font-size: 1.15rem; color: var(--sun);
+}
+.game-head .hint { display: block; font-size: .88rem; }

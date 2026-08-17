@@ -33,54 +33,71 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
   (12 h d'écart entre elles) ; à 12 h 00 légales, le midi solaire est à 15° Est (la France vit
   à l'heure de Berlin) — le halo doré de la carte est centré sur le **vrai** midi solaire.
 - **Invariants d'interaction** (voulus par l'utilisateur, vérifiés par les tests) :
-  choisir une destination ne change **jamais** l'heure — seule la caméra se recale ; le Soleil
-  est fixe à l'écran entre deux sélections, posé sur l'axe horizontal, et **passe derrière la
-  Terre** quand on regarde la face nuit (epsilon 0,02 sur sun[1] : sin(π) ≈ 1e-16 ne doit pas
-  le classer « derrière ») ; glisser horizontalement tourne la Terre (l'heure change), jamais
-  la caméra.
+  choisir une destination ne change **jamais** l'heure — son point pulse sur la vue du pôle et
+  la caméra du globe 3D vole vers le lieu ; sur le globe 3D, le Soleil est fixe à l'écran
+  entre deux sélections, posé sur l'axe horizontal ; le cadrage est **borné** par
+  `cameraFrame` (model.js) à 50°–90° du midi solaire — donc **jamais la face jour pile en
+  face** (la limite jour/nuit reste toujours à l'écran) et **jamais le Soleil caché derrière
+  la Terre** après un recadrage (un lieu en pleine nuit s'affiche vers le bord sombre) ; le
+  Soleil ne passe derrière la Terre que fugitivement, pendant un vol de caméra qui contourne
+  par la face nuit (epsilon 0,02 sur sun[1] : sin(π) ≈ 1e-16 ne doit pas le classer
+  « derrière ») ; glisser tourne la Terre (l'heure change — rotatif sur la vue du pôle,
+  horizontal sur le globe et la carte), jamais la caméra.
 - Boucle rAF résiliente (`try/finally`), `prefers-reduced-motion` respecté (pas de rotation
   automatique), aria-labels sur tous les canvas.
 
 ## Structure
 
-- `index.html` — page unique : en-tête, panneau globe (recherche + 9 puces, globe 3D dans
-  `.globe-stage` avec cadre des deux heures et 3 pastilles de vue, curseur 0–24 h), deux
-  cartes-horloges (France + destination), scénarios + histoire, boîte « Pourquoi les fuseaux
-  horaires ? » à écouter (menu de voix), carte à plat (recherche jumelle, cadre jumeau, bouton
-  lecture jumeau), note aux parents
+- `index.html` — page unique : en-tête, panneau principal `pole-panel` (recherche + 9 puces,
+  **Terre vue du pôle Nord** `pole-view` dans `.globe-stage` avec cadre des deux heures,
+  curseur 0–24 h), deux cartes-horloges (France + destination), scénarios + histoire, boîte
+  « Pourquoi les fuseaux horaires ? » à écouter (menu de voix), **jeu** « Amuse-toi à trouver
+  l'heure… » (`.game-head` puis `globe-panel` : globe 3D avec cadre jumeau `-globe` et
+  2 boutons de lieux 🏠 chez nous / destination, puis carte à plat : recherche jumelle, cadre
+  jumeau `-map`), note aux parents
 - `css/style.css` — thème sombre de la série ; **bascule mobile ≤ 640 px** : le cadre et les
-  pastilles quittent l'incrustation et se rangent sous le globe (idem pour le cadre de la
-  carte) ; en plein écran mobile (repli `.fs-fallback`, le cas réel iOS), la scène ne s'étire
-  pas et les suggestions s'effacent
+  boutons de lieux quittent l'incrustation et se rangent sous le globe (idem pour le cadre de
+  la carte) ; en plein écran mobile (repli `.fs-fallback`, le cas réel iOS), la scène ne
+  s'étire pas et les suggestions s'effacent
 - `js/model.js` — logique horaire pure (lieux, horloges locales, report de jour, heure solaire,
-  hauteur du soleil, scénarios et phrases générées, écarts en toutes lettres)
+  hauteur du soleil, scénarios et phrases générées, écarts en toutes lettres, cadrage caméra
+  borné `cameraFrame`)
 - `js/geo.js` — GÉNÉRÉ : ~177 pays Natural Earth 110m avec ISO (~10 700 points), lacs, glaces
   (AQ/GL), arc des Antilles et petites îles (`SPECKS` : Bali, La Réunion, Tahiti…) à la main
 - `js/places.js` — répertoire hors-ligne (≈ 220 lieux `{n, c|pays, q, iso, lat, lon, tz}`,
   décalages standard, demi-fuseaux gérés), `searchPlaces` (accents ignorés), drapeaux émoji,
   `DECOR` (9 villes toujours dessinées — la nuit, elles s'allument)
 - `js/views.js` — `MapView` (planisphère : bandes UTC étiquetées, halo doré du midi solaire,
-  nuit qui balaie, Greenwich sous UTC, hitTest), `SkyView` (ciels des vignettes), `buildClock`
-  (horloge SVG), helpers (`fitCanvas`, `label`, `pointInRing`…)
+  nuit qui balaie, Greenwich sous UTC, hitTest), `PoleView` (la **vue principale** : Terre vue
+  du pôle Nord, 24 tranches tournantes, moitié nuit fixe, Soleil à droite rapproché si la
+  largeur manque, lieux sur leurs cercles, pulsation à la sélection, `layout` pour le glisser
+  rotatif), `SkyView` (ciels des vignettes), `buildClock` (horloge SVG), helpers (`fitCanvas`,
+  `label`, `pointInRing`…)
 - `js/view3d.js` — `Globe3D` : projection orthographique maison, polygones découpés à l'horizon
   et recousus au limbe, nuit en calottes à seuils, Soleil ancré sur l'axe horizontal (côté
-  lumière, hystérésis à ±0,05 sur cos ; derrière la Terre côté nuit, rayons qui frôlent),
-  villes-décor allumées la nuit, hitTest inverse — pas de lib 3D, c'est voulu
-- `js/main.js` — boucle d'animation, curseur, glissers (globe : H = tourner la Terre,
-  V = pencher ; carte : H = changer l'heure ; clic = choisir), `centerCameraOn` (recadrage sec
-  à la sélection, biais ≤ 42° vers le Soleil si la destination est en pleine nuit), pastilles
-  de vue (📍/🌗/☀️), recherche jumelle, scénarios, cadres jumeaux, plein écran, synthèse
+  lumière, hystérésis à ±0,05 sur cos ; le rendu « derrière la Terre, rayons qui frôlent » ne
+  sert plus que pendant les vols de caméra), mode **compact** sous 520 px de canvas (Terre à
+  0,315 au lieu de 0,28 du côté court, Soleil rapproché), villes-décor allumées la nuit,
+  hitTest inverse — pas de lib 3D, c'est voulu
+- `js/main.js` — boucle d'animation, curseur, glissers (vue du pôle : rotatif = changer
+  l'heure ; globe : H = tourner la Terre, V = pencher, clic = choisir ; carte : H = changer
+  l'heure, clic = choisir), `centerCameraOn` + `flyCameraTo` (vol animé vers le cadrage
+  `cameraFrame`, contournement par la face nuit si le Soleil change de côté, saut sec en
+  `prefers-reduced-motion`), boutons de lieux (🏠 chez nous / destination à son nom),
+  recherche jumelle, scénarios, cadres jumeaux (`''`/`-globe`/`-map`), plein écran, synthèse
   vocale (score des voix françaises, ton conteur phrase à phrase, menu 🗣, choix retenu en
   localStorage)
-- `test/model.test.mjs` — 51 vérifications ; `test/geo.test.mjs` — 25 vérifications
+- `test/model.test.mjs` — 58 vérifications ; `test/geo.test.mjs` — 25 vérifications
 
 ## Vérification navigateur
 
-Suite Playwright maintenue dans le scratchpad des sessions (`test-site.js`, ~60 vérifications :
-desktop + mobile 390 px, sélection sans bouger la Terre, cadres jumeaux, pastilles, halo de
-midi et position du Soleil par sondes de pixels, plein écran natif **et** repli iOS, zéro
-erreur console). Lancer les serveurs avant : `python3 -m http.server 8123` sur le site.
-Chromium : `chromium.launch()` avec repli `executablePath: '/opt/pw-browsers/chromium'`.
+Suite Playwright maintenue dans le scratchpad des sessions (`test-site.js` : desktop +
+mouvement réduit + mobile 390 px, structure de la page — vue du pôle en vedette, jeu après
+l'histoire —, glisser rotatif du disque (quart de tour ≈ 6 h), sélection sans changer
+l'heure, boutons de lieux, sondes de pixels sur le Soleil et le croissant de nuit — jamais de
+« plein jour » plein cadre, Soleil jamais coincé derrière la Terre, entier même rapproché sur
+mobile —, zéro erreur console). Lancer les serveurs avant : `python3 -m http.server 8123` sur
+le site. Chromium : `chromium.launch()` avec repli `executablePath: '/opt/pw-browsers/chromium'`.
 
 ## Conventions
 
