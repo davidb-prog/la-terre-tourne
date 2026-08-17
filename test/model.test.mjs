@@ -6,7 +6,7 @@ import {
   PLACES, HOME, SCENARIOS, wrap24, wrapLon, localClock, solarHours, sunAltitude,
   skyState, placeAngle, subsolarLon, sunriseHomeH, sunsetHomeH, formatHM,
   periodWord, activityFor, dayBadge, placePhrase, offsetDiffText, DEG, TAU,
-  cameraFrame, CAM_OFF_NOON_MIN, CAM_OFF_NOON_MAX,
+  cameraFrame, CAM_OFF_NOON_MIN, CAM_OFF_NOON_MAX, placeLocative,
 } from '../js/model.js';
 
 let failed = 0;
@@ -181,6 +181,9 @@ console.log('Scénarios et phrases générées');
     placePhrase(20, B).indexOf('3 h 00') !== -1);
   check('à 2 h chez nous, la Guadeloupe est « encore hier »',
     placePhrase(2, G).indexOf('encore hier') !== -1);
+  check('même fuseau que la France : la phrase célèbre la coïncidence au lieu de répéter l’heure',
+    placePhrase(12, { utcOffset: 1, lonDeg: 13.4 }, true).indexOf('même heure que chez nous') !== -1 &&
+    placePhrase(12, { utcOffset: 1, lonDeg: 13.4 }, true).indexOf('aussi 12 h 00') !== -1);
   check('à midi chez nous, la phrase de la Guadeloupe donne 7 h 00 et un lever de soleil',
     placePhrase(12, G).indexOf('7 h 00') !== -1);
   check('au lever du soleil balinais, la phrase dit que le soleil se lève',
@@ -193,6 +196,27 @@ console.log('Scénarios et phrases générées');
   check('même heure que nous : la même phrase gentille',
     offsetDiffText({ utcOffset: 1 }) === 'la même heure que chez nous !');
 }
+
+console.log('Prépositions de lieu (pour la version sonore des scénarios)');
+check('villes et îles : à Paris, à Bali, à La Réunion',
+  placeLocative({ name: 'Paris', pays: false }) === 'à Paris' &&
+  placeLocative({ name: 'Bali', pays: false }) === 'à Bali' &&
+  placeLocative({ name: 'La Réunion', pays: false }) === 'à La Réunion');
+check('article soudé : au Caire, aux Marquises',
+  placeLocative({ name: 'Le Caire', pays: false }) === 'au Caire' &&
+  placeLocative({ name: 'Les Marquises', pays: false }) === 'aux Marquises');
+check('pays : en France, en Inde, au Portugal, au Japon, aux États-Unis',
+  placeLocative({ name: 'France', pays: true }) === 'en France' &&
+  placeLocative({ name: 'Inde', pays: true }) === 'en Inde' &&
+  placeLocative({ name: 'Portugal', pays: true }) === 'au Portugal' &&
+  placeLocative({ name: 'Japon', pays: true }) === 'au Japon' &&
+  placeLocative({ name: 'États-Unis', pays: true }) === 'aux États-Unis');
+check('exceptions : au Mexique, à Cuba, en Guadeloupe, à la Dominique, en Afrique du Sud',
+  placeLocative({ name: 'Mexique', pays: true }) === 'au Mexique' &&
+  placeLocative({ name: 'Cuba', pays: true }) === 'à Cuba' &&
+  placeLocative({ name: 'Guadeloupe', pays: false }) === 'en Guadeloupe' &&
+  placeLocative({ name: 'Dominique', pays: true }) === 'à la Dominique' &&
+  placeLocative({ name: 'Afrique du Sud', pays: true }) === 'en Afrique du Sud');
 
 console.log('');
 if (failed > 0) {

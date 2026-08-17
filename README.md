@@ -16,18 +16,21 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
 
 ## Fonctionnalités
 
-- **La vue principale : la Terre vue de tout en haut** (au-dessus du pôle Nord) — le dessin
-  des manuels, en grand et en vivant : un disque découpé en **24 tranches comme une orange**
-  (une par heure), le Soleil fixe à droite qui n'éclaire que la moitié qui lui fait face, la
-  France et la destination posées chacune sur son cercle, qui tournent avec l'heure et passent
-  du jour à la nuit. **On attrape le disque et on le fait tourner au doigt** (glisser
-  rotatif) : l'heure suit le mouvement, dans le vrai sens de rotation de la Terre.
+- **Organisé comme l'épisode 2** : d'abord l'heure **chez nous** et **là-bas** (les deux
+  cartes-horloges, avec la recherche juste dessous), puis la vue « 🚀 **Depuis l'espace** » à
+  côté — la Terre vue de tout en haut, au-dessus du pôle Nord, le dessin des manuels en grand
+  et en vivant : un disque découpé en **24 tranches comme une orange** (une par heure), le
+  Soleil fixe à droite qui n'éclaire que la moitié qui lui fait face, la France et la
+  destination posées chacune sur son cercle, qui tournent avec l'heure et passent du jour à
+  la nuit. **On attrape le disque et on le fait tourner au doigt** (glisser rotatif) :
+  l'heure suit le mouvement, dans le vrai sens de rotation de la Terre. Et en dessous, la
+  **frise du temps court sur toute la largeur de la page**.
 - **La recherche fonctionne sans Internet** : ≈ 220 villes et pays embarqués (accents ignorés,
   demi-fuseaux compris — cherche l'Inde !), 9 idées de voyage prêtes à cliquer (Guadeloupe,
   Bali, Tahiti, Tokyo…). Deux moteurs synchronisés, en haut de page et sur la carte à plat ;
   choisir un lieu fait pulser son point sur le disque, sans jamais changer l'heure.
-- **Le cadre des deux heures**, posé sur la vue du pôle et répliqué sur le globe 3D et la
-  carte : l'heure en France, l'heure là-bas, et l'écart en toutes lettres (« 8 h d'avance sur
+- **Le cadre des deux heures**, posé sur la vue du pôle et répliqué sous le globe du jeu :
+  l'heure en France, l'heure là-bas, et l'écart en toutes lettres (« 8 h d'avance sur
   nous »).
 - **Deux cartes-horloges** (France + destination) : horloge analogique, grosse heure digitale,
   mot-repère (« midi ! », « la nuit »…), activité du moment, badge « **déjà demain !** » /
@@ -39,7 +42,15 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
 - **Quatre boutons-scénarios** : « Quand je me réveille (7 h) », « Quand je déjeune (midi) »,
   « Quand je vais au dodo (20 h) », « Le soleil se lève là-bas ». La Terre tourne en douceur —
   toujours vers l'est, son vrai sens ! — puis une petite histoire compare la France et la
-  destination.
+  destination. Si la destination vit sur le **même fuseau que la France** (Allemagne,
+  Italie…), la phrase célèbre la coïncidence (« c'est la même heure que chez nous ! ») au
+  lieu de répéter l'heure. Et si on **change de destination**, l'histoire affichée se met à
+  jour toute seule. Un bouton 🔇/🔊 active la **version sonore** : à chaque moment choisi, le
+  conteur dit ce qui se passe chez nous et là-bas — même voix et même ton que l'histoire des
+  fuseaux, avec les enchaînements ajoutés pour l'oral (« Chez nous… Et pendant ce temps, à
+  Bali… »), la bonne préposition pour chaque lieu (« en Guadeloupe », « au Japon »,
+  « aux Fidji », « au Caire »… — `placeLocative`, testée) et sans les émojis, imprononçables.
+  Le choix est retenu.
 - **La carte du monde à plat** (mêmes contours que le globe) : les 24 fuseaux en bandes
   étiquetées **par leur décalage UTC** (−11 … UTC … +11), la nuit qui balaie la carte d'est en
   ouest, un **halo doré** centré sur le vrai midi solaire, « Greenwich » écrit sous « UTC »,
@@ -58,8 +69,11 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
   continents et les frontières des ~180 pays (Natural Earth, embarqué dans `js/geo.js` —
   aucune tuile, aucune bibliothèque), la France surlignée en rose, la destination en doré, les
   24 fuseaux en tranches. Glisser horizontalement le fait tourner (l'heure change), un clic
-  sur un pays ou une ville-décor l'observe, et son heure s'affiche dans le cadre. Sur petit
-  écran, la Terre occupe davantage le cadre pour rester lisible.
+  sur un pays ou une ville-décor l'observe, et son heure s'affiche dans le cadre. Sur
+  ordinateur, le globe et la carte s'affichent **côte à côte, sur un seul écran** ; sur
+  téléphone, l'enchaînement est globe 3D → cadre des heures et boutons de lieux → carte à
+  plat — **les deux vues tiennent ensemble sur l'écran** (titre et recherche de la carte
+  passent dessous), et la Terre occupe davantage le cadre pour rester lisible.
 - **Le Soleil du globe reste à sa place, et l'image reste lisible.** Il se pose sur l'axe
   horizontal, du côté d'où vient la lumière — et le cadrage garde **toujours la limite
   jour/nuit à l'écran** : jamais la face éclairée pile en face, jamais le Soleil coincé
@@ -72,9 +86,9 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
   caméra qui **vole en douceur** jusqu'au lieu (et contourne par la face nuit quand le Soleil
   doit changer de côté). Deux **boutons de lieux** sous le globe : 🏠 *chez nous* et la
   destination, à son nom (🌺 *Bali*…) — la sortie de secours quand on s'est perdu en glissant.
-- **Plein écran** du globe (API native, repli maison pour iOS), et une mise en page mobile
-  dédiée : sous 640 px, le cadre des heures et les boutons de lieux se rangent sous les vues
-  pour ne jamais les recouvrir.
+- **Rien ne recouvre jamais les vues** : dans le jeu, le cadre des heures et les boutons de
+  lieux sont rangés sous le globe à toutes les tailles d'écran, et sous 640 px le cadre de la
+  vue du pôle descend lui aussi sous le disque.
 - Accessible : aria-labels sur tous les canvas, `prefers-reduced-motion` respecté (rien ne
   bouge tout seul), curseur utilisable au clavier, espace = pause.
 
@@ -101,7 +115,7 @@ sans navigateur :
 node test/model.test.mjs && node test/geo.test.mjs
 ```
 
-**58 vérifications horaires**, dont les données exactes du récit : 12 h en France (hiver) → 7 h
+**63 vérifications horaires**, dont les données exactes du récit : 12 h en France (hiver) → 7 h
 en Guadeloupe et 19 h à Bali ; l'ordre des levers de soleil Bali → France → Guadeloupe ;
 l'effet « déjà demain » (20 h chez nous = 3 h le lendemain à Bali) ; « encore hier » au petit
 matin ; le miroir Bali/Guadeloupe (lever sur l'une ≈ coucher sur l'autre) ; les phrases
@@ -114,10 +128,11 @@ milieu du Pacifique dans l'océan, Bali/La Réunion/Tahiti ont leur île, la rec
 « reunion » sans accent, chaque pays du répertoire a son polygone…
 
 Le site est aussi vérifié en navigateur (Playwright/Chromium, desktop + mobile 390 px) : zéro
-erreur de console, structure de la page (vue du pôle en vedette, jeu après l'histoire),
-glisser rotatif du disque (un quart de tour ≈ 6 h), sélection sans changer l'heure, cadres
-jumeaux, boutons de lieux, sondes de pixels sur la position du Soleil et le croissant de nuit
-(jamais de « plein jour » plein cadre, Soleil entier même rapproché sur mobile).
+erreur de console, structure de la page (heures chez nous/là-bas d'abord puis « Depuis
+l'espace », frise pleine largeur, jeu côte à côte sur ordinateur), glisser rotatif du disque
+(un quart de tour ≈ 6 h), sélection sans changer l'heure, cadres jumeaux, boutons de lieux,
+bascule 🔇/🔊 des scénarios, sondes de pixels sur la position du Soleil et le croissant de
+nuit (jamais de « plein jour » plein cadre, Soleil entier même rapproché sur mobile).
 
 ## Déployer sur GitHub Pages
 
@@ -175,9 +190,9 @@ Tout est dans [`js/model.js`](js/model.js) (aucun accès DOM, toutes les constan
 ## Structure
 
 ```
-index.html            page unique (Terre vue du pôle + recherche, cadres, vignettes,
-                      scénarios, boîte des fuseaux à écouter, jeu : globe 3D + carte à plat,
-                      note aux parents)
+index.html            page unique (cartes-horloges + recherche, « Depuis l'espace » vue du
+                      pôle, frise du temps, scénarios sonores, boîte des fuseaux à écouter,
+                      jeu : globe 3D + carte à plat, note aux parents)
 css/style.css         thème sombre de la série, responsive (bascule mobile ≤ 640 px), aucune lib
 js/model.js           logique horaire pure (lieux, horloges, soleil, scénarios) — testable sous Node
 js/geo.js             GÉNÉRÉ — contours lon/lat Natural Earth 110m (pays, lacs) + îles à la main
@@ -187,7 +202,7 @@ js/view3d.js          globe 3D (projection orthographique maison, découpe à l'
                       en calottes, Soleil ancré sur l'axe horizontal)
 js/main.js            boucle d'animation + interactions (curseur, glissers, sélection,
                       boutons de lieux, vol de caméra, scénarios, plein écran, voix)
-test/model.test.mjs   tests Node du modèle horaire (58 vérifications)
+test/model.test.mjs   tests Node du modèle horaire (63 vérifications)
 test/geo.test.mjs     tests Node de la géographie et de la recherche (25 vérifications)
 ```
 

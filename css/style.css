@@ -63,8 +63,62 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 
 /* ---------- grille du simulateur ---------- */
 
-.sim-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(300px, 5fr); gap: 16px; }
+/* comme l'épisode 2 : d'abord l'heure chez nous et là-bas (avec la recherche
+   dessous), puis la vue depuis l'espace à droite */
+.sim-grid { display: grid; grid-template-columns: minmax(300px, 5fr) minmax(0, 7fr); gap: 16px; }
 @media (max-width: 960px) { .sim-grid { grid-template-columns: 1fr; } }
+.home-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+/* la recherche vit sous les deux cartes-horloges */
+.search-panel { padding: 12px 14px 14px; }
+.search-title { font-weight: 700; margin: 0 2px 8px; }
+.search-panel .search-row { margin: 0; }
+
+/* la frise du temps, sur toute la largeur de la page */
+.time-panel { margin-top: 16px; padding: 14px 18px 16px; }
+.time-panel .time-control { margin-top: 0; }
+
+/* le jeu : sur grand écran, la Terre en 3D et la carte à plat côte à côte —
+   le globe un peu plus étroit (il passe en mode compact : Terre bien pleine),
+   la carte plus large et plus haute (16/10) pour équilibrer les hauteurs */
+.game-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.game-grid .map-panel { margin-top: 0; }
+@media (min-width: 961px) {
+  .game-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: start; }
+  .game-grid .globe-panel { grid-column: 1; grid-row: 1; }
+  .game-grid .map-panel { grid-column: 2; grid-row: 1 / span 2; }
+  .game-grid .game-side { grid-column: 1; grid-row: 2; }
+  .game-grid .ratio-map { aspect-ratio: 16 / 10; }
+  @supports not (aspect-ratio: 1 / 1) {
+    .game-grid .ratio-map { height: min(36vw, 430px); }
+  }
+}
+/* le cadre des heures et les boutons de lieux du jeu vivent dans leur propre
+   bloc (.game-side) : sous le globe sur ordinateur, après la carte sur
+   mobile — jamais incrustés, rien ne mord sur les vues. Sur mobile, la carte
+   à plat suit ainsi le globe 3D immédiatement : les deux tiennent sur un
+   écran, et le titre + la recherche de la carte glissent sous elle. */
+.game-side { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.game-side .globe-frame {
+  position: static; z-index: auto; margin: 0; pointer-events: auto;
+  background: #0d1531;
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+.game-side .view-chips {
+  position: static; left: auto; bottom: auto;
+  -webkit-transform: none; transform: none;
+  display: flex; gap: 6px; max-width: 100%; flex-wrap: wrap; justify-content: center;
+}
+@media (max-width: 960px) {
+  /* sur téléphone, le cadre des heures et les boutons s'intercalent entre le
+     globe 3D et la carte à plat — et le tout tient encore sur un écran */
+  .game-grid .globe-panel { order: 1; }
+  .game-grid .game-side { order: 2; }
+  .game-grid .map-panel { order: 3; }
+  .map-panel { display: flex; flex-direction: column; }
+  .map-panel .canvas-wrap { order: -1; }
+  .map-panel .canvas-title { margin: 12px 4px 6px; }
+}
 
 .canvas-panel { padding: 12px; }
 .canvas-title { font-size: .88rem; color: var(--muted); margin: 2px 4px 10px; }
@@ -232,7 +286,11 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 /* ---------- boutons-scénarios + histoire ---------- */
 
 .scenario-panel { margin-top: 16px; padding: 14px 16px 16px; }
-.scenario-title { font-weight: 700; font-size: 1.05rem; margin: 2px 2px 10px; }
+.scenario-title {
+  font-weight: 700; font-size: 1.05rem; margin: 2px 2px 10px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px 12px; flex-wrap: wrap;
+}
 .scenario-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
 @media (max-width: 860px) { .scenario-buttons { grid-template-columns: 1fr 1fr; } }
 
@@ -366,45 +424,6 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 }
 .card-close:hover { color: var(--text); }
 
-/* ---------- plein écran du globe ---------- */
-
-.globe-panel:fullscreen {
-  display: flex; flex-direction: column; border-radius: 0; padding: 12px 14px;
-  background: #0b1020;
-}
-.globe-panel:fullscreen .globe-stage,
-.globe-panel.fs-fallback .globe-stage { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-.globe-panel:fullscreen .canvas-wrap { flex: 1; height: auto; min-height: 0; }
-.globe-panel.fs-fallback {
-  position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 60;
-  display: flex; flex-direction: column; border-radius: 0; margin: 0;
-  overflow-y: auto;
-}
-.globe-panel.fs-fallback .canvas-wrap { flex: 1; height: auto; min-height: 220px; }
-@supports (aspect-ratio: 1 / 1) {
-  .globe-panel:fullscreen .canvas-wrap, .globe-panel.fs-fallback .canvas-wrap { aspect-ratio: auto; }
-}
-/* sur grand écran, le plein écran garde le cadre et les pastilles en
-   incrustation (comportement par défaut du globe : rien à forcer). */
-@media (max-width: 640px) {
-  /* Sur un mobile en plein écran, on N'étire PAS la scène (flex:1 + min-height
-     nul la ferait déborder et son contenu — les pastilles — viendrait
-     recouvrir l'heure juste dessous). On empile normalement : le globe prend
-     une belle hauteur fixe, le cadre et les pastilles se rangent dessous, et
-     la page défile si tout ne tient pas. Les suggestions de voyage s'effacent
-     pour laisser le globe respirer (la recherche reste là). */
-  .globe-panel:fullscreen,
-  .globe-panel.fs-fallback { overflow-y: auto; -webkit-overflow-scrolling: touch; }
-  .globe-panel:fullscreen .globe-stage,
-  .globe-panel.fs-fallback .globe-stage { flex: none; }
-  .globe-panel:fullscreen .canvas-wrap,
-  .globe-panel.fs-fallback .canvas-wrap {
-    flex: none; height: min(88vw, 58vh); min-height: 300px;
-  }
-  .globe-panel:fullscreen .search-chips,
-  .globe-panel.fs-fallback .search-chips { display: none; }
-}
-
 /* ---------- cadre des deux heures, posé sur le globe ---------- */
 
 .globe-frame {
@@ -425,20 +444,6 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 .frame-row-sel strong { color: var(--sun); }
 .frame-name { color: var(--text); max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .frame-diff { color: var(--muted); font-size: .76rem; text-align: center; border-top: 1px dashed var(--border); padding-top: 4px; }
-
-/* sur la carte à plat, le même cadre se pose en bas à gauche (le haut porte
-   les étiquettes UTC des bandes) ; sur petit écran il glisse sous la carte,
-   pour ne pas la recouvrir à moitié */
-.map-panel { position: relative; }
-.frame-low { top: auto; left: 22px; bottom: 22px; }
-@media (max-width: 640px) {
-  .frame-low {
-    position: static; margin: 10px 2px 0;
-    background: #0d1531;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
 
 /* puce du lieu choisi dans l'histoire */
 .story-chip-selected { background: rgba(255, 207, 92, .14); color: var(--sun); border: 1px solid rgba(255, 207, 92, .5); }
