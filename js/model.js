@@ -161,6 +161,36 @@ export function placePhrase(homeH, place) {
   return txt;
 }
 
+// « à Paris », « en France », « au Portugal », « aux Fidji »… — le lieu avec
+// sa préposition française, pour les phrases dites à voix haute. Règle
+// simple : les villes et les îles prennent « à » (avec l'article soudé :
+// « au Caire », « aux Marquises »), les pays féminins ou commençant par une
+// voyelle « en », les autres « au » — plus les exceptions du répertoire.
+const LOCATIVE_SPECIAL = {
+  'Mexique': 'au ', 'Mozambique': 'au ', 'Cambodge': 'au ', 'Zimbabwe': 'au ',
+  'Belize': 'au ', 'Suriname': 'au ', 'Honduras': 'au ', 'Laos': 'au ',
+  'États-Unis': 'aux ', 'Pays-Bas': 'aux ', 'Philippines': 'aux ',
+  'Fidji': 'aux ', 'Comores': 'aux ', 'Seychelles': 'aux ', 'Maldives': 'aux ',
+  'Bahamas': 'aux ', 'Samoa': 'aux ', 'Tonga': 'aux ', 'Kiribati': 'aux ',
+  'Cuba': 'à ', 'Madagascar': 'à ', 'Malte': 'à ', 'Chypre': 'à ',
+  'Bahreïn': 'à ', 'Djibouti': 'à ', 'Singapour': 'à ', 'Oman': 'à ',
+  'Monaco': 'à ', 'Dominique': 'à la ', 'Barbade': 'à la ',
+  'Corée du Nord': 'en ', 'Corée du Sud': 'en ', 'Afrique du Sud': 'en ',
+  'Guadeloupe': 'en ', 'Martinique': 'en ',
+  'Polynésie française': 'en ', 'Nouvelle-Calédonie': 'en ',
+};
+export function placeLocative(place) {
+  const name = place.name;
+  if (LOCATIVE_SPECIAL[name]) return LOCATIVE_SPECIAL[name] + name;
+  if (name.indexOf('Les ') === 0) return 'aux ' + name.slice(4);
+  if (name.indexOf('Le ') === 0) return 'au ' + name.slice(3);
+  if (place.pays) {
+    if (/^[AEIOUÉÈÊÎÏÔ]/.test(name) || /e$/.test(name)) return 'en ' + name;
+    return 'au ' + name;
+  }
+  return 'à ' + name; // villes et îles : « à Paris », « à Bali », « à La Réunion »
+}
+
 // L'écart d'heures avec chez nous, en toutes lettres (pour le cadre du globe).
 export function offsetDiffText(place) {
   const d = place.utcOffset - HOME.utcOffset;

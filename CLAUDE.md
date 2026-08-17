@@ -93,7 +93,7 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
   des fuseaux et la **version sonore des scénarios** (bouton 🔇/🔊, choix retenu ; on ne lit
   pas les bulles telles quelles — enchaînements « Chez nous… / Et pendant ce temps… » ajoutés
   à l'oral, émojis retirés)
-- `test/model.test.mjs` — 58 vérifications ; `test/geo.test.mjs` — 25 vérifications
+- `test/model.test.mjs` — 62 vérifications ; `test/geo.test.mjs` — 25 vérifications
 
 ## Vérification navigateur
 

@@ -45,7 +45,9 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
   destination. Un bouton 🔇/🔊 active la **version sonore** : à chaque moment choisi, le
   conteur dit ce qui se passe chez nous et là-bas — même voix et même ton que l'histoire des
   fuseaux, avec les enchaînements ajoutés pour l'oral (« Chez nous, en France… Et pendant ce
-  temps, à Bali… ») et sans les émojis, imprononçables. Le choix est retenu.
+  temps, à Bali… »), la bonne préposition pour chaque lieu (« en Guadeloupe », « au Japon »,
+  « aux Fidji », « au Caire »… — `placeLocative`, testée) et sans les émojis, imprononçables.
+  Le choix est retenu.
 - **La carte du monde à plat** (mêmes contours que le globe) : les 24 fuseaux en bandes
   étiquetées **par leur décalage UTC** (−11 … UTC … +11), la nuit qui balaie la carte d'est en
   ouest, un **halo doré** centré sur le vrai midi solaire, « Greenwich » écrit sous « UTC »,
@@ -108,7 +110,7 @@ sans navigateur :
 node test/model.test.mjs && node test/geo.test.mjs
 ```
 
-**58 vérifications horaires**, dont les données exactes du récit : 12 h en France (hiver) → 7 h
+**62 vérifications horaires**, dont les données exactes du récit : 12 h en France (hiver) → 7 h
 en Guadeloupe et 19 h à Bali ; l'ordre des levers de soleil Bali → France → Guadeloupe ;
 l'effet « déjà demain » (20 h chez nous = 3 h le lendemain à Bali) ; « encore hier » au petit
 matin ; le miroir Bali/Guadeloupe (lever sur l'une ≈ coucher sur l'autre) ; les phrases
@@ -195,7 +197,7 @@ js/view3d.js          globe 3D (projection orthographique maison, découpe à l'
                       en calottes, Soleil ancré sur l'axe horizontal)
 js/main.js            boucle d'animation + interactions (curseur, glissers, sélection,
                       boutons de lieux, vol de caméra, scénarios, plein écran, voix)
-test/model.test.mjs   tests Node du modèle horaire (58 vérifications)
+test/model.test.mjs   tests Node du modèle horaire (62 vérifications)
 test/geo.test.mjs     tests Node de la géographie et de la recherche (25 vérifications)
 ```
 

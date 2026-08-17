@@ -4,7 +4,7 @@
 
 import { TAU, DEG, PLACES, HOME, SCENARIOS, wrap24, localClock, formatHM,
          periodWord, activityFor, dayBadge, sunriseHomeH,
-         placePhrase, offsetDiffText, cameraFrame } from './model.js';
+         placePhrase, offsetDiffText, cameraFrame, placeLocative } from './model.js';
 import { MapView, SkyView, PoleView, buildClock, pointInRing } from './views.js';
 import { Globe3D } from './view3d.js';
 import { GAZETTEER, DECOR, searchPlaces, flagEmoji } from './places.js';
@@ -35,7 +35,7 @@ function defaultSelected() {
     id: 'selected', selectable: true, isDefault: true,
     name: g.name, emoji: g.emoji, scene: g.scene,
     lonDeg: g.lonDeg, latDeg: g.latDeg, utcOffset: g.utcOffset,
-    color: '#ffcf5c', iso: null,
+    color: '#ffcf5c', iso: null, pays: false,
   };
 }
 let selected = defaultSelected();
@@ -131,6 +131,7 @@ function choosePlace(entry) {
     utcOffset: entry.tz,
     color: '#ffcf5c',
     iso: entry.pays ? entry.iso : null, // seul un pays est surligné sur les cartes
+    pays: !!entry.pays, // pour la préposition dite à voix haute (« au Japon »)
   };
   buildCards();
   pole.pulse = { lonDeg: entry.lon, home: false, k: 1 };
@@ -877,10 +878,13 @@ scnVoiceBtn.addEventListener('click', () => {
 const EMOJI_RE = /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}]/gu;
 
 function spokenStory(scn, atH) {
-  const clean = (t) => t.replace(EMOJI_RE, '').replace(/\s+/g, ' ').trim();
+  // retirer un émoji laisse un espace orphelin devant le point final — et un
+  // « . » isolé se fait lire « point » par certaines voix : on le recolle
+  const clean = (t) => t.replace(EMOJI_RE, '').replace(/\s+/g, ' ')
+    .replace(/\s+\./g, '.').trim();
   const chunks = [{ text: 'Chez nous, en France…', endPara: false }];
   for (const c of sentenceChunks(clean(scn.france || placePhrase(atH, FRANCE)), true)) chunks.push(c);
-  chunks.push({ text: 'Et pendant ce temps, à ' + selected.name + '…', endPara: false });
+  chunks.push({ text: 'Et pendant ce temps, ' + placeLocative(selected) + '…', endPara: false });
   for (const c of sentenceChunks(clean(placePhrase(atH, selected)), true)) chunks.push(c);
   return chunks;
 }

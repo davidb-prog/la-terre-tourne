@@ -78,11 +78,17 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 .time-panel { margin-top: 16px; padding: 14px 18px 16px; }
 .time-panel .time-control { margin-top: 0; }
 
-/* le jeu : sur grand écran, la Terre en 3D et la carte à plat côte à côte */
+/* le jeu : sur grand écran, la Terre en 3D et la carte à plat côte à côte —
+   le globe un peu plus étroit (il passe en mode compact : Terre bien pleine),
+   la carte plus large et plus haute (16/10) pour équilibrer les hauteurs */
 .game-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
 .game-grid .map-panel { margin-top: 0; }
 @media (min-width: 961px) {
-  .game-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+  .game-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: start; }
+  .game-grid .ratio-map { aspect-ratio: 16 / 10; }
+  @supports not (aspect-ratio: 1 / 1) {
+    .game-grid .ratio-map { height: min(36vw, 430px); }
+  }
 }
 
 .canvas-panel { padding: 12px; }
