@@ -132,25 +132,6 @@
         <div class="canvas-wrap ratio-square">
           <canvas id="globe3d-view" aria-label="La Terre en trois dimensions, éclairée par le Soleil posé du côté d’où vient la lumière — la limite entre le jour et la nuit reste toujours visible, et côté nuit les villes s’allument. Les vrais continents et pays sont dessinés, la France est surlignée en rose, et les 24 fuseaux horaires apparaissent en tranches. Faites glisser horizontalement pour faire tourner la Terre et changer l’heure, verticalement pour la pencher, et cliquez sur un pays ou une ville pour l’observer."></canvas>
         </div>
-        <div class="globe-frame" id="globe-frame-globe">
-          <div class="frame-row frame-row-home">
-            <span class="frame-flag">🏠</span>
-            <span class="frame-name">France</span>
-            <strong id="frame-home-time-globe">12 h 00</strong>
-          </div>
-          <div class="frame-row frame-row-sel">
-            <span class="frame-flag" id="frame-sel-flag-globe">🏝️</span>
-            <span class="frame-name" id="frame-sel-name-globe">Guadeloupe</span>
-            <strong id="frame-sel-time-globe">7 h 00</strong>
-          </div>
-          <div class="frame-diff" id="frame-diff-globe">5 h de retard sur nous</div>
-        </div>
-        <div class="view-chips" role="group" aria-label="Aller voir un lieu : le globe pivote jusqu’à lui, l’heure ne change pas">
-          <button id="view-france" class="view-chip" aria-pressed="false"
-            aria-label="Tourner le globe pour voir la France, chez nous — l’heure ne change pas">🏠 chez nous</button>
-          <button id="view-dest" class="view-chip active" aria-pressed="true"
-            aria-label="Tourner le globe pour revoir la Guadeloupe, la destination — l’heure ne change pas"><span id="view-dest-label">🏝️ Guadeloupe</span></button>
-        </div>
       </div>
     </div>
 
@@ -171,6 +152,28 @@
       </div>
       <div class="canvas-wrap ratio-map">
         <canvas id="map-view" aria-label="Carte du monde avec les vrais continents. Les 24 fuseaux horaires apparaissent en bandes verticales, chacune avec son décalage en heures par rapport à UTC ; la moitié plongée dans la nuit est assombrie et se déplace quand l’heure change. Faites glisser horizontalement pour changer l’heure, et cliquez sur un pays ou une ville pour l’observer."></canvas>
+      </div>
+    </div>
+
+    <div class="game-side">
+      <div class="globe-frame" id="globe-frame-globe">
+        <div class="frame-row frame-row-home">
+          <span class="frame-flag">🏠</span>
+          <span class="frame-name">France</span>
+          <strong id="frame-home-time-globe">12 h 00</strong>
+        </div>
+        <div class="frame-row frame-row-sel">
+          <span class="frame-flag" id="frame-sel-flag-globe">🏝️</span>
+          <span class="frame-name" id="frame-sel-name-globe">Guadeloupe</span>
+          <strong id="frame-sel-time-globe">7 h 00</strong>
+        </div>
+        <div class="frame-diff" id="frame-diff-globe">5 h de retard sur nous</div>
+      </div>
+      <div class="view-chips" role="group" aria-label="Aller voir un lieu : le globe pivote jusqu’à lui, l’heure ne change pas">
+        <button id="view-france" class="view-chip" aria-pressed="false"
+          aria-label="Tourner le globe pour voir la France, chez nous — l’heure ne change pas">🏠 chez nous</button>
+        <button id="view-dest" class="view-chip active" aria-pressed="true"
+          aria-label="Tourner le globe pour revoir la Guadeloupe, la destination — l’heure ne change pas"><span id="view-dest-label">🏝️ Guadeloupe</span></button>
       </div>
     </div>
     </div>

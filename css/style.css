@@ -85,21 +85,34 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 .game-grid .map-panel { margin-top: 0; }
 @media (min-width: 961px) {
   .game-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: start; }
+  .game-grid .globe-panel { grid-column: 1; grid-row: 1; }
+  .game-grid .map-panel { grid-column: 2; grid-row: 1 / span 2; }
+  .game-grid .game-side { grid-column: 1; grid-row: 2; }
   .game-grid .ratio-map { aspect-ratio: 16 / 10; }
   @supports not (aspect-ratio: 1 / 1) {
     .game-grid .ratio-map { height: min(36vw, 430px); }
   }
 }
-/* dans le jeu, le cadre des heures et les boutons de lieux ne mordent jamais
-   sur le globe : ils se rangent dessous, à toutes les tailles d'écran */
-.game-grid .globe-stage > .globe-frame {
-  position: static; z-index: auto; margin: 10px 0 0; pointer-events: auto;
+/* le cadre des heures et les boutons de lieux du jeu vivent dans leur propre
+   bloc (.game-side) : sous le globe sur ordinateur, après la carte sur
+   mobile — jamais incrustés, rien ne mord sur les vues. Sur mobile, la carte
+   à plat suit ainsi le globe 3D immédiatement : les deux tiennent sur un
+   écran, et le titre + la recherche de la carte glissent sous elle. */
+.game-side { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.game-side .globe-frame {
+  position: static; z-index: auto; margin: 0; pointer-events: auto;
   background: #0d1531;
   -webkit-backdrop-filter: none; backdrop-filter: none;
 }
-.game-grid .globe-stage > .view-chips {
-  position: static; -webkit-transform: none; transform: none;
-  margin: 10px 0 2px; max-width: 100%; flex-wrap: wrap; justify-content: center;
+.game-side .view-chips {
+  position: static; left: auto; bottom: auto;
+  -webkit-transform: none; transform: none;
+  display: flex; gap: 6px; max-width: 100%; flex-wrap: wrap; justify-content: center;
+}
+@media (max-width: 960px) {
+  .map-panel { display: flex; flex-direction: column; }
+  .map-panel .canvas-wrap { order: -1; }
+  .map-panel .canvas-title { margin: 12px 4px 6px; }
 }
 
 .canvas-panel { padding: 12px; }

@@ -55,9 +55,11 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
   heures) ; frise du temps pleine largeur (`time-panel`, curseur 0–24 h) ; scénarios +
   histoire (bouton 🔇/🔊 `btn-scn-voice` de version sonore) ; boîte « Pourquoi les fuseaux
   horaires ? » à écouter (menu de voix) ; **jeu** « Amuse-toi à trouver l'heure… »
-  (`.game-head` puis `.game-grid` : globe 3D avec, rangés dessous, le cadre jumeau `-globe`
-  et les 2 boutons de lieux 🏠 chez nous / destination, puis carte à plat avec sa recherche
-  jumelle — côte à côte dès 961 px, pas de plein écran) ; note aux parents
+  (`.game-head` puis `.game-grid` : globe 3D, carte à plat avec sa recherche jumelle, et le
+  bloc `.game-side` — cadre jumeau `-globe` + 2 boutons de lieux 🏠 chez nous / destination.
+  Côte à côte dès 961 px avec `.game-side` sous le globe ; sur mobile la carte suit le globe
+  **immédiatement** — les deux vues tiennent sur un écran, titre et recherche de la carte
+  passent dessous, `.game-side` après. Pas de plein écran) ; note aux parents
 - `css/style.css` — thème sombre de la série ; sur la vue du pôle, le cadre des heures est
   incrusté (il se range dessous en **mobile ≤ 640 px**) ; dans le jeu (`.game-grid`), le cadre
   et les boutons de lieux sont **toujours** rangés sous le globe, à toutes les tailles — rien

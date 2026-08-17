@@ -70,8 +70,10 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
   aucune tuile, aucune bibliothèque), la France surlignée en rose, la destination en doré, les
   24 fuseaux en tranches. Glisser horizontalement le fait tourner (l'heure change), un clic
   sur un pays ou une ville-décor l'observe, et son heure s'affiche dans le cadre. Sur
-  ordinateur, le globe et la carte s'affichent **côte à côte, sur un seul écran** ; sur petit
-  écran, la Terre occupe davantage le cadre pour rester lisible.
+  ordinateur, le globe et la carte s'affichent **côte à côte, sur un seul écran** ; sur
+  téléphone, la carte à plat suit le globe **immédiatement** — les deux vues tiennent
+  ensemble sur l'écran (cadre, boutons de lieux, titre et recherche de la carte passent
+  dessous), et la Terre occupe davantage le cadre pour rester lisible.
 - **Le Soleil du globe reste à sa place, et l'image reste lisible.** Il se pose sur l'axe
   horizontal, du côté d'où vient la lumière — et le cadrage garde **toujours la limite
   jour/nuit à l'écran** : jamais la face éclairée pile en face, jamais le Soleil coincé
