@@ -48,13 +48,16 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
 
 ## Structure
 
-- `index.html` — page unique : en-tête, panneau principal `pole-panel` (recherche + 9 puces,
-  **Terre vue du pôle Nord** `pole-view` dans `.globe-stage` avec cadre des deux heures,
-  curseur 0–24 h), deux cartes-horloges (France + destination), scénarios + histoire, boîte
-  « Pourquoi les fuseaux horaires ? » à écouter (menu de voix), **jeu** « Amuse-toi à trouver
-  l'heure… » (`.game-head` puis `globe-panel` : globe 3D avec cadre jumeau `-globe` et
-  2 boutons de lieux 🏠 chez nous / destination, puis carte à plat : recherche jumelle, cadre
-  jumeau `-map`), note aux parents
+- `index.html` — page unique, organisée comme l'épisode 2 : grille principale avec la colonne
+  « chez nous » d'abord (`.home-col` : deux cartes-horloges France + destination, puis
+  recherche `search-panel` + 9 puces), et à droite le panneau `pole-panel` « 🚀 Depuis
+  l'espace » (**Terre vue du pôle Nord** `pole-view` dans `.globe-stage`, cadre des deux
+  heures) ; frise du temps pleine largeur (`time-panel`, curseur 0–24 h) ; scénarios +
+  histoire (bouton 🔇/🔊 `btn-scn-voice` de version sonore) ; boîte « Pourquoi les fuseaux
+  horaires ? » à écouter (menu de voix) ; **jeu** « Amuse-toi à trouver l'heure… »
+  (`.game-head` puis `.game-grid` : globe 3D — cadre jumeau `-globe`, 2 boutons de lieux 🏠
+  chez nous / destination — et carte à plat — recherche jumelle, cadre jumeau `-map` — côte à
+  côte dès 961 px) ; note aux parents
 - `css/style.css` — thème sombre de la série ; **bascule mobile ≤ 640 px** : le cadre et les
   boutons de lieux quittent l'incrustation et se rangent sous le globe (idem pour le cadre de
   la carte) ; en plein écran mobile (repli `.fs-fallback`, le cas réel iOS), la scène ne
@@ -84,20 +87,25 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
   l'heure, clic = choisir), `centerCameraOn` + `flyCameraTo` (vol animé vers le cadrage
   `cameraFrame`, contournement par la face nuit si le Soleil change de côté, saut sec en
   `prefers-reduced-motion`), boutons de lieux (🏠 chez nous / destination à son nom),
-  recherche jumelle, scénarios, cadres jumeaux (`''`/`-globe`/`-map`), plein écran, synthèse
-  vocale (score des voix françaises, ton conteur phrase à phrase, menu 🗣, choix retenu en
-  localStorage)
+  recherche jumelle, scénarios, cadres jumeaux (`''`/`-globe`/`-map`), plein écran, et le
+  **conteur** `narrator` : un seul moteur de synthèse vocale (score des voix françaises, ton
+  conteur phrase à phrase, menu 🗣, choix retenu en localStorage) partagé entre l'histoire
+  des fuseaux et la **version sonore des scénarios** (bouton 🔇/🔊, choix retenu ; on ne lit
+  pas les bulles telles quelles — enchaînements « Chez nous… / Et pendant ce temps… » ajoutés
+  à l'oral, émojis retirés)
 - `test/model.test.mjs` — 58 vérifications ; `test/geo.test.mjs` — 25 vérifications
 
 ## Vérification navigateur
 
 Suite Playwright maintenue dans le scratchpad des sessions (`test-site.js` : desktop +
-mouvement réduit + mobile 390 px, structure de la page — vue du pôle en vedette, jeu après
-l'histoire —, glisser rotatif du disque (quart de tour ≈ 6 h), sélection sans changer
-l'heure, boutons de lieux, sondes de pixels sur le Soleil et le croissant de nuit — jamais de
-« plein jour » plein cadre, Soleil jamais coincé derrière la Terre, entier même rapproché sur
-mobile —, zéro erreur console). Lancer les serveurs avant : `python3 -m http.server 8123` sur
-le site. Chromium : `chromium.launch()` avec repli `executablePath: '/opt/pw-browsers/chromium'`.
+mouvement réduit + mobile 390 px, structure de la page — heures chez nous/là-bas d'abord puis
+« Depuis l'espace », recherche dans la colonne des cartes, frise pleine largeur, jeu côte à
+côte sur ordinateur —, glisser rotatif du disque (quart de tour ≈ 6 h), sélection sans
+changer l'heure, boutons de lieux, bascule 🔇/🔊 des scénarios, sondes de pixels sur le
+Soleil et le croissant de nuit — jamais de « plein jour » plein cadre, Soleil jamais coincé
+derrière la Terre, entier même rapproché sur mobile —, zéro erreur console). Lancer les
+serveurs avant : `python3 -m http.server 8123` sur le site. Chromium : `chromium.launch()`
+avec repli `executablePath: '/opt/pw-browsers/chromium'`.
 
 ## Conventions
 

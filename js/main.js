@@ -575,6 +575,8 @@ function runScenario(scn) {
   setPlaying(false);
   setActiveScenario(scn.id);
   renderStory(scn, atH);
+  lastTold = { scn: scn, atH: atH };
+  tellScenario(); // la version sonore, si le parent l'a activée
   const delta = wrap24(atH - sim.homeH);
   if (reduceMotion || delta < 0.02) {
     sim.tween = null;
@@ -682,19 +684,30 @@ function frame(ms) {
   }
 }
 
-// ---- « Écouter l'histoire » : la boîte des fuseaux lue à voix haute par la
-// synthèse vocale du navigateur (hors-ligne, rien n'est envoyé nulle part).
-// Les voix installées varient énormément d'un appareil à l'autre : on note
-// chaque voix française et on prend d'office la plus douce — français de
-// France et voix « naturelles » d'abord, voix robotiques et accents lointains
-// en dernier — et un petit menu laisse les parents en changer. ----
+// ---- le conteur : une seule voix pour tout le site — l'histoire des fuseaux
+// ET la version sonore des scénarios. La synthèse vocale du navigateur lit
+// hors-ligne, rien n'est envoyé nulle part. Les voix installées varient
+// énormément d'un appareil à l'autre : on note chaque voix française et on
+// prend d'office la plus douce — français de France et voix « naturelles »
+// d'abord, voix robotiques et accents lointains en dernier — et un petit
+// menu laisse les parents en changer. ----
+
+// une phrase par bulle (les longs textes d'une traite se font couper) ; la
+// dernière phrase du bloc marque une vraie respiration
+function sentenceChunks(text, endPara) {
+  const bits = text.replace(/\s+/g, ' ').match(/[^.!?…]+[.!?…]*/g) || [];
+  const out = [];
+  for (const b of bits) { if (b.trim()) out.push({ text: b.trim(), endPara: false }); }
+  if (out.length && endPara) out[out.length - 1].endPara = true;
+  return out;
+}
 
 const listenBtn = $('btn-listen');
 const voiceSel = $('voice-pick');
 const voiceHint = $('voice-hint');
+let narrator = null; // { speak(chunks, onDone), stop() } — null sans synthèse vocale
+
 if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
-  listenBtn.hidden = false;
-  let speaking = false;
   let frVoices = [];
   let chosenURI = null;
   try { chosenURI = window.localStorage.getItem('ltt-voice'); } catch (e) { /* mode privé */ }
@@ -763,37 +776,26 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
     return frVoices.length ? frVoices[0] : null;
   };
 
-  const resetListen = () => {
-    speaking = false;
-    listenBtn.textContent = '🔊 Écouter l’histoire';
-    listenBtn.setAttribute('aria-pressed', 'false');
-  };
+  // une lecture à la fois : gen invalide les onend des lectures annulées, et
+  // le onDone de la lecture précédente est toujours prévenu qu'elle s'achève
+  let gen = 0;
+  let curDone = null;
+  const settle = () => { const d = curDone; curDone = null; if (d) d(); };
+  const stopSpeaking = () => { gen++; window.speechSynthesis.cancel(); settle(); };
 
-  let gen = 0; // ignore les onend/onerror des lectures annulées
-  const startReading = () => {
-    gen++;
+  // ton de conteur : les phrases s'enchaînent avec de vraies pauses, sur un
+  // débit posé, et un peu de relief là où le texte s'exclame ou questionne
+  // (la synthèse du navigateur n'offre que rate et pitch — on s'en sert)
+  const speakChunks = (chunks, onDone) => {
+    stopSpeaking();
+    refreshVoices(); // certaines listes de voix n'arrivent qu'après le chargement
     const myGen = gen;
-    window.speechSynthesis.cancel();
+    curDone = onDone || null;
     const voice = pickVoice();
-    // une phrase par bulle (les longs textes d'une traite se font couper), en
-    // retenant les fins de paragraphes pour y respirer plus longtemps
-    const chunks = [];
-    const paras = $('explain-text').querySelectorAll('p');
-    for (const para of paras) {
-      const bits = para.textContent.replace(/\s+/g, ' ').match(/[^.!?…]+[.!?…]*/g) || [];
-      const clean = [];
-      for (const b of bits) { if (b.trim()) clean.push(b.trim()); }
-      for (let i = 0; i < clean.length; i++) {
-        chunks.push({ text: clean[i], endPara: i === clean.length - 1 });
-      }
-    }
-    // ton de conteur : les phrases s'enchaînent avec de vraies pauses, sur un
-    // débit posé, et un peu de relief là où le texte s'exclame ou questionne
-    // (la synthèse du navigateur n'offre que rate et pitch — on s'en sert)
     let at = 0;
     const speakNext = () => {
       if (myGen !== gen) return;
-      if (at >= chunks.length) { resetListen(); return; }
+      if (at >= chunks.length) { settle(); return; }
       const c = chunks[at++];
       const u = new SpeechSynthesisUtterance(c.text);
       u.lang = voice ? voice.lang : 'fr-FR';
@@ -806,28 +808,87 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
         if (myGen !== gen) return;
         window.setTimeout(speakNext, c.endPara ? 620 : 300);
       };
-      u.onerror = () => { if (myGen === gen) resetListen(); };
+      u.onerror = () => { if (myGen === gen) settle(); };
       window.speechSynthesis.speak(u);
     };
-    speaking = true;
-    listenBtn.textContent = '⏹ Arrêter';
-    listenBtn.setAttribute('aria-pressed', 'true');
     speakNext();
   };
+  narrator = { speak: speakChunks, stop: stopSpeaking };
 
+  // -- « Écouter l'histoire » : la boîte des fuseaux, phrase à phrase --
+  listenBtn.hidden = false;
+  let reading = false;
+  const resetListen = () => {
+    reading = false;
+    listenBtn.textContent = '🔊 Écouter l’histoire';
+    listenBtn.setAttribute('aria-pressed', 'false');
+  };
+  const startReading = () => {
+    const chunks = [];
+    const paras = $('explain-text').querySelectorAll('p');
+    for (const para of paras) {
+      for (const c of sentenceChunks(para.textContent, true)) chunks.push(c);
+    }
+    speakChunks(chunks, resetListen);
+    reading = true;
+    listenBtn.textContent = '⏹ Arrêter';
+    listenBtn.setAttribute('aria-pressed', 'true');
+  };
   listenBtn.addEventListener('click', () => {
-    if (speaking) { gen++; window.speechSynthesis.cancel(); resetListen(); return; }
-    refreshVoices(); // certaines listes de voix n'arrivent qu'après le chargement
+    if (reading) { stopSpeaking(); return; } // le onDone remet le bouton
     startReading();
   });
   if (voiceSel) {
     voiceSel.addEventListener('change', () => {
       chosenURI = voiceSel.value;
       try { window.localStorage.setItem('ltt-voice', chosenURI); } catch (e) { /* tant pis */ }
-      if (speaking) startReading(); // on réécoute tout de suite avec la nouvelle voix
+      if (reading) startReading(); // on réécoute tout de suite avec la nouvelle voix
     });
   }
   window.addEventListener('pagehide', () => { window.speechSynthesis.cancel(); });
+} else {
+  $('btn-scn-voice').hidden = true; // pas de synthèse vocale : pas de version sonore
+}
+
+// ---- la version sonore des scénarios : quand l'enfant choisit un moment,
+// le conteur dit ce qui se passe chez nous et là-bas. On ne lit pas les
+// bulles écrites telles quelles : à l'oral, il manque les enchaînements —
+// le conteur ajoute « Chez nous, en France… » et « Et pendant ce temps,
+// à Bali… », et retire les émojis, imprononçables. ----
+
+const scnVoiceBtn = $('btn-scn-voice');
+let scnVoiceOn = false;
+try { scnVoiceOn = window.localStorage.getItem('ltt-scn-voice') === '1'; } catch (e) { /* mode privé */ }
+let lastTold = null; // le scénario affiché à l'écran : { scn, atH }
+
+function setScnVoiceUi() {
+  scnVoiceBtn.textContent = scnVoiceOn ? '🔊 la voix raconte' : '🔇 sans la voix';
+  scnVoiceBtn.setAttribute('aria-pressed', scnVoiceOn ? 'true' : 'false');
+}
+setScnVoiceUi();
+scnVoiceBtn.addEventListener('click', () => {
+  scnVoiceOn = !scnVoiceOn;
+  try { window.localStorage.setItem('ltt-scn-voice', scnVoiceOn ? '1' : '0'); } catch (e) { /* tant pis */ }
+  setScnVoiceUi();
+  if (!narrator) return;
+  if (scnVoiceOn) tellScenario(); else narrator.stop();
+});
+
+const EMOJI_RE = /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}]/gu;
+
+function spokenStory(scn, atH) {
+  const clean = (t) => t.replace(EMOJI_RE, '').replace(/\s+/g, ' ').trim();
+  const chunks = [{ text: 'Chez nous, en France…', endPara: false }];
+  for (const c of sentenceChunks(clean(scn.france || placePhrase(atH, FRANCE)), true)) chunks.push(c);
+  chunks.push({ text: 'Et pendant ce temps, à ' + selected.name + '…', endPara: false });
+  for (const c of sentenceChunks(clean(placePhrase(atH, selected)), true)) chunks.push(c);
+  return chunks;
+}
+
+function tellScenario() {
+  if (narrator && scnVoiceOn && lastTold) {
+    narrator.speak(spokenStory(lastTold.scn, lastTold.atH));
+  }
 }
 
 buildCards();

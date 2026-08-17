@@ -63,8 +63,27 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 
 /* ---------- grille du simulateur ---------- */
 
-.sim-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(300px, 5fr); gap: 16px; }
+/* comme l'épisode 2 : d'abord l'heure chez nous et là-bas (avec la recherche
+   dessous), puis la vue depuis l'espace à droite */
+.sim-grid { display: grid; grid-template-columns: minmax(300px, 5fr) minmax(0, 7fr); gap: 16px; }
 @media (max-width: 960px) { .sim-grid { grid-template-columns: 1fr; } }
+.home-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+/* la recherche vit sous les deux cartes-horloges */
+.search-panel { padding: 12px 14px 14px; }
+.search-title { font-weight: 700; margin: 0 2px 8px; }
+.search-panel .search-row { margin: 0; }
+
+/* la frise du temps, sur toute la largeur de la page */
+.time-panel { margin-top: 16px; padding: 14px 18px 16px; }
+.time-panel .time-control { margin-top: 0; }
+
+/* le jeu : sur grand écran, la Terre en 3D et la carte à plat côte à côte */
+.game-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.game-grid .map-panel { margin-top: 0; }
+@media (min-width: 961px) {
+  .game-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+}
 
 .canvas-panel { padding: 12px; }
 .canvas-title { font-size: .88rem; color: var(--muted); margin: 2px 4px 10px; }
@@ -232,7 +251,11 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 /* ---------- boutons-scénarios + histoire ---------- */
 
 .scenario-panel { margin-top: 16px; padding: 14px 16px 16px; }
-.scenario-title { font-weight: 700; font-size: 1.05rem; margin: 2px 2px 10px; }
+.scenario-title {
+  font-weight: 700; font-size: 1.05rem; margin: 2px 2px 10px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px 12px; flex-wrap: wrap;
+}
 .scenario-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
 @media (max-width: 860px) { .scenario-buttons { grid-template-columns: 1fr 1fr; } }
 
