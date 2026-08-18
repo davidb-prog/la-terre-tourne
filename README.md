@@ -1,6 +1,6 @@
 # Quelle heure est-il là-bas ? 🌍
 
-Épisode 3 du **Petit labo d'astronomie** : un site d'une page, interactif, pour expliquer les
+Un épisode du **Petit labo d'astronomie** : un site d'une page, interactif, pour expliquer les
 fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix haute.
 
 - La **Terre tourne sur elle-même en 24 heures** ; le Soleil, fixe, n'éclaire qu'un côté à la fois ;
