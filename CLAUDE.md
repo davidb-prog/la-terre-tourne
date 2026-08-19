@@ -52,9 +52,13 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
   « chez nous » d'abord (`.home-col` : deux cartes-horloges France + destination, puis
   recherche `search-panel` + 9 puces), et à droite le panneau `pole-panel` « 🚀 Depuis
   l'espace » (**Terre vue du pôle Nord** `pole-view` dans `.globe-stage`, cadre des deux
-  heures) ; frise du temps pleine largeur (`time-panel`, curseur 0–24 h) ; scénarios +
+  heures) ; barre d'heures collante `sticky-times` (troisième jumeau du cadre, `aria-hidden`,
+  mobile seulement) ; frise du temps pleine largeur (`time-panel`, curseur 0–24 h) ; scénarios +
   histoire (bouton 🔇/🔊 `btn-scn-voice` de version sonore) ; boîte « Pourquoi les fuseaux
-  horaires ? » à écouter (menu de voix) ; **jeu** « Amuse-toi à trouver l'heure… »
+  horaires ? » à écouter (menu de voix ; `<details>` `explain-fold`, **repliée sur mobile
+  ≤ 640 px** — le résumé ne s'affiche qu'en mobile et duplique le h2 de `.explain-head`,
+  chacun masqué à l'autre taille ; main.js la garde ouverte sur ordinateur) ;
+  **jeu** « Amuse-toi à trouver l'heure… »
   (`.game-head` puis `.game-grid` : globe 3D avec les 2 boutons de lieux 🏠 chez nous /
   destination **incrustés dans son ciel, sous la Terre** (toutes tailles ; `width:
   max-content` sinon l'absolu `left:50%` replie les boutons), carte à plat avec sa recherche
@@ -65,7 +69,10 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
 - `css/style.css` — thème sombre de la série ; sur la vue du pôle, le cadre des heures est
   incrusté (il se range dessous en **mobile ≤ 640 px**) ; dans le jeu (`.game-grid`), le cadre
   et les boutons de lieux sont **toujours** rangés sous le globe, à toutes les tailles — rien
-  ne mord sur les vues
+  ne mord sur les vues ; section « lisibilité mobile » **en fin de feuille** (planchers
+  ≥ ~12,5 px : hints des titres de canvas sur leur ligne, graduation du curseur, cadre des
+  heures, sous-titres de scénarios — en fin de feuille exprès : à spécificité égale, elle doit
+  passer après les tailles de base)
 - `js/model.js` — logique horaire pure (lieux, horloges locales, report de jour, heure solaire,
   hauteur du soleil, scénarios et phrases générées — dont le cas « même fuseau que la
   France » —, écarts en toutes lettres, prépositions de lieu `placeLocative`, cadrage caméra
@@ -98,7 +105,10 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
   `prefers-reduced-motion`), boutons de lieux (🏠 chez nous / destination à son nom),
   recherche jumelle, scénarios (le scénario actif `activeScn` se rejoue quand la destination
   change : l'histoire suit sans re-clic ; il s'efface dès qu'on reprend la main), cadres
-  jumeaux (`''`/`-globe`), et le **conteur** `narrator` : un seul moteur de synthèse vocale
+  jumeaux (`''`/`-globe`/`-sticky` — la barre collante mobile apparaît quand les
+  cartes-horloges sortent de l'écran par le haut, `IntersectionObserver` avec garde : sans
+  lui elle reste masquée ; même garde `matchMedia` pour replier `explain-fold` sur mobile et
+  le rouvrir sur ordinateur), et le **conteur** `narrator` : un seul moteur de synthèse vocale
   (score des voix françaises, ton conteur phrase à phrase, menu 🗣, choix retenu en
   localStorage) partagé entre l'histoire des fuseaux et la **version sonore des scénarios**
   (bouton 🔇/🔊, choix retenu ; on ne lit pas les bulles telles quelles — enchaînements

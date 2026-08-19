@@ -591,9 +591,10 @@ function setText(cache, key, el, value) {
   el.textContent = value;
 }
 
-// les cadres posés sur la vue du pôle et sous le globe du jeu : l'heure ici,
-// l'heure là-bas, et l'écart — même contenu aux deux endroits
-const FRAME_IDS = ['', '-globe'];
+// les cadres posés sur la vue du pôle et sous le globe du jeu, plus la barre
+// collante du haut d'écran (mobile) : l'heure ici, l'heure là-bas, et l'écart
+// — même contenu aux trois endroits
+const FRAME_IDS = ['', '-globe', '-sticky'];
 const frameCache = { name: null };
 
 function updateFrame() {
@@ -887,6 +888,38 @@ function tellScenario() {
     narrator.speak(spokenStory(activeScn.scn, activeScn.atH));
   }
 }
+
+// ---- la barre d'heures collante (mobile ≤ 640 px, voir style.css) : dès que
+// les cartes-horloges sortent de l'écran par le haut, elle garde les deux
+// heures sous les yeux — on voit l'heure changer en jouant avec les scénarios,
+// le curseur ou les glissers, sans remonter la page. Sans IntersectionObserver
+// (vieux Safari), elle reste simplement masquée. ----
+
+if (window.IntersectionObserver) {
+  const stickyBar = $('sticky-times');
+  new IntersectionObserver((entries) => {
+    const e = entries[entries.length - 1];
+    // seulement « sorties par le haut » : tout en haut de page, rien à montrer
+    const gone = !e.isIntersecting && e.boundingClientRect.bottom < 0;
+    if (gone) stickyBar.classList.add('show');
+    else stickyBar.classList.remove('show');
+  }).observe($('cards'));
+}
+
+// ---- la boîte « Pourquoi les fuseaux horaires ? » : repliée sur mobile pour
+// raccourcir la page (le résumé n'apparaît qu'en ≤ 640 px), toujours ouverte
+// sur ordinateur — même si un clavier joue avec le résumé masqué. ----
+
+const explainFold = $('explain-fold');
+const mqMobile = window.matchMedia('(max-width: 640px)');
+function syncExplainFold() {
+  if (mqMobile.matches) return; // sur mobile, l'enfant plie et déplie librement
+  explainFold.open = true;
+}
+if (mqMobile.matches) explainFold.open = false; // au chargement : repliée
+explainFold.addEventListener('toggle', syncExplainFold);
+if (mqMobile.addEventListener) mqMobile.addEventListener('change', syncExplainFold);
+else if (mqMobile.addListener) mqMobile.addListener(syncExplainFold); // vieux Safari
 
 buildCards();
 renderInvite();
