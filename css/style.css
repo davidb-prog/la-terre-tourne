@@ -202,6 +202,37 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
   .globe-stage .drag-hint { bottom: 12px; }
 }
 
+/* ---------- barre d'heures collante (mobile) ---------- */
+
+/* sur téléphone, les cartes-horloges sortent vite de l'écran : dès qu'elles
+   disparaissent, cette fine barre fixée en haut garde « l'heure ici, l'heure
+   là-bas » sous les yeux pendant qu'on joue (scénarios, curseur, glissers).
+   main.js la montre/cache avec un IntersectionObserver ; sans lui, elle
+   reste simplement masquée. */
+.sticky-times { display: none; }
+@media (max-width: 640px) {
+  .sticky-times {
+    display: flex; align-items: baseline; justify-content: center;
+    flex-wrap: wrap; gap: 2px 16px;
+    position: fixed; top: 0; left: 0; right: 0; z-index: 40;
+    padding: 7px 10px 8px;
+    padding-top: calc(7px + env(safe-area-inset-top, 0px));
+    font-size: .88rem;
+    background: rgba(7, 11, 23, .9);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--border);
+    opacity: 0; visibility: hidden; pointer-events: none;
+    -webkit-transform: translateY(-100%); transform: translateY(-100%);
+    transition: opacity .25s, visibility .25s, transform .25s;
+  }
+  .sticky-times.show { opacity: 1; visibility: visible; -webkit-transform: none; transform: none; }
+  .sticky-times .frame-row { padding-left: 6px; }
+  .sticky-times .frame-row strong { margin-left: 4px; padding-left: 0; font-size: 1rem; }
+  .sticky-times .frame-name { max-width: 8em; }
+  .sticky-times .frame-diff { display: none; }
+}
+
 /* ---------- le grand curseur du temps ---------- */
 
 .globe-panel .canvas-title { display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap; }
@@ -389,6 +420,7 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .drag-hint { transition: none; }
   .scn, button { transition: none; }
+  .sticky-times { transition: none; }
   html { scroll-behavior: auto; }
 }
 
@@ -464,16 +496,29 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 .map-panel .canvas-title { display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap; }
 .map-panel .canvas-title span { flex: 1 1 260px; }
 
-@media (max-width: 480px) {
-  .globe-frame { font-size: .78rem; padding: 6px 9px; }
-  .frame-row strong { font-size: .9rem; }
-}
+/* (sous 640 px, plus aucun cadre n'est incrusté sur une vue : inutile de le
+   rapetisser — la règle mobile ci-dessus le grossit au contraire un peu) */
 
 /* ---------- la boîte « pourquoi les fuseaux horaires ? » ---------- */
 
 .explain-panel { margin-top: 16px; padding: 16px 20px 18px; }
 .explain-head { display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; margin-bottom: 8px; }
 .explain-head h2 { margin: 0; font-size: 1.15rem; color: var(--sun); }
+/* le résumé repliable ne sert que sur mobile : sur ordinateur il est masqué
+   et main.js garde la boîte ouverte (le titre reste celui de .explain-head) */
+.explain-summary { display: none; }
+@media (max-width: 640px) {
+  .explain-panel { padding: 4px 16px 6px; }
+  .explain-panel[open] { padding-bottom: 16px; }
+  .explain-summary { display: block; cursor: pointer; padding: 12px 4px; list-style: none; }
+  .explain-summary::-webkit-details-marker { display: none; }
+  .explain-summary::before { content: '▸ '; color: var(--sun); font-weight: 700; }
+  .explain-panel[open] .explain-summary::before { content: '▾ '; }
+  .explain-summary h2 { display: inline; margin: 0; font-size: 1.15rem; color: var(--sun); }
+  .explain-summary .hint { display: block; margin: 3px 0 0 1.35em; font-size: .8rem; }
+  /* sur mobile, le titre vit dans le résumé : celui de la rangée disparaît */
+  .explain-head h2 { display: none; }
+}
 .listen-btn {
   margin-left: auto; border-radius: 999px; padding: 8px 16px; font-weight: 700;
   background: linear-gradient(180deg, #4a3a0d, #332807); border: 1px solid var(--sun-deep);
@@ -497,3 +542,23 @@ button:focus-visible, input:focus-visible, a:focus-visible {
   margin: 0 0 4px; font-size: 1.15rem; color: var(--sun);
 }
 .game-head .hint { display: block; font-size: .88rem; }
+
+/* ---------- lisibilité mobile : planchers de taille de texte ----------
+   (section volontairement en fin de feuille : à spécificité égale, elle doit
+   passer après les tailles de base déclarées plus haut) */
+
+@media (max-width: 640px) {
+  /* les tout petits textes remontent vers 12,5 px minimum — les hints des
+     titres de canvas passent sur leur propre ligne */
+  .canvas-title { font-size: .92rem; }
+  .canvas-title .hint { display: block; margin-top: 2px; font-size: .8rem; }
+  .slider-scale { font-size: .78rem; }
+  .scn-sub { font-size: .8rem; }
+  /* sous 640 px, le cadre des heures n'est plus incrusté sur une vue : il a
+     la place de se lire confortablement */
+  .globe-frame { font-size: .9rem; }
+  .frame-row strong { font-size: 1.05rem; }
+  /* sauf dans la barre collante du haut, plus compacte */
+  .sticky-times { font-size: .88rem; }
+  .sticky-times .frame-row strong { font-size: 1rem; }
+}

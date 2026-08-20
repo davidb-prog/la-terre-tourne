@@ -21,6 +21,23 @@
   <section class="sim" aria-labelledby="sim-title">
     <h2 id="sim-title" class="visually-hidden">La Terre qui tourne, les horloges qui changent</h2>
 
+    <!-- barre d'heures collante (mobile) : dès que les cartes-horloges sortent de
+         l'écran, elle garde les deux heures sous les yeux — troisième jumeau du
+         cadre des heures, masqué aux lecteurs d'écran (il répète l'existant) -->
+    <div class="sticky-times" id="sticky-times" aria-hidden="true">
+      <div class="frame-row frame-row-home">
+        <span class="frame-flag">🏠</span>
+        <span class="frame-name">France</span>
+        <strong id="frame-home-time-sticky">12 h 00</strong>
+      </div>
+      <div class="frame-row frame-row-sel">
+        <span class="frame-flag" id="frame-sel-flag-sticky">🏝️</span>
+        <span class="frame-name" id="frame-sel-name-sticky">Guadeloupe</span>
+        <strong id="frame-sel-time-sticky">7 h 00</strong>
+      </div>
+      <div class="frame-diff" id="frame-diff-sticky">5 h de retard sur nous</div>
+    </div>
+
     <div class="sim-grid">
       <div class="home-col">
         <div class="vignettes" id="cards" aria-live="polite"></div>
@@ -87,7 +104,13 @@
       <div id="story" class="story" aria-live="polite"></div>
     </div>
 
-    <div class="panel explain-panel">
+    <!-- sur mobile, la boîte se replie comme la note aux parents (le résumé ne
+         s'affiche qu'en ≤ 640 px ; sur ordinateur, main.js la garde ouverte) -->
+    <details class="panel explain-panel" id="explain-fold" open>
+      <summary class="explain-summary">
+        <h2>🍊 Pourquoi les fuseaux horaires ?</h2>
+        <span class="hint">appuie ici pour lire ou écouter l’histoire</span>
+      </summary>
       <div class="explain-head">
         <h2>🍊 Pourquoi les fuseaux horaires ?</h2>
         <button id="btn-listen" class="listen-btn" hidden>🔊 Écouter l’histoire</button>
@@ -114,11 +137,11 @@
           ciel, et la nuit tombe quand il fait sombre. C’est bien pratique. Et quand c’est
           l’heure du dodo chez toi… quelque part, très loin, des enfants se réveillent !</p>
       </div>
-    </div>
+    </details>
 
     <div class="game-head">
       <h2>🧭 Amuse-toi à trouver l’heure qu’il est dans les pays que tu connais !</h2>
-      <p class="hint">Clique un pays — sur la Terre en 3D ou sur la carte à plat — et lis son
+      <p class="hint">Clique sur un pays — sur la Terre en 3D ou sur la carte à plat — et lis son
         heure dans le petit cadre.</p>
     </div>
 
