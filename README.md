@@ -78,9 +78,10 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
   **les deux vues tiennent ensemble sur l'écran** (titre et recherche de la carte passent
   dessous), et la Terre occupe davantage le cadre pour rester lisible. Sur écran tactile, on
   **pince à deux doigts pour zoomer** les deux vues : la Terre 3D grossit (on la tourne au
-  doigt pour explorer), la carte à plat se zoome autour des doigts et on **s'y promène à deux
-  doigts** — noms, points et icônes gardent leur taille, et pincer ne change jamais l'heure
-  ni la destination.
+  doigt pour explorer), la carte à plat se zoome autour des doigts et on **s'y promène au doigt**
+  (un ou deux — tant qu'elle est zoomée, glisser la promène sans toucher à l'heure ; le
+  glisser-heure revient au dézoom) — noms, points et icônes gardent leur taille, et pincer
+  ne change jamais l'heure ni la destination.
 - **Le Soleil du globe reste à sa place, et l'image reste lisible.** Il se pose sur l'axe
   horizontal, du côté d'où vient la lumière — et le cadrage garde **toujours la limite
   jour/nuit à l'écran** : jamais la face éclairée pile en face, jamais le Soleil coincé

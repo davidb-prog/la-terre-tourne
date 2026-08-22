@@ -47,9 +47,10 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
   horizontal sur le globe et la carte), jamais la caméra ; **pincer à deux doigts** (tactile)
   zoome les deux vues du jeu **sans jamais changer l'heure ni sélectionner de pays** — globe :
   seul le rayon grossit (`globe3d.zoom`, borné 1–2,6, le Soleil sort du cadre en s'approchant) ;
-  carte : zoom autour des doigts + promenade à deux doigts (`map.zoom`/`panX`/`panY`, borné
-  1–3, pan borné au cadre), textes/points/icônes à taille d'écran constante (`fixed` dans
-  MapView), le glisser-heure à un doigt divisé par le zoom.
+  carte : zoom autour des doigts (`map.zoom`/`panX`/`panY`, borné 1–3, pan borné au cadre)
+  puis promenade à **un ou deux doigts** — zoomée, un doigt promène la carte au lieu de
+  changer l'heure, le glisser-heure revient à zoom 1 —, textes/points/icônes à taille
+  d'écran constante (`fixed` dans MapView).
 - Boucle rAF résiliente (`try/finally`), `prefers-reduced-motion` respecté (pas de rotation
   automatique), aria-labels sur tous les canvas.
 

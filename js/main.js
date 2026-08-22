@@ -474,11 +474,12 @@ function wireEarthDrag(canvas) {
 }
 
 // ---- glisser sur la carte : là, on déplace la nuit (donc l'heure) ; la
-// pince zoome autour des doigts, et à deux doigts on se promène dans la
-// carte zoomée sans toucher à l'heure ----
+// pince zoome autour des doigts, et dans la carte zoomée on se promène au
+// doigt (un ou deux) sans toucher à l'heure — le glisser-heure revient
+// dès qu'on a dézoomé ----
 
 function wireMapDrag(canvas) {
-  let dragging = false, lastX = 0, moved = 0, downT = 0;
+  let dragging = false, lastX = 0, lastY = 0, moved = 0, downT = 0;
   const pinch = makePinch((k, mdx, mdy, s) => {
     const L = map.layout;
     if (!L) return;
@@ -498,19 +499,26 @@ function wireMapDrag(canvas) {
     e.preventDefault();
     if (pinch.down(e)) { dragging = false; return; }
     dragging = true;
-    lastX = e.clientX; moved = 0; downT = performance.now();
+    lastX = e.clientX; lastY = e.clientY; moved = 0; downT = performance.now();
   });
   canvas.addEventListener('pointermove', (e) => {
     if (pinch.move(e)) return;
     if (!dragging) return;
-    const dx = e.clientX - lastX;
-    moved += Math.abs(dx);
+    const dx = e.clientX - lastX, dy = e.clientY - lastY;
+    moved += Math.abs(dx) + Math.abs(dy);
     if (moved > 6) {
-      if (sim.playing || sim.tween) stopAuto();
-      // zoomée, la carte est z fois plus large à l'écran : l'heure suit le doigt
-      sim.homeH = wrap24(sim.homeH - dx / (map.layout.W * map.layout.z) * 24);
+      if (map.layout.z > 1) {
+        // carte zoomée : un doigt s'y promène, comme dans toute appli de
+        // cartes — l'heure ne bouge pas ; le glisser-heure revient dès
+        // qu'on a dézoomé (MapView borne le pan au cadre en dessinant)
+        map.panX += dx;
+        map.panY += dy;
+      } else {
+        if (sim.playing || sim.tween) stopAuto();
+        sim.homeH = wrap24(sim.homeH - dx / map.layout.W * 24);
+      }
     }
-    lastX = e.clientX;
+    lastX = e.clientX; lastY = e.clientY;
   });
   canvas.addEventListener('pointerup', (e) => {
     const wasPinch = pinch.active();
