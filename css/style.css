@@ -141,6 +141,13 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 }
 .canvas-wrap canvas { position: absolute; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: 100%; display: block; }
 
+/* touch-action: none jusqu'aux conteneurs (le choix de l'épisode 2) : le geste
+   posé sur une vue appartient TOUJOURS au glisser ou à la pince — un doigt un
+   peu de travers ne part jamais en défilement de page, même depuis le cadre
+   arrondi, les boutons de lieux ou le cadre des heures rangés sous le disque.
+   Les vues sont plafonnées en hauteur : il reste de la page autour pour
+   défiler. */
+.canvas-wrap, .globe-stage { touch-action: none; }
 #pole-view, #globe3d-view, #map-view { touch-action: none; cursor: grab; }
 #pole-view:active, #globe3d-view:active, #map-view:active { cursor: grabbing; }
 

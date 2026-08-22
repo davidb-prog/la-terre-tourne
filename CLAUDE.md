@@ -19,7 +19,9 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
 - **Compat mobiles anciens** : pas d'optional chaining `?.` ni de nullish `??` ; pas de
   lookbehind dans les regex ; repli `@supports` pour `aspect-ratio` ; `top/right/bottom/left`
   plutôt que `inset` ; préfixer `-webkit-backdrop-filter` et `-webkit-transform` ;
-  `touch-action: none` sur les canvas interactifs ; tester à 390 px de large.
+  `touch-action: none` sur les canvas interactifs **et leurs conteneurs**
+  (`.canvas-wrap`, `.globe-stage` — comme l'épisode 2 : un doigt un peu de travers ne part
+  jamais en défilement de page) ; tester à 390 px de large.
 - `js/model.js` est **pur** (aucun accès DOM) et doit le rester : il se teste avec
   `node test/model.test.mjs`. Toutes les constantes de lieux et de décalages vivent dedans —
   ne jamais les recopier ailleurs. Même règle pour `js/geo.js` (contours lon/lat purs) et
