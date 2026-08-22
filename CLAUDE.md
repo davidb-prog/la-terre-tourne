@@ -46,11 +46,15 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
   « derrière ») ; glisser tourne la Terre (l'heure change — rotatif sur la vue du pôle,
   horizontal sur le globe et la carte), jamais la caméra ; **pincer à deux doigts** (tactile)
   zoome les deux vues du jeu **sans jamais changer l'heure ni sélectionner de pays** — globe :
-  seul le rayon grossit (`globe3d.zoom`, borné 1–2,6, le Soleil sort du cadre en s'approchant) ;
-  carte : zoom autour des doigts (`map.zoom`/`panX`/`panY`, borné 1–3, pan borné au cadre)
+  seul le rayon grossit (`globe3d.zoom`, borné 1–5, le Soleil sort du cadre en s'approchant,
+  l'arc des Antilles grossit avec le zoom) ;
+  carte : zoom autour des doigts (`map.zoom`/`panX`/`panY`, borné 1–6, pan borné au cadre)
   puis promenade à **un ou deux doigts** — zoomée, un doigt promène la carte au lieu de
   changer l'heure, le glisser-heure revient à zoom 1 —, textes/points/icônes à taille
-  d'écran constante (`fixed` dans MapView) ; **double-tap sur une vue zoomée** = retour au
+  d'écran constante (`fixed` dans MapView) ; un clic hors de tout polygone choisit le
+  **lieu du répertoire le plus proche** (~3°, repli de `resolveHit`) — c'est ce qui rend
+  cliquables la Guadeloupe, Tahiti et les petites îles `SPECKS`, sans polygone Natural
+  Earth ; **double-tap sur une vue zoomée** = retour au
   zoom 1 en douceur (`makeDoubleTap`/`makeDezoom`, saut sec en mouvement réduit) — pour
   qu'il ne choisisse pas un pays au passage, la sélection au tap est différée de
   `DBL_TAP_MS` tant que la vue est zoomée (fenêtre du double-tap et délai égaux exprès) ;

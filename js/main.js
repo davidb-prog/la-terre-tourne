@@ -378,6 +378,18 @@ function resolveHit(ll) {
       }
     }
   }
+  // aucun pays sous le doigt ? C'est peut-être une petite île dessinée à la
+  // main (Guadeloupe, Tahiti, Maldives… — pas de polygone Natural Earth
+  // 110m) : on prend le lieu du répertoire le plus proche, s'il est à moins
+  // de ~3° — le premier du répertoire gagne à égalité, ce qui préfère
+  // « La Réunion » à « Saint-Denis (La Réunion) »
+  let isle = null, isleD = 3;
+  for (const e of GAZETTEER) {
+    const dLon = Math.abs(((e.lon - ll.lonDeg + 540) % 360) - 180);
+    const dist = Math.max(dLon * Math.cos(ll.latDeg * DEG), Math.abs(e.lat - ll.latDeg));
+    if (dist < isleD) { isleD = dist; isle = e; }
+  }
+  if (isle && isle.n !== 'France') return isle;
   return null;
 }
 
@@ -484,7 +496,7 @@ function wireEarthDrag(canvas) {
   let dragging = false, lastX = 0, lastY = 0, downX = 0, moved = 0, downT = 0;
   let timeUnlocked = false;
   const pinch = makePinch((k) => {
-    globe3d.zoom = Math.max(1, Math.min(2.6, globe3d.zoom * k));
+    globe3d.zoom = Math.max(1, Math.min(5, globe3d.zoom * k));
   });
   const dezoom = makeDezoom(() => globe3d.zoom,
     (z0, k) => { globe3d.zoom = z0 + (1 - z0) * k; });
@@ -551,7 +563,7 @@ function wireMapDrag(canvas) {
     const mx = s.mx - rect.left - (L.ox + L.W / 2);
     const my = s.my - rect.top - (L.oy + L.H / 2);
     const z0 = map.zoom;
-    map.zoom = Math.max(1, Math.min(3, z0 * k));
+    map.zoom = Math.max(1, Math.min(6, z0 * k));
     map.panX = mx + mdx - (mx - map.panX) * (map.zoom / z0);
     map.panY = my + mdy - (my - map.panY) * (map.zoom / z0);
   });

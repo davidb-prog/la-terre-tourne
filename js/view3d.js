@@ -132,7 +132,11 @@ export class Globe3D {
       }
     }
     for (const lake of LAKES) this.shape(ctx, lake, cx, cy, R, COL3D.lake);
-    for (const [lon, lat] of ANTILLES) this.spot(ctx, lon, lat, 1.8, COL3D.land, cx, cy, R);
+    // l'arc des Antilles grossit avec le zoom (sinon ses îlots restent des
+    // points de 2 px, introuvables au doigt une fois la Terre agrandie)
+    for (const [lon, lat] of ANTILLES) {
+      this.spot(ctx, lon, lat, 1.8 * this.zoom, COL3D.land, cx, cy, R);
+    }
     for (const [lon, lat, r] of SPECKS) {
       this.spot(ctx, lon, lat, Math.max(1.4, r * DEG * R), COL3D.land, cx, cy, R);
     }

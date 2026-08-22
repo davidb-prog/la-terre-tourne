@@ -71,7 +71,10 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
   continents et les frontières des ~180 pays (Natural Earth, embarqué dans `js/geo.js` —
   aucune tuile, aucune bibliothèque), la France surlignée en rose, la destination en doré, les
   24 fuseaux en tranches. Glisser horizontalement le fait tourner (l'heure change), un clic
-  sur un pays ou une ville-décor l'observe, et son heure s'affiche dans le cadre. Les deux
+  sur un pays ou une ville-décor l'observe, et son heure s'affiche dans le cadre — et même
+  les petites îles dessinées à la main (la Guadeloupe, Tahiti, les Maldives…) se laissent
+  cliquer : sans polygone sous le doigt, c'est le lieu du répertoire le plus proche qui est
+  choisi. Les deux
   **boutons de lieux** (🏠 chez nous / la destination) sont posés dans le ciel étoilé, juste
   sous la Terre. Sur ordinateur, le globe et la carte s'affichent **côte à côte, sur un seul
   écran** ; sur téléphone, l'enchaînement est globe 3D → cadre des heures → carte à plat —
