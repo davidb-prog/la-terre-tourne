@@ -381,24 +381,69 @@ function resolveHit(ll) {
   return null;
 }
 
+// ---- pince à deux doigts (tactile, donc mobile/tablette) : sur les deux
+// vues du jeu, écarter/rapprocher les doigts zoome. Dès que deux doigts sont
+// posés, le glisser à un doigt et le clic sont neutralisés : zoomer ne change
+// jamais l'heure et ne choisit jamais de pays. ----
+
+function makePinch(onPinch) {
+  const touches = {}; // pointerId → [x, y] des doigts posés (clavier/souris exclus)
+  const ids = () => Object.keys(touches);
+  const span = () => { // écart et point médian entre les deux premiers doigts
+    const k = ids();
+    const a = touches[k[0]], b = touches[k[1]];
+    const dx = b[0] - a[0], dy = b[1] - a[1];
+    return { d: Math.sqrt(dx * dx + dy * dy) || 1, mx: (a[0] + b[0]) / 2, my: (a[1] + b[1]) / 2 };
+  };
+  let last = null;
+  return {
+    // vrai dès que ce doigt fait passer en mode pince
+    down: (e) => {
+      if (e.pointerType !== 'touch') return false;
+      touches[e.pointerId] = [e.clientX, e.clientY];
+      if (ids().length >= 2) { last = span(); return true; }
+      return false;
+    },
+    // vrai si la pince a consommé le mouvement
+    move: (e) => {
+      if (touches[e.pointerId]) touches[e.pointerId] = [e.clientX, e.clientY];
+      if (ids().length < 2) return false;
+      const s = span();
+      onPinch(s.d / last.d, s.mx - last.mx, s.my - last.my, s);
+      last = s;
+      return true;
+    },
+    up: (e) => {
+      delete touches[e.pointerId];
+      if (ids().length < 2) last = null;
+    },
+    active: () => ids().length >= 2,
+  };
+}
+
 // ---- glisser sur le globe : horizontalement on TOURNE LA TERRE (l'heure
 // change, le Soleil ne bouge pas), verticalement on la penche ; un petit clic
-// choisit le pays ou la ville sous le doigt ----
+// choisit le pays ou la ville sous le doigt ; la pince zoome ----
 
 function wireEarthDrag(canvas) {
   let dragging = false, lastX = 0, lastY = 0, downX = 0, moved = 0, downT = 0;
   let timeUnlocked = false;
+  const pinch = makePinch((k) => {
+    globe3d.zoom = Math.max(1, Math.min(2.6, globe3d.zoom * k));
+  });
   canvas.addEventListener('pointerdown', (e) => {
     if (!globe3d.layout) return;
+    if (canvas.setPointerCapture) canvas.setPointerCapture(e.pointerId);
+    hideHint();
+    e.preventDefault();
+    if (pinch.down(e)) { dragging = false; camAnim = null; return; }
     dragging = true;
     timeUnlocked = false;
     lastX = e.clientX; lastY = e.clientY;
     downX = e.clientX; moved = 0; downT = performance.now();
-    if (canvas.setPointerCapture) canvas.setPointerCapture(e.pointerId);
-    hideHint();
-    e.preventDefault();
   });
   canvas.addEventListener('pointermove', (e) => {
+    if (pinch.move(e)) return;
     if (!dragging) return;
     const dx = e.clientX - lastX, dy = e.clientY - lastY;
     moved += Math.abs(dx) + Math.abs(dy);
@@ -416,46 +461,68 @@ function wireEarthDrag(canvas) {
     lastX = e.clientX; lastY = e.clientY;
   });
   canvas.addEventListener('pointerup', (e) => {
-    if (dragging && moved <= 6 && performance.now() - downT < 600) {
+    const wasPinch = pinch.active();
+    pinch.up(e);
+    if (dragging && !wasPinch && moved <= 6 && performance.now() - downT < 600) {
       const rect = canvas.getBoundingClientRect();
       const hit = resolveHit(globe3d.hitTest(e.clientX - rect.left, e.clientY - rect.top));
       if (hit) choosePlace(hit);
     }
     dragging = false;
   });
-  canvas.addEventListener('pointercancel', () => { dragging = false; });
+  canvas.addEventListener('pointercancel', (e) => { pinch.up(e); dragging = false; });
 }
 
-// ---- glisser sur la carte : là, on déplace la nuit (donc l'heure) ----
+// ---- glisser sur la carte : là, on déplace la nuit (donc l'heure) ; la
+// pince zoome autour des doigts, et à deux doigts on se promène dans la
+// carte zoomée sans toucher à l'heure ----
 
 function wireMapDrag(canvas) {
   let dragging = false, lastX = 0, moved = 0, downT = 0;
+  const pinch = makePinch((k, mdx, mdy, s) => {
+    const L = map.layout;
+    if (!L) return;
+    const rect = canvas.getBoundingClientRect();
+    // le point de carte pincé reste sous les doigts pendant le zoom, puis
+    // suit leur déplacement ; MapView borne le pan au cadre en dessinant
+    const mx = s.mx - rect.left - (L.ox + L.W / 2);
+    const my = s.my - rect.top - (L.oy + L.H / 2);
+    const z0 = map.zoom;
+    map.zoom = Math.max(1, Math.min(3, z0 * k));
+    map.panX = mx + mdx - (mx - map.panX) * (map.zoom / z0);
+    map.panY = my + mdy - (my - map.panY) * (map.zoom / z0);
+  });
   canvas.addEventListener('pointerdown', (e) => {
     if (!map.layout) return;
-    dragging = true;
-    lastX = e.clientX; moved = 0; downT = performance.now();
     if (canvas.setPointerCapture) canvas.setPointerCapture(e.pointerId);
     e.preventDefault();
+    if (pinch.down(e)) { dragging = false; return; }
+    dragging = true;
+    lastX = e.clientX; moved = 0; downT = performance.now();
   });
   canvas.addEventListener('pointermove', (e) => {
+    if (pinch.move(e)) return;
     if (!dragging) return;
     const dx = e.clientX - lastX;
     moved += Math.abs(dx);
     if (moved > 6) {
       if (sim.playing || sim.tween) stopAuto();
-      sim.homeH = wrap24(sim.homeH - dx / map.layout.W * 24);
+      // zoomée, la carte est z fois plus large à l'écran : l'heure suit le doigt
+      sim.homeH = wrap24(sim.homeH - dx / (map.layout.W * map.layout.z) * 24);
     }
     lastX = e.clientX;
   });
   canvas.addEventListener('pointerup', (e) => {
-    if (dragging && moved <= 6 && performance.now() - downT < 600) {
+    const wasPinch = pinch.active();
+    pinch.up(e);
+    if (dragging && !wasPinch && moved <= 6 && performance.now() - downT < 600) {
       const rect = canvas.getBoundingClientRect();
       const hit = resolveHit(map.hitTest(e.clientX - rect.left, e.clientY - rect.top));
       if (hit) choosePlace(hit);
     }
     dragging = false;
   });
-  canvas.addEventListener('pointercancel', () => { dragging = false; });
+  canvas.addEventListener('pointercancel', (e) => { pinch.up(e); dragging = false; });
 }
 
 // ---- glisser sur la vue du pôle : on attrape le disque et on le fait

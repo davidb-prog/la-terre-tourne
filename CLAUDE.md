@@ -42,7 +42,12 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
   Soleil ne passe derrière la Terre que fugitivement, pendant un vol de caméra qui contourne
   par la face nuit (epsilon 0,02 sur sun[1] : sin(π) ≈ 1e-16 ne doit pas le classer
   « derrière ») ; glisser tourne la Terre (l'heure change — rotatif sur la vue du pôle,
-  horizontal sur le globe et la carte), jamais la caméra.
+  horizontal sur le globe et la carte), jamais la caméra ; **pincer à deux doigts** (tactile)
+  zoome les deux vues du jeu **sans jamais changer l'heure ni sélectionner de pays** — globe :
+  seul le rayon grossit (`globe3d.zoom`, borné 1–2,6, le Soleil sort du cadre en s'approchant) ;
+  carte : zoom autour des doigts + promenade à deux doigts (`map.zoom`/`panX`/`panY`, borné
+  1–3, pan borné au cadre), textes/points/icônes à taille d'écran constante (`fixed` dans
+  MapView), le glisser-heure à un doigt divisé par le zoom.
 - Boucle rAF résiliente (`try/finally`), `prefers-reduced-motion` respecté (pas de rotation
   automatique), aria-labels sur tous les canvas.
 
@@ -100,7 +105,9 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
   hitTest inverse — pas de lib 3D, c'est voulu
 - `js/main.js` — boucle d'animation, curseur, glissers (vue du pôle : rotatif = changer
   l'heure ; globe : H = tourner la Terre, V = pencher, clic = choisir ; carte : H = changer
-  l'heure, clic = choisir), `centerCameraOn` + `flyCameraTo` (vol animé vers le cadrage
+  l'heure, clic = choisir ; globe et carte : pince à deux doigts = zoomer, via `makePinch` —
+  suivi des pointeurs tactiles, neutralise glisser et clic pendant la pince),
+  `centerCameraOn` + `flyCameraTo` (vol animé vers le cadrage
   `cameraFrame`, contournement par la face nuit si le Soleil change de côté, saut sec en
   `prefers-reduced-motion`), boutons de lieux (🏠 chez nous / destination à son nom),
   recherche jumelle, scénarios (le scénario actif `activeScn` se rejoue quand la destination
@@ -124,7 +131,10 @@ mouvement réduit + mobile 390 px, structure de la page — heures chez nous/là
 côte sur ordinateur —, glisser rotatif du disque (quart de tour ≈ 6 h), sélection sans
 changer l'heure, boutons de lieux, bascule 🔇/🔊 des scénarios, sondes de pixels sur le
 Soleil et le croissant de nuit — jamais de « plein jour » plein cadre, Soleil jamais coincé
-derrière la Terre, entier même rapproché sur mobile —, zéro erreur console). Lancer les
+derrière la Terre, entier même rapproché sur mobile —, zéro erreur console). Le zoom à deux
+doigts a sa suite dédiée (`test-pinch.js` : touches synthétisées par CDP
+`Input.dispatchTouchEvent`, pince/dépince sur les deux vues du jeu, heure et destination
+inchangées, retour exact à la vue de départ, glissers à un doigt intacts, souris intacte). Lancer les
 serveurs avant : `python3 -m http.server 8123` sur le site. Chromium : `chromium.launch()`
 avec repli `executablePath: '/opt/pw-browsers/chromium'`.
 
