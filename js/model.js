@@ -236,6 +236,7 @@ export function texteOral(t) {
     .replace(/(\d+)\s*h\s*00\b/g, '$1 h')
     .replace(/(\d+)\s*h\s+(\d+)/g, '$1 heures $2')
     .replace(/(\d+)\s*h\b/g, '$1 heures')
+    .replace(/\b1 heures\b/g, '1 heure') // « 1 heure », singulier — sinon la voix accroche
     .replace(/\s+/g, ' ')
     .replace(/\s+([.,…])/g, '$1')
     .replace(/([!?…])\s*\./g, '$1')

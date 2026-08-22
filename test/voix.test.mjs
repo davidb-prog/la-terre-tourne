@@ -25,6 +25,9 @@ check('« 6 h 30 » se dit « 6 heures 30 », « 18 h » se dit « 18 heures »'
   texteOral('à 6 h 30 puis 18 h pile') === 'à 6 heures 30 puis 18 heures pile');
 check('« 7 h 00 » se dit « 7 heures » (jamais « zéro zéro »)',
   texteOral('Il est 7 h 00 : debout') === 'Il est 7 heures : debout');
+check('« 1 h » se dit « 1 heure » au singulier — 11 h et 21 h restent au pluriel',
+  texteOral('à 1 h puis 1 h 30') === 'à 1 heure puis 1 heure 30' &&
+  texteOral('à 11 h et 21 h') === 'à 11 heures et 21 heures');
 check('« 24 heures » écrit en toutes lettres ne bouge pas',
   texteOral('24 heures pour un tour') === '24 heures pour un tour');
 check('les émojis disparaissent et le point se recolle',

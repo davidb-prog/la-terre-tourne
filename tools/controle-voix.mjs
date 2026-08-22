@@ -82,9 +82,12 @@ export function normaliser(texte) {
     const v = parseInt(n, 10);
     return v <= 60 ? MOTS_NOMBRES[v] : m;
   });
-  // tolérances d'oreille : Whisper entend parfois « et demie » pour « trente »
+  // tolérances d'oreille : Whisper entend parfois « et demie » pour « trente »,
+  // et « une heure » pour « 1 heure »
   t = t.replace(/\bheures et demie\b/g, 'heures trente')
-    .replace(/\bheures et quart\b/g, 'heures quinze');
+    .replace(/\bheures et quart\b/g, 'heures quinze')
+    .replace(/\bune heure\b/g, 'un heure')
+    .replace(/\bheure\b/g, 'heures');
   return t.replace(/\s+/g, ' ').trim();
 }
 

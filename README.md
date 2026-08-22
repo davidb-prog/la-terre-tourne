@@ -142,7 +142,7 @@ jour/nuit toujours à l'écran, le Soleil jamais caché derrière la Terre aprè
 milieu du Pacifique dans l'océan, Bali/La Réunion/Tahiti ont leur île, la recherche trouve
 « reunion » sans accent, chaque pays du répertoire a son polygone…
 
-**35 vérifications de la voix** : le texte oral (émojis retirés, « 6 h 30 » → « 6 heures 30 »,
+**36 vérifications de la voix** : le texte oral (émojis retirés, « 6 h 30 » → « 6 heures 30 »,
 espaces recollés), l'arrondi assumé du scénario du lever (« presque 7 h 30 », jamais une heure
 déjà passée), les blocs du conteur — et surtout la **couverture** : le corpus vocal est
 ré-énuméré sur chaque scénario × chaque lieu du répertoire, aucune histoire que le site peut
@@ -256,7 +256,7 @@ tools/controle-voix.mjs  contrôle « sans oreilles » des clips (durées, blanc
                       Whisper comparée au manifeste) → tools/controle.html, les suspects seuls
 test/model.test.mjs   tests Node du modèle horaire (63 vérifications)
 test/geo.test.mjs     tests Node de la géographie et de la recherche (25 vérifications)
-test/voix.test.mjs    tests Node du conteur : textes oraux, couverture, manifeste (35 vérifications)
+test/voix.test.mjs    tests Node du conteur : textes oraux, couverture, manifeste (36 vérifications)
 ```
 
 ## La série
