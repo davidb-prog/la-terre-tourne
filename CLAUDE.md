@@ -19,7 +19,9 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
 - **Compat mobiles anciens** : pas d'optional chaining `?.` ni de nullish `??` ; pas de
   lookbehind dans les regex ; repli `@supports` pour `aspect-ratio` ; `top/right/bottom/left`
   plutôt que `inset` ; préfixer `-webkit-backdrop-filter` et `-webkit-transform` ;
-  `touch-action: none` sur les canvas interactifs ; tester à 390 px de large.
+  `touch-action: none` sur les canvas interactifs **et leurs conteneurs**
+  (`.canvas-wrap`, `.globe-stage` — comme l'épisode 2 : un doigt un peu de travers ne part
+  jamais en défilement de page) ; tester à 390 px de large.
 - `js/model.js` est **pur** (aucun accès DOM) et doit le rester : il se teste avec
   `node test/model.test.mjs`. Toutes les constantes de lieux et de décalages vivent dedans —
   ne jamais les recopier ailleurs. Même règle pour `js/geo.js` (contours lon/lat purs) et
@@ -42,7 +44,21 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
   Soleil ne passe derrière la Terre que fugitivement, pendant un vol de caméra qui contourne
   par la face nuit (epsilon 0,02 sur sun[1] : sin(π) ≈ 1e-16 ne doit pas le classer
   « derrière ») ; glisser tourne la Terre (l'heure change — rotatif sur la vue du pôle,
-  horizontal sur le globe et la carte), jamais la caméra.
+  horizontal sur le globe et la carte), jamais la caméra ; **pincer à deux doigts** (tactile)
+  zoome les deux vues du jeu **sans jamais changer l'heure ni sélectionner de pays** — globe :
+  seul le rayon grossit (`globe3d.zoom`, borné 1–5, le Soleil sort du cadre en s'approchant,
+  l'arc des Antilles grossit avec le zoom) ;
+  carte : zoom autour des doigts (`map.zoom`/`panX`/`panY`, borné 1–6, pan borné au cadre)
+  puis promenade à **un ou deux doigts** — zoomée, un doigt promène la carte au lieu de
+  changer l'heure, le glisser-heure revient à zoom 1 —, textes/points/icônes à taille
+  d'écran constante (`fixed` dans MapView) ; un clic hors de tout polygone choisit le
+  **lieu du répertoire le plus proche** (~3°, repli de `resolveHit`) — c'est ce qui rend
+  cliquables la Guadeloupe, Tahiti et les petites îles `SPECKS`, sans polygone Natural
+  Earth ; **double-tap sur une vue zoomée** = retour au
+  zoom 1 en douceur (`makeDoubleTap`/`makeDezoom`, saut sec en mouvement réduit) — pour
+  qu'il ne choisisse pas un pays au passage, la sélection au tap est différée de
+  `DBL_TAP_MS` tant que la vue est zoomée (fenêtre du double-tap et délai égaux exprès) ;
+  à zoom 1 la sélection reste immédiate.
 - Boucle rAF résiliente (`try/finally`), `prefers-reduced-motion` respecté (pas de rotation
   automatique), aria-labels sur tous les canvas.
 
@@ -100,7 +116,10 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
   hitTest inverse — pas de lib 3D, c'est voulu
 - `js/main.js` — boucle d'animation, curseur, glissers (vue du pôle : rotatif = changer
   l'heure ; globe : H = tourner la Terre, V = pencher, clic = choisir ; carte : H = changer
-  l'heure, clic = choisir), `centerCameraOn` + `flyCameraTo` (vol animé vers le cadrage
+  l'heure, clic = choisir ; globe et carte : pince à deux doigts = zoomer, via `makePinch` —
+  suivi des pointeurs tactiles, neutralise glisser et clic pendant la pince — et double-tap
+  = dézoomer, via `makeDoubleTap` + `makeDezoom`),
+  `centerCameraOn` + `flyCameraTo` (vol animé vers le cadrage
   `cameraFrame`, contournement par la face nuit si le Soleil change de côté, saut sec en
   `prefers-reduced-motion`), boutons de lieux (🏠 chez nous / destination à son nom),
   recherche jumelle, scénarios (le scénario actif `activeScn` se rejoue quand la destination
@@ -124,7 +143,10 @@ mouvement réduit + mobile 390 px, structure de la page — heures chez nous/là
 côte sur ordinateur —, glisser rotatif du disque (quart de tour ≈ 6 h), sélection sans
 changer l'heure, boutons de lieux, bascule 🔇/🔊 des scénarios, sondes de pixels sur le
 Soleil et le croissant de nuit — jamais de « plein jour » plein cadre, Soleil jamais coincé
-derrière la Terre, entier même rapproché sur mobile —, zéro erreur console). Lancer les
+derrière la Terre, entier même rapproché sur mobile —, zéro erreur console). Le zoom à deux
+doigts a sa suite dédiée (`test-pinch.js` : touches synthétisées par CDP
+`Input.dispatchTouchEvent`, pince/dépince sur les deux vues du jeu, heure et destination
+inchangées, retour exact à la vue de départ, glissers à un doigt intacts, souris intacte). Lancer les
 serveurs avant : `python3 -m http.server 8123` sur le site. Chromium : `chromium.launch()`
 avec repli `executablePath: '/opt/pw-browsers/chromium'`.
 

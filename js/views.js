@@ -114,17 +114,26 @@ export function pointInRing(lon, lat, ring) {
 }
 
 export class MapView {
-  constructor(canvas) { this.canvas = canvas; this.layout = null; }
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.layout = null;
+    // pince à deux doigts (mobile) : zoom et déplacement dans le cadre fixe
+    this.zoom = 1; this.panX = 0; this.panY = 0;
+  }
 
   // Convertit un clic (coordonnées canvas CSS) en longitude/latitude, ou null
-  // hors du planisphère.
+  // hors du planisphère. Retire d'abord le zoom/pan pour retomber dans le
+  // repère de base de la carte.
   hitTest(x, y) {
     if (!this.layout) return null;
     const L = this.layout;
     if (x < L.ox || x > L.ox + L.W || y < L.oy || y > L.oy + L.H) return null;
+    const cx = L.ox + L.W / 2, cy = L.oy + L.H / 2;
+    const bx = (x - cx - L.panX) / L.z + cx;
+    const by = (y - cy - L.panY) / L.z + cy;
     return {
-      lonDeg: (x - L.ox) / L.W * 360 - 180,
-      latDeg: 90 - (y - L.oy) / L.H * 180,
+      lonDeg: (bx - L.ox) / L.W * 360 - 180,
+      latDeg: 90 - (by - L.oy) / L.H * 180,
     };
   }
 
@@ -137,7 +146,11 @@ export class MapView {
     let W = w - 8, H = W / 2;
     if (H > h - 8) { H = h - 8; W = H * 2; }
     const ox = (w - W) / 2, oy = (h - H) / 2;
-    this.layout = { ox: ox, oy: oy, W: W, H: H };
+    // le pan reste borné : la carte zoomée couvre toujours tout le cadre
+    const z = this.zoom;
+    this.panX = Math.max(-(z - 1) * W / 2, Math.min((z - 1) * W / 2, this.panX));
+    this.panY = Math.max(-(z - 1) * H / 2, Math.min((z - 1) * H / 2, this.panY));
+    this.layout = { ox: ox, oy: oy, W: W, H: H, z: z, panX: this.panX, panY: this.panY };
     const X = (lon) => ox + (lon + 180) / 360 * W;
     const Y = (lat) => oy + (90 - lat) / 180 * H;
     const sub = subsolarLon(homeH);
@@ -145,6 +158,25 @@ export class MapView {
     ctx.save();
     roundRectPath(ctx, ox, oy, W, H, 12);
     ctx.clip();
+    // zoom à deux doigts : tout le dessin de la carte passe par cette
+    // transformation, le cadre (clip ci-dessus) et son contour restant fixes ;
+    // les repères internes ([ox, ox+W] et les ±W du rebouclage) vivent dans le
+    // repère de base, donc le reste du code ne change pas
+    if (z !== 1) {
+      const mcx = ox + W / 2, mcy = oy + H / 2;
+      ctx.translate(mcx + this.panX, mcy + this.panY);
+      ctx.scale(z, z);
+      ctx.translate(-mcx, -mcy);
+    }
+    // dessine autour de (x, y) à taille d'écran constante : les textes, points
+    // et icônes ne grossissent pas avec le zoom (comme sur le globe 3D, où
+    // seul le rayon grossit)
+    const fixed = (x, y, fn) => {
+      ctx.save();
+      ctx.translate(x, y); ctx.scale(1 / z, 1 / z); ctx.translate(-x, -y);
+      fn();
+      ctx.restore();
+    };
 
     // océan
     const og = ctx.createLinearGradient(0, oy, 0, oy + H);
@@ -271,11 +303,11 @@ export class MapView {
       const x = Math.max(ox + 16, Math.min(ox + W - 16, X(15 * m)));
       const txt = m === 0 ? 'UTC'
         : (m > 0 ? '+' : '−') + Math.abs(m) + (step === 1 ? ' h' : '');
-      label(ctx, txt, x, oy + 10,
-        { align: 'center', size: 9.5, alpha: 0.85, weight: 400, color: 'rgba(225, 234, 252, 0.95)' });
+      fixed(x, oy + 10, () => label(ctx, txt, x, oy + 10,
+        { align: 'center', size: 9.5, alpha: 0.85, weight: 400, color: 'rgba(225, 234, 252, 0.95)' }));
     }
-    label(ctx, 'Greenwich', X(0), oy + 23,
-      { align: 'center', size: 9, alpha: 0.7, weight: 400, color: 'rgba(225, 234, 252, 0.9)' });
+    fixed(X(0), oy + 23, () => label(ctx, 'Greenwich', X(0), oy + 23,
+      { align: 'center', size: 9, alpha: 0.7, weight: 400, color: 'rgba(225, 234, 252, 0.9)' }));
 
     // petit soleil « il est midi ici » et petite lune « il est minuit ici »
     const both = (lon, fn) => {
@@ -284,7 +316,7 @@ export class MapView {
       if (x < ox + 70) fn(x + W);
       if (x > ox + W - 70) fn(x - W);
     };
-    both(sub, (x) => {
+    both(sub, (x) => fixed(x, Y(12), () => {
       const y = Y(12);
       const g = ctx.createRadialGradient(x, y, 1, x, y, 30);
       g.addColorStop(0, 'rgba(255, 207, 92, 0.55)'); g.addColorStop(1, 'rgba(255, 207, 92, 0)');
@@ -302,8 +334,8 @@ export class MapView {
       if (W >= 520) {
         label(ctx, 'il est midi ici', x, y + 30, { align: 'center', size: 10, alpha: 0.9, color: COL.sun });
       }
-    });
-    both(sub + 180, (x) => {
+    }));
+    both(sub + 180, (x) => fixed(x, Y(12), () => {
       const y = Y(12);
       ctx.save();
       ctx.shadowColor = 'rgba(233, 237, 248, 0.8)'; ctx.shadowBlur = 12;
@@ -317,7 +349,7 @@ export class MapView {
       if (W >= 520) {
         label(ctx, 'il est minuit ici', x, y + 27, { align: 'center', size: 10, alpha: 0.85, color: '#c9d5f2' });
       }
-    });
+    }));
 
     // villes-décor : de petits points nommés pour que la carte ne soit jamais vide
     for (const d of DECOR) {
@@ -327,24 +359,28 @@ export class MapView {
       }
       if (near) continue;
       const x = X(d.lon), y = Y(d.lat);
-      ctx.beginPath(); ctx.arc(x, y, 2.4, 0, TAU);
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)'; ctx.fill();
-      label(ctx, d.n, x, y - 7,
-        { align: 'center', size: 8.5, alpha: 0.6, weight: 400, clampW: w, clampH: h });
+      fixed(x, y, () => {
+        ctx.beginPath(); ctx.arc(x, y, 2.4, 0, TAU);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.85)'; ctx.fill();
+        label(ctx, d.n, x, y - 7,
+          { align: 'center', size: 8.5, alpha: 0.6, weight: 400, clampW: w, clampH: h });
+      });
     }
 
     // les maisons
     for (const p of places) {
       const x = X(p.lonDeg), y = Y(p.latDeg);
-      ctx.save();
-      ctx.shadowColor = p.color; ctx.shadowBlur = 9;
-      ctx.beginPath(); ctx.arc(x, y, 6, 0, TAU); ctx.fillStyle = p.color; ctx.fill();
-      ctx.restore();
-      ctx.beginPath(); ctx.arc(x, y, 6, 0, TAU);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)'; ctx.lineWidth = 2; ctx.stroke();
-      const above = p.id === 'france';
-      label(ctx, p.name, x, above ? y - 14 : y + 15,
-        { align: 'center', size: 11.5, color: p.color, clampW: w, clampH: h });
+      fixed(x, y, () => {
+        ctx.save();
+        ctx.shadowColor = p.color; ctx.shadowBlur = 9;
+        ctx.beginPath(); ctx.arc(x, y, 6, 0, TAU); ctx.fillStyle = p.color; ctx.fill();
+        ctx.restore();
+        ctx.beginPath(); ctx.arc(x, y, 6, 0, TAU);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)'; ctx.lineWidth = 2; ctx.stroke();
+        const above = p.id === 'france';
+        label(ctx, p.name, x, above ? y - 14 : y + 15,
+          { align: 'center', size: 11.5, color: p.color, clampW: w, clampH: h });
+      });
     }
 
     ctx.restore();

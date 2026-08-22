@@ -31,6 +31,7 @@ export class Globe3D {
     this.canvas = canvas;
     this.yaw = -55 * DEG;  // azimut caméra — main.js le recale sur le lieu observé
     this.pitch = 16 * DEG; // pôle Nord légèrement penché vers nous
+    this.zoom = 1;         // pince à deux doigts (mobile) : la Terre grossit
     this.layout = null;
     this.pulse = null;     // { lonDeg, latDeg, k } — anneau après un vol
   }
@@ -55,7 +56,10 @@ export class Globe3D {
     // se rapproche du disque (ses rayons-flèches s'effacent, faute de room)
     const S = Math.min(w, h);
     const compact = S < 520;
-    const cx = 0.5 * w, cy = 0.5 * h, R = (compact ? 0.315 : 0.28) * S;
+    // le zoom (pince à deux doigts) grossit simplement le rayon : tout le
+    // dessin suit — le Soleil, posé à 1,55 R du centre, sort du cadre quand on
+    // s'approche, et le hitTest/glisser restent justes sans rien changer
+    const cx = 0.5 * w, cy = 0.5 * h, R = (compact ? 0.315 : 0.28) * S * this.zoom;
     this.layout = { cx: cx, cy: cy, R: R };
     this._spin = placeAngle(homeH, GREENWICH_LON);
     this._ct = Math.cos(this.pitch); this._st = Math.sin(this.pitch);
@@ -128,7 +132,11 @@ export class Globe3D {
       }
     }
     for (const lake of LAKES) this.shape(ctx, lake, cx, cy, R, COL3D.lake);
-    for (const [lon, lat] of ANTILLES) this.spot(ctx, lon, lat, 1.8, COL3D.land, cx, cy, R);
+    // l'arc des Antilles grossit avec le zoom (sinon ses îlots restent des
+    // points de 2 px, introuvables au doigt une fois la Terre agrandie)
+    for (const [lon, lat] of ANTILLES) {
+      this.spot(ctx, lon, lat, 1.8 * this.zoom, COL3D.land, cx, cy, R);
+    }
     for (const [lon, lat, r] of SPECKS) {
       this.spot(ctx, lon, lat, Math.max(1.4, r * DEG * R), COL3D.land, cx, cy, R);
     }
@@ -195,11 +203,15 @@ export class Globe3D {
         ctx.moveTo(x2, y); ctx.lineTo(x2 + side * 7, y + 4); ctx.stroke();
       }
       const lx = cx + side * R * 1.24;
-      label(ctx, 'le Soleil', lx, sunY + rS * 2.0 + 8,
-        { align: 'center', size: 11, alpha: 0.9, color: '#ffcf5c', clampW: w, clampH: h });
-      label(ctx, 'il éclaire l’autre côté !', lx, sunY + rS * 2.0 + 23,
-        { align: 'center', size: 9.5, alpha: 0.78, color: '#ffcf5c', clampW: w, clampH: h });
-    } else {
+      if (lx > -40 && lx < w + 40) { // zoomé, l'étiquette ne se colle pas au bord
+        label(ctx, 'le Soleil', lx, sunY + rS * 2.0 + 8,
+          { align: 'center', size: 11, alpha: 0.9, color: '#ffcf5c', clampW: w, clampH: h });
+        label(ctx, 'il éclaire l’autre côté !', lx, sunY + rS * 2.0 + 23,
+          { align: 'center', size: 9.5, alpha: 0.78, color: '#ffcf5c', clampW: w, clampH: h });
+      }
+    } else if (sunX + rS * 2.6 > 0 && sunX - rS * 2.6 < w) {
+      // (zoomée, la Terre pousse le Soleil hors du cadre : on n'affiche alors
+      // ni son disque ni son étiquette — sinon elle resterait collée au bord)
       drawSunDisc();
       label(ctx, 'le Soleil', sunX, sunY + rS * 2.1 + 8,
         { align: 'center', size: 11, alpha: 0.85, color: '#ffcf5c', clampW: w, clampH: h });
@@ -228,6 +240,8 @@ export class Globe3D {
       const v = this.point(d.lon, d.lat);
       if (-v[1] < 0.1) continue;
       const x = cx + R * v[0], y = cy - R * v[2];
+      // zoomé, un point peut sortir du cadre : son nom ne doit pas y rester collé
+      if (x < -24 || x > w + 24 || y < -24 || y > h + 24) continue;
       const dark = v[0] * sun[0] + v[1] * sun[1] + v[2] * sun[2] < -0.07;
       if (dark) {
         const g = ctx.createRadialGradient(x, y, 0.5, x, y, 7);
@@ -248,6 +262,7 @@ export class Globe3D {
       const v = this.point(p.lonDeg, p.latDeg);
       if (-v[1] < 0.06) continue;
       const x = cx + R * v[0], y = cy - R * v[2];
+      if (x < -24 || x > w + 24 || y < -24 || y > h + 24) continue;
       const s = 5 + 2.5 * -v[1];
       ctx.save();
       ctx.shadowColor = p.color; ctx.shadowBlur = 10;
