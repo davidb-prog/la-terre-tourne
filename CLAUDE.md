@@ -178,6 +178,16 @@ guide de la famille est `ou-va-le-soleil/docs/voix-conteur.md` ; règles dures :
 - **Figer les textes avant d'enregistrer**, valider à l'écoute (`tools/ecoute.html`,
   gitignoré), puis UN seul commit d'`assets/audio/` (mp3 + manifeste) — l'audio commité ne se
   delta-compresse pas, chaque régénération commitée est un blob mort à vie.
+- **La revue des ~165 clips ne se fait pas à l'oreille un par un** :
+  `node tools/controle-voix.mjs` (local, comme build-voix — prérequis `brew install ffmpeg`
+  et `pip3 install -U openai-whisper`) vérifie chaque mp3 mécaniquement (durée plausible
+  pour son texte, blancs au milieu, silence de fin mesuré) puis le transcrit (Whisper) et
+  compare au texte du manifeste (normalisation « 7 h 30 » ↔ « sept heures trente », seuil
+  0,82) ; il écrit `tools/controle.html` (gitignoré) avec SEULEMENT les suspects — lecteur,
+  attendu/entendu, commande `--only` prête. Cache par empreinte de fichier
+  (`tools/controle-cache.json`, gitignoré) : après un re-tirage, seul le fichier refait est
+  re-transcrit. Un clip signalé n'est pas forcément raté — c'est la courte liste de
+  réécoute ; l'oreille reste juge en dernier ressort.
 
 ## Vérification navigateur
 

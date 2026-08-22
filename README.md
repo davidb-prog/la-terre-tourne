@@ -252,6 +252,8 @@ js/main.js            boucle d'animation + interactions (curseur, glissers, sél
 assets/audio/         la voix enregistrée : mp3 + manifest.json (vide tant que rien n'est généré)
 tools/build-voix.mjs  génération ElevenLabs hors site (--dry-run, --essai, --only)
 tools/voix-lib.mjs    le corpus vocal par énumération (scénarios × lieux, dédupliqué)
+tools/controle-voix.mjs  contrôle « sans oreilles » des clips (durées, blancs, ré-écoute
+                      Whisper comparée au manifeste) → tools/controle.html, les suspects seuls
 test/model.test.mjs   tests Node du modèle horaire (63 vérifications)
 test/geo.test.mjs     tests Node de la géographie et de la recherche (25 vérifications)
 test/voix.test.mjs    tests Node du conteur : textes oraux, couverture, manifeste (35 vérifications)
