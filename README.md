@@ -81,7 +81,8 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
   doigt pour explorer), la carte à plat se zoome autour des doigts et on **s'y promène au doigt**
   (un ou deux — tant qu'elle est zoomée, glisser la promène sans toucher à l'heure ; le
   glisser-heure revient au dézoom) — noms, points et icônes gardent leur taille, et pincer
-  ne change jamais l'heure ni la destination.
+  ne change jamais l'heure ni la destination. Et sur une vue zoomée, **taper deux fois**
+  la ramène en douceur à la vue entière, sans rien sélectionner.
 - **Le Soleil du globe reste à sa place, et l'image reste lisible.** Il se pose sur l'axe
   horizontal, du côté d'où vient la lumière — et le cadrage garde **toujours la limite
   jour/nuit à l'écran** : jamais la face éclairée pile en face, jamais le Soleil coincé

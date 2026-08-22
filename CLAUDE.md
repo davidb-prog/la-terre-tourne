@@ -50,7 +50,11 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
   carte : zoom autour des doigts (`map.zoom`/`panX`/`panY`, borné 1–3, pan borné au cadre)
   puis promenade à **un ou deux doigts** — zoomée, un doigt promène la carte au lieu de
   changer l'heure, le glisser-heure revient à zoom 1 —, textes/points/icônes à taille
-  d'écran constante (`fixed` dans MapView).
+  d'écran constante (`fixed` dans MapView) ; **double-tap sur une vue zoomée** = retour au
+  zoom 1 en douceur (`makeDoubleTap`/`makeDezoom`, saut sec en mouvement réduit) — pour
+  qu'il ne choisisse pas un pays au passage, la sélection au tap est différée de
+  `DBL_TAP_MS` tant que la vue est zoomée (fenêtre du double-tap et délai égaux exprès) ;
+  à zoom 1 la sélection reste immédiate.
 - Boucle rAF résiliente (`try/finally`), `prefers-reduced-motion` respecté (pas de rotation
   automatique), aria-labels sur tous les canvas.
 
@@ -109,7 +113,8 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
 - `js/main.js` — boucle d'animation, curseur, glissers (vue du pôle : rotatif = changer
   l'heure ; globe : H = tourner la Terre, V = pencher, clic = choisir ; carte : H = changer
   l'heure, clic = choisir ; globe et carte : pince à deux doigts = zoomer, via `makePinch` —
-  suivi des pointeurs tactiles, neutralise glisser et clic pendant la pince),
+  suivi des pointeurs tactiles, neutralise glisser et clic pendant la pince — et double-tap
+  = dézoomer, via `makeDoubleTap` + `makeDezoom`),
   `centerCameraOn` + `flyCameraTo` (vol animé vers le cadrage
   `cameraFrame`, contournement par la face nuit si le Soleil change de côté, saut sec en
   `prefers-reduced-motion`), boutons de lieux (🏠 chez nous / destination à son nom),

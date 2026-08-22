@@ -421,9 +421,64 @@ function makePinch(onPinch) {
   };
 }
 
+// ---- retour au zoom 1 en douceur (saut sec en mouvement réduit) : `run`
+// anime la vue de son état capturé par `snap` vers apply(état, 1) ; `cancel`
+// dès que la main reprend la vue ----
+
+function makeDezoom(snap, apply) {
+  let token = 0;
+  return {
+    cancel: () => { token++; },
+    run: () => {
+      const my = ++token, s0 = snap();
+      if (reduceMotion) { apply(s0, 1); return; }
+      const start = performance.now(), dur = 260;
+      const step = (now) => {
+        if (my !== token) return; // la main a repris la vue : on s'arrête
+        const t = Math.min(1, (now - start) / dur);
+        apply(s0, 1 - Math.pow(1 - t, 3));
+        if (t < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    },
+  };
+}
+
+// ---- double-tap : deux petits taps rapprochés (fenêtre DBL_TAP_MS, < 30 px).
+// Sur une vue zoomée il dézoome — et pour qu'il ne choisisse pas un pays au
+// passage, la sélection au tap est différée de la même fenêtre tant que la
+// vue est zoomée (le second tap l'annule ; fenêtre et délai doivent rester
+// égaux, sinon la sélection peut partir avant le second tap). À zoom 1, la
+// sélection reste immédiate, comme toujours. ----
+
+const DBL_TAP_MS = 400;
+
+function makeDoubleTap(isZoomed, onDouble, onTap) {
+  let last = null, timer = null;
+  return {
+    cancelPending: () => { if (timer) { clearTimeout(timer); timer = null; } },
+    tap: (x, y) => {
+      const now = performance.now();
+      if (last && now - last.t < DBL_TAP_MS && Math.abs(x - last.x) < 30 && Math.abs(y - last.y) < 30) {
+        last = null;
+        if (timer) { clearTimeout(timer); timer = null; }
+        if (isZoomed()) onDouble();
+        return;
+      }
+      last = { t: now, x: x, y: y };
+      if (isZoomed()) {
+        timer = setTimeout(() => { timer = null; onTap(x, y); }, DBL_TAP_MS);
+      } else {
+        onTap(x, y);
+      }
+    },
+  };
+}
+
 // ---- glisser sur le globe : horizontalement on TOURNE LA TERRE (l'heure
 // change, le Soleil ne bouge pas), verticalement on la penche ; un petit clic
-// choisit le pays ou la ville sous le doigt ; la pince zoome ----
+// choisit le pays ou la ville sous le doigt ; la pince zoome, le double-tap
+// dézoome ----
 
 function wireEarthDrag(canvas) {
   let dragging = false, lastX = 0, lastY = 0, downX = 0, moved = 0, downT = 0;
@@ -431,11 +486,20 @@ function wireEarthDrag(canvas) {
   const pinch = makePinch((k) => {
     globe3d.zoom = Math.max(1, Math.min(2.6, globe3d.zoom * k));
   });
+  const dezoom = makeDezoom(() => globe3d.zoom,
+    (z0, k) => { globe3d.zoom = z0 + (1 - z0) * k; });
+  const dtap = makeDoubleTap(() => globe3d.zoom > 1, dezoom.run, (x, y) => {
+    const rect = canvas.getBoundingClientRect();
+    const hit = resolveHit(globe3d.hitTest(x - rect.left, y - rect.top));
+    if (hit) choosePlace(hit);
+  });
   canvas.addEventListener('pointerdown', (e) => {
     if (!globe3d.layout) return;
     if (canvas.setPointerCapture) canvas.setPointerCapture(e.pointerId);
     hideHint();
     e.preventDefault();
+    dezoom.cancel();
+    dtap.cancelPending();
     if (pinch.down(e)) { dragging = false; camAnim = null; return; }
     dragging = true;
     timeUnlocked = false;
@@ -464,9 +528,7 @@ function wireEarthDrag(canvas) {
     const wasPinch = pinch.active();
     pinch.up(e);
     if (dragging && !wasPinch && moved <= 6 && performance.now() - downT < 600) {
-      const rect = canvas.getBoundingClientRect();
-      const hit = resolveHit(globe3d.hitTest(e.clientX - rect.left, e.clientY - rect.top));
-      if (hit) choosePlace(hit);
+      dtap.tap(e.clientX, e.clientY);
     }
     dragging = false;
   });
@@ -476,7 +538,7 @@ function wireEarthDrag(canvas) {
 // ---- glisser sur la carte : là, on déplace la nuit (donc l'heure) ; la
 // pince zoome autour des doigts, et dans la carte zoomée on se promène au
 // doigt (un ou deux) sans toucher à l'heure — le glisser-heure revient
-// dès qu'on a dézoomé ----
+// dès qu'on a dézoomé (pince resserrée ou double-tap) ----
 
 function wireMapDrag(canvas) {
   let dragging = false, lastX = 0, lastY = 0, moved = 0, downT = 0;
@@ -493,10 +555,22 @@ function wireMapDrag(canvas) {
     map.panX = mx + mdx - (mx - map.panX) * (map.zoom / z0);
     map.panY = my + mdy - (my - map.panY) * (map.zoom / z0);
   });
+  const dezoom = makeDezoom(() => [map.zoom, map.panX, map.panY], (s, k) => {
+    map.zoom = s[0] + (1 - s[0]) * k;
+    map.panX = s[1] * (1 - k);
+    map.panY = s[2] * (1 - k);
+  });
+  const dtap = makeDoubleTap(() => map.zoom > 1, dezoom.run, (x, y) => {
+    const rect = canvas.getBoundingClientRect();
+    const hit = resolveHit(map.hitTest(x - rect.left, y - rect.top));
+    if (hit) choosePlace(hit);
+  });
   canvas.addEventListener('pointerdown', (e) => {
     if (!map.layout) return;
     if (canvas.setPointerCapture) canvas.setPointerCapture(e.pointerId);
     e.preventDefault();
+    dezoom.cancel();
+    dtap.cancelPending();
     if (pinch.down(e)) { dragging = false; return; }
     dragging = true;
     lastX = e.clientX; lastY = e.clientY; moved = 0; downT = performance.now();
@@ -524,9 +598,7 @@ function wireMapDrag(canvas) {
     const wasPinch = pinch.active();
     pinch.up(e);
     if (dragging && !wasPinch && moved <= 6 && performance.now() - downT < 600) {
-      const rect = canvas.getBoundingClientRect();
-      const hit = resolveHit(map.hitTest(e.clientX - rect.left, e.clientY - rect.top));
-      if (hit) choosePlace(hit);
+      dtap.tap(e.clientX, e.clientY);
     }
     dragging = false;
   });
