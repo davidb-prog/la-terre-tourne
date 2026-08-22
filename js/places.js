@@ -621,6 +621,14 @@ export function searchPlaces(query, max) {
   return scored.slice(0, max || 8).map((s) => s[1]);
 }
 
+// Les idées de voyage prêtes à cliquer (les 9 puces sous les recherches).
+// Partagées entre l'interface (js/main.js) et la voix enregistrée
+// (tools/voix-lib.mjs) : les transitions nommées du conteur (« Et pendant ce
+// temps, à Tahiti… ») ne sont enregistrées que pour ces lieux-là — les
+// autres lieux du répertoire s'entendent « là-bas ».
+export const IDEES_VOYAGE = ['Guadeloupe', 'Bali', 'Tahiti', 'Tokyo', 'New York',
+  'Sydney', 'La Réunion', 'Nouméa', 'Thaïlande'];
+
 // Villes-décor toujours dessinées sur les cartes (petits points neutres),
 // pour que le monde ne soit jamais vide.
 export const DECOR = [
