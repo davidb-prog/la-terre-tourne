@@ -146,12 +146,20 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
   leur transition nommée
 - `tools/voix-lib.mjs` — le **corpus vocal par énumération** : chaque scénario × chaque lieu
   du répertoire (+ la Guadeloupe par défaut de model.js) passe par `blocsScenario`, dédupliqué
-  par id → ~165 blocs, ~11 600 caractères. `tools/build-voix.mjs` — génération ElevenLabs
-  HORS site (copié de l'épisode 2 : `--dry-run`, `--essai`, `--only`, manifeste idempotent,
-  `tools/ecoute.html` gitignoré) ; `assets/audio/manifest.json` — vide tant que rien n'est
-  généré, le site reste 100 % synthèse
+  par id → 165 blocs, ~11 600 caractères. `tools/build-voix.mjs` — génération ElevenLabs
+  HORS site (copié de l'épisode 2 : `--dry-run`, `--essai`, `--only`, manifeste idempotent) +
+  les acquis de cet épisode : `--calme` (réglages posés style 0/stabilité 0,75, contexte de
+  prosodie `previous_text`, diction « : » dit comme un point et heures en toutes lettres —
+  pour les clips qui accrochent prise après prise ; le manifeste garde le texte officiel,
+  seuls les mots PRONONCÉS doivent rester identiques), et la page d'écoute-marathon
+  `tools/ecoute.html` (gitignorée, régénérée à chaque run) : lecture enchaînée des 165 clips,
+  marquage 🚩 → commandes `--only … --calme`, écoute ciblée d'une fournée par `#ids=…`
+  (build-voix imprime l'URL de ce qu'il vient de générer), et anti-cache `?v=` sur chaque
+  mp3 — SANS lui, le navigateur ressert l'ancienne version d'un clip re-tiré (leçon payée :
+  six « re-tirages ratés » qui étaient le même fichier en cache) ;
+  `assets/audio/manifest.json` — les 165 blocs enregistrés (la synthèse reste le repli)
 - `test/model.test.mjs` — 63 vérifications ; `test/geo.test.mjs` — 25 vérifications ;
-  `test/voix.test.mjs` — 42 vérifications (textes oraux, arrondi jamais en retard, blocs,
+  `test/voix.test.mjs` — 47 vérifications (textes oraux, arrondi jamais en retard, blocs,
   **couverture** : tout ce que le site peut raconter est dans le corpus, manifeste ↔ site)
 
 ## La voix enregistrée (ElevenLabs)
@@ -181,9 +189,11 @@ guide de la famille est `ou-va-le-soleil/docs/voix-conteur.md` ; règles dures :
 - **La revue des ~165 clips ne se fait pas à l'oreille un par un** :
   `node tools/controle-voix.mjs` (local, comme build-voix — prérequis `brew install ffmpeg`
   et `pip3 install -U openai-whisper`) vérifie chaque mp3 mécaniquement (durée plausible
-  pour son texte, blancs au milieu, silence de fin mesuré) puis le transcrit (Whisper) et
-  compare au texte du manifeste (normalisation « 7 h 30 » ↔ « sept heures trente », seuil
-  0,82, détecteur de bégaiement : n-gramme doublé dans l’entendu, absent de l’attendu) ; il écrit `tools/controle.html` (gitignoré) avec SEULEMENT les suspects — lecteur,
+  pour son texte, blancs au milieu, silence de fin mesuré) puis le transcrit (Whisper,
+  horodatage des mots) et compare au texte du manifeste (normalisation « 7 h 30 » ↔ « sept
+  heures trente », seuil 0,82, détecteur de bégaiement : n-gramme doublé dans l'entendu,
+  absent de l'attendu, blancs ≥ 0,8 s en pleine phrase et mots étirés — calibré voix de
+  conteur : pauses inter-segments et bords de clip exclus, l'oreille reste la référence) ; il écrit `tools/controle.html` (gitignoré) avec SEULEMENT les suspects — lecteur,
   attendu/entendu, commande `--only` prête. Cache par empreinte de fichier
   (`tools/controle-cache.json`, gitignoré) : après un re-tirage, seul le fichier refait est
   re-transcrit. Un clip signalé n'est pas forcément raté — c'est la courte liste de
