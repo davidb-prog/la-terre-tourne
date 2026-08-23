@@ -61,9 +61,10 @@ check('la phrase orale n’annonce jamais une heure déjà passée',
     // reconstruire les minutes annoncées depuis le mot (« minuit 30 »,
     // « une heure », « midi », « 7 h 30 »…) et comparer à l'heure réelle
     const minutesDe = (mot) => {
-      const m = mot.match(/^(minuit|midi|une heure|\d+ h)( (\d+))?$/);
+      const m = mot.match(/^(minuit|midi|une heure|vingt et une heures|\d+ h)( (\d+))?$/);
       const base = m[1] === 'minuit' ? 0 : m[1] === 'midi' ? 12 * 60
-        : m[1] === 'une heure' ? 60 : parseInt(m[1], 10) * 60;
+        : m[1] === 'une heure' ? 60 : m[1] === 'vingt et une heures' ? 21 * 60
+        : parseInt(m[1], 10) * 60;
       return base + (m[3] ? parseInt(m[3], 10) : 0);
     };
     for (let h = 0; h < 24; h += 7 / 60) {
@@ -83,9 +84,15 @@ check('à midi chez nous, la phrase orale de Bali dit 19 h sans émoji',
   'Il est 19 h : le soleil se couche, on dîne.');
 check('au dodo (20 h), Bali est « déjà demain » — en phrase séparée à l’oral',
   placePhraseOrale(20, bali, false, false).indexOf('. Et c’est déjà demain !') !== -1);
-check('« une histoire… et au lit » perd ses points de suspension à l’oral (la voix calait)',
-  placePhraseOrale(20.75, HOME, false, false).indexOf('une histoire, et au lit') !== -1 &&
+check('« une histoire… et au lit » devient une phrase pleine à l’oral (la voix calait)',
+  placePhraseOrale(20.75, HOME, false, false)
+    .indexOf('on écoute une histoire avant d’aller au lit') !== -1 &&
   placePhraseOrale(20.75, HOME, false, false).indexOf('…') === -1);
+check('21 h se dit « vingt et une heures » (le moteur fait la faute de genre en chiffres)',
+  heureOrale(21, false).mot === 'vingt et une heures' &&
+  heureOrale(21.5, false).mot === 'vingt et une heures 30');
+check('avant un report de jour, le « ! » de l’activité s’adoucit en point',
+  placePhraseOrale(23, bali, false, false).indexOf('petit-déjeuner. Et c’est déjà demain !') !== -1);
 check('même fuseau que la France : la coïncidence se célèbre à l’oral',
   placePhraseOrale(12, HOME, true, false).indexOf('la même heure que chez nous') === 0 ||
   placePhraseOrale(12, HOME, true, false).indexOf('C’est la même heure') === 0);
@@ -119,8 +126,8 @@ const blocs = corpus();
     const g = b.id.split('-')[0];
     groupes[g] = (groupes[g] || 0) + 1;
   }
-  check('l’ossature y est : 1 « chez nous », 3 textes France, 10 transitions, 5 paragraphes d’histoire',
-    groupes.voix === 1 && groupes.scn === 3 && groupes.trans === 10 && groupes.histoire === 5,
+  check('l’ossature y est : 1 « chez nous », 3 textes France, 10 transitions, 6 paragraphes d’histoire',
+    groupes.voix === 1 && groupes.scn === 3 && groupes.trans === 10 && groupes.histoire === 6,
     JSON.stringify(groupes));
   check('les phrases générées énumérées restent bornées (100 à 250 blocs)',
     groupes.phrase >= 100 && groupes.phrase <= 250, groupes.phrase);
@@ -152,9 +159,9 @@ check('aucun émoji dans les textes oraux',
 check('aucune heure en chiffres non oralisée (« N h ») ne subsiste',
   blocs.every((b) => !/\d\s*h\b/.test(b.texte)));
 // les leçons payées à l'enregistrement : ces tournures font trébucher la voix
-check('jamais « 0 heures », « 1 heure(s) » ni « 12 heures » en chiffres à l’oral',
-  blocs.every((b) => !/\b(0|1|12) heures?\b/.test(b.texte)),
-  blocs.filter((b) => /\b(0|1|12) heures?\b/.test(b.texte)).map((b) => b.id).join(', '));
+check('jamais « 0 heures », « 1 heure(s) », « 12 heures » ni « 21 heures » en chiffres à l’oral',
+  blocs.every((b) => !/\b(0|1|12|21) heures?\b/.test(b.texte)),
+  blocs.filter((b) => /\b(0|1|12|21) heures?\b/.test(b.texte)).map((b) => b.id).join(', '));
 // (les paragraphes d'histoire, écrits main, gardent le droit au « … » de
 // suspense — ils se valident à l'oreille ; les phrases GÉNÉRÉES, jamais)
 check('jamais de points de suspension en plein flux dans les phrases générées',

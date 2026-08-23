@@ -127,7 +127,10 @@ const ACTIVITIES = [
   { until: 18, emoji: '⚽', text: 'On joue dehors' },
   { until: 19, emoji: '🛁', text: 'C’est l’heure du bain' },
   { until: 20.5, emoji: '🍲', text: 'On dîne' },
-  { until: 22, emoji: '📖', text: 'Une histoire… et au lit' },
+  // à l'oral, le fragment sans verbe se dit mal (constaté sur 6 clips) : la
+  // voix reçoit une phrase pleine, l'écran garde son « … » d'invitation
+  { until: 22, emoji: '📖', text: 'Une histoire… et au lit',
+    oral: 'on écoute une histoire avant d’aller au lit' },
   { until: 24, emoji: '😴', text: 'On dort profondément' },
 ];
 export function activityFor(localHours) {
@@ -263,8 +266,11 @@ export function heureOrale(hours, approx) {
   const h = Math.floor(total / 60);
   const m = total % 60;
   const mn = m === 0 ? '' : ' ' + (m < 10 ? '0' + m : String(m));
+  // « 21 » : le moteur vocal oralise « vingt-et-un heures », faute de genre
+  // systématique — on écrit « vingt et une heures » en toutes lettres
   const mot = h === 0 ? 'minuit' + mn : h === 12 ? 'midi' + mn
     : h === 1 ? 'une heure' + mn
+    : h === 21 ? 'vingt et une heures' + mn
     : h + ' h' + mn;
   return { mot: mot, presque: presque };
 }
@@ -280,14 +286,18 @@ export function placePhraseOrale(homeH, place, sameAsHome, approx) {
   const b = phraseBits(homeH, place);
   const t = heureOrale(b.clock.hours, approx);
   const est = (t.presque ? 'presque ' : '') + t.mot;
-  const act = b.actTxt.replace('… ', ', ');
+  const act = b.act.oral || b.actTxt.replace('… ', ', ');
   if (sameAsHome) {
     return 'C’est la même heure que chez nous — il est aussi ' + est + ' : ' +
       b.skyTxt + ', ' + act + '.';
   }
   let txt = 'Il est ' + est + ' : ' + b.skyTxt + ', ' + act + '.';
-  if (b.clock.dayShift > 0) txt += ' Et c’est déjà demain !';
-  else if (b.clock.dayShift < 0) txt += ' Et là-bas, on est encore hier !';
+  if (b.clock.dayShift !== 0) {
+    // deux exclamations enchaînées (« petit-déjeuner ! Et c'est déjà
+    // demain ! ») s'entendent mal : celle de l'activité s'adoucit en point
+    txt = txt.replace(/\s*!\.$/, '.');
+    txt += b.clock.dayShift > 0 ? ' Et c’est déjà demain !' : ' Et là-bas, on est encore hier !';
+  }
   return txt;
 }
 

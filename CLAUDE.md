@@ -151,7 +151,7 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
   `tools/ecoute.html` gitignoré) ; `assets/audio/manifest.json` — vide tant que rien n'est
   généré, le site reste 100 % synthèse
 - `test/model.test.mjs` — 63 vérifications ; `test/geo.test.mjs` — 25 vérifications ;
-  `test/voix.test.mjs` — 40 vérifications (textes oraux, arrondi jamais en retard, blocs,
+  `test/voix.test.mjs` — 42 vérifications (textes oraux, arrondi jamais en retard, blocs,
   **couverture** : tout ce que le site peut raconter est dans le corpus, manifeste ↔ site)
 
 ## La voix enregistrée (ElevenLabs)
