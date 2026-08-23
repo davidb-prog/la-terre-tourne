@@ -325,10 +325,15 @@ if (!cle || !voix) {
 // -- génération (séquentielle : respecte les limites de débit du plan) --
 const calme = drapeau('--calme');
 if (calme) console.log('mode --calme : réglages posés + contexte de prosodie previous_text');
+// en mode calme, le deux-points SE DIT comme un point : la voix termine sa
+// syllabe et marque un vrai arrêt au lieu d'enchaîner (une prise avalait la
+// fin de « trente » juste avant un « : »). Les mots prononcés sont les
+// mêmes — le manifeste garde le texte officiel, seule la diction change.
+const diction = (t) => (calme ? t.replace(/\s*:\s+/g, '. ') : t);
 mkdirSync(dossierAudio, { recursive: true });
 for (const b of aFaire) {
   process.stdout.write(b.id + (calme ? ' (calme)' : '') + ' … ');
-  const mp3 = await genererMp3(b.texte, voix, b.precedent || (calme ? contexteDe(b) : null), calme);
+  const mp3 = await genererMp3(diction(b.texte), voix, b.precedent || (calme ? contexteDe(b) : null), calme);
   writeFileSync(dossierAudio + b.id + '.mp3', mp3);
   manifeste.blocs[b.id] = { texte: b.texte, hash: empreinteBloc(b), fichier: b.id + '.mp3' };
   console.log('ok (' + Math.round(mp3.length / 1024) + ' ko)');
