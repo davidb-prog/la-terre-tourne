@@ -1,5 +1,837 @@
 {
-  "voix": null,
-  "modele": null,
-  "blocs": {}
+  "voix": "GFj5Qf6cNQ3Lgp8VKBwc",
+  "modele": "eleven_multilingual_v2",
+  "blocs": {
+    "voix-chez-nous": {
+      "texte": "Chez nous…",
+      "hash": "dbb6c3099953",
+      "fichier": "voix-chez-nous.mp3"
+    },
+    "scn-reveil-france": {
+      "texte": "Debout ! Il est 7 heures du matin, le soleil se lève.",
+      "hash": "ee1a070322a5",
+      "fichier": "scn-reveil-france.mp3"
+    },
+    "trans-ailleurs": {
+      "texte": "Et pendant ce temps, là-bas…",
+      "hash": "bb2a6d7cb71e",
+      "fichier": "trans-ailleurs.mp3"
+    },
+    "phrase-ctsbz1": {
+      "texte": "Il est 6 heures : le soleil se lève, on se réveille, petit-déjeuner !",
+      "hash": "9700b0cee25e",
+      "fichier": "phrase-ctsbz1.mp3"
+    },
+    "phrase-5560os": {
+      "texte": "Il est 6 heures : il fait nuit, on se réveille, petit-déjeuner !",
+      "hash": "b40eee97b563",
+      "fichier": "phrase-5560os.mp3"
+    },
+    "phrase-1lse102": {
+      "texte": "C’est la même heure que chez nous, il est aussi 7 heures : le soleil se lève, on se réveille, petit-déjeuner !",
+      "hash": "de87208070f8",
+      "fichier": "phrase-1lse102.mp3"
+    },
+    "phrase-j9fv67": {
+      "texte": "C’est la même heure que chez nous, il est aussi 7 heures : le soleil brille, on se réveille, petit-déjeuner !",
+      "hash": "f1d05d0e3e00",
+      "fichier": "phrase-j9fv67.mp3"
+    },
+    "phrase-1bznhl6": {
+      "texte": "Il est 8 heures : le soleil brille, on joue, on apprend.",
+      "hash": "e3f107ab432b",
+      "fichier": "phrase-1bznhl6.mp3"
+    },
+    "phrase-165t0ob": {
+      "texte": "Il est 9 heures : le soleil brille, on joue, on apprend.",
+      "hash": "e8df1c2e6256",
+      "fichier": "phrase-165t0ob.mp3"
+    },
+    "phrase-1gebltf": {
+      "texte": "Il est 10 heures : le soleil brille, on joue, on apprend.",
+      "hash": "0a1ec6dae26a",
+      "fichier": "phrase-1gebltf.mp3"
+    },
+    "phrase-1w992ug": {
+      "texte": "Il est 9 heures 30 : le soleil brille, on joue, on apprend.",
+      "hash": "b8a9b8cca594",
+      "fichier": "phrase-1w992ug.mp3"
+    },
+    "phrase-197e52o": {
+      "texte": "Il est 10 heures 30 : le soleil brille, on joue, on apprend.",
+      "hash": "150d362cf23a",
+      "fichier": "phrase-197e52o.mp3"
+    },
+    "phrase-1m862qa": {
+      "texte": "Il est 11 heures : le soleil brille, on joue, on apprend.",
+      "hash": "fe0c20a34e25",
+      "fichier": "phrase-1m862qa.mp3"
+    },
+    "phrase-1q4sqep": {
+      "texte": "Il est 11 heures 30 : le soleil brille, on joue, on apprend.",
+      "hash": "d15b8970f835",
+      "fichier": "phrase-1q4sqep.mp3"
+    },
+    "phrase-1hag0pf": {
+      "texte": "Il est 11 heures 45 : le soleil brille, on joue, on apprend.",
+      "hash": "a56bc60cc9ce",
+      "fichier": "phrase-1hag0pf.mp3"
+    },
+    "phrase-1w9vhkb": {
+      "texte": "Il est midi : le soleil brille, on déjeune.",
+      "hash": "912bb1d30df8",
+      "fichier": "phrase-1w9vhkb.mp3"
+    },
+    "phrase-1vi16co": {
+      "texte": "Il est 13 heures : le soleil brille, on déjeune.",
+      "hash": "ed0773548773",
+      "fichier": "phrase-1vi16co.mp3"
+    },
+    "phrase-12w5xlt": {
+      "texte": "Il est 14 heures : le soleil brille, on joue dehors.",
+      "hash": "824488eb3e77",
+      "fichier": "phrase-12w5xlt.mp3"
+    },
+    "phrase-1s9xf4w": {
+      "texte": "Il est 15 heures : le soleil brille, on joue dehors.",
+      "hash": "15c702d7d967",
+      "fichier": "phrase-1s9xf4w.mp3"
+    },
+    "trans-tokyo": {
+      "texte": "Et pendant ce temps, à Tokyo…",
+      "hash": "d548d92dc3cf",
+      "fichier": "trans-tokyo.mp3"
+    },
+    "phrase-etq1k3": {
+      "texte": "Il est 16 heures : le soleil brille, on joue dehors.",
+      "hash": "bc43cd529e0a",
+      "fichier": "phrase-etq1k3.mp3"
+    },
+    "phrase-rh6kkj": {
+      "texte": "Il est 15 heures 30 : le soleil brille, on joue dehors.",
+      "hash": "ec17a4582dfd",
+      "fichier": "phrase-rh6kkj.mp3"
+    },
+    "trans-sydney": {
+      "texte": "Et pendant ce temps, à Sydney…",
+      "hash": "7bc86d28c15d",
+      "fichier": "trans-sydney.mp3"
+    },
+    "trans-noumea": {
+      "texte": "Et pendant ce temps, à Nouméa…",
+      "hash": "9f29cf9acf83",
+      "fichier": "trans-noumea.mp3"
+    },
+    "phrase-1jcdbh0": {
+      "texte": "Il est 18 heures : le soleil se couche, c’est l’heure du bain.",
+      "hash": "677a62ba1c85",
+      "fichier": "phrase-1jcdbh0.mp3"
+    },
+    "phrase-1p8nxia": {
+      "texte": "Il est 19 heures : le soleil se couche, on dîne.",
+      "hash": "3bb48114f2bb",
+      "fichier": "phrase-1p8nxia.mp3"
+    },
+    "phrase-f14rt5": {
+      "texte": "Il est 20 heures : il fait nuit, on dîne.",
+      "hash": "1a173f6f5f88",
+      "fichier": "phrase-f14rt5.mp3"
+    },
+    "trans-tahiti": {
+      "texte": "Et pendant ce temps, à Tahiti…",
+      "hash": "3d48402ea8dc",
+      "fichier": "trans-tahiti.mp3"
+    },
+    "phrase-ymo0yg": {
+      "texte": "Il est minuit : il fait nuit, on dort profondément.",
+      "hash": "cb7e9dc883da",
+      "fichier": "phrase-ymo0yg.mp3"
+    },
+    "trans-new-york": {
+      "texte": "Et pendant ce temps, à New York…",
+      "hash": "49480098f912",
+      "fichier": "trans-new-york.mp3"
+    },
+    "phrase-iz7acg": {
+      "texte": "Il est 2 heures : il fait nuit, on dort profondément.",
+      "hash": "8f90e4f1d18e",
+      "fichier": "phrase-iz7acg.mp3"
+    },
+    "phrase-9el15v": {
+      "texte": "Il est 2 heures 30 : il fait nuit, on dort profondément.",
+      "hash": "ca08d870497e",
+      "fichier": "phrase-9el15v.mp3"
+    },
+    "phrase-edzush": {
+      "texte": "Il est 3 heures : il fait nuit, on dort profondément.",
+      "hash": "34173110a5ec",
+      "fichier": "phrase-edzush.mp3"
+    },
+    "phrase-1thxeli": {
+      "texte": "Il est 4 heures : il fait nuit, on dort profondément.",
+      "hash": "89d9de571a5d",
+      "fichier": "phrase-1thxeli.mp3"
+    },
+    "trans-thailande": {
+      "texte": "Et pendant ce temps, en Thaïlande…",
+      "hash": "abba1272500e",
+      "fichier": "trans-thailande.mp3"
+    },
+    "trans-guadeloupe": {
+      "texte": "Et pendant ce temps, en Guadeloupe…",
+      "hash": "cd582b390fbf",
+      "fichier": "trans-guadeloupe.mp3"
+    },
+    "trans-la-reunion": {
+      "texte": "Et pendant ce temps, à La Réunion…",
+      "hash": "aa4e538cc39a",
+      "fichier": "trans-la-reunion.mp3"
+    },
+    "trans-bali": {
+      "texte": "Et pendant ce temps, à Bali…",
+      "hash": "418e5924fc0f",
+      "fichier": "trans-bali.mp3"
+    },
+    "phrase-e61k4p": {
+      "texte": "Il est 18 heures : le soleil brille, c’est l’heure du bain.",
+      "hash": "dae2b9839679",
+      "fichier": "phrase-e61k4p.mp3"
+    },
+    "phrase-1fcm1t3": {
+      "texte": "Il est 5 heures : il fait nuit, on dort profondément.",
+      "hash": "56dbd6d94c3e",
+      "fichier": "phrase-1fcm1t3.mp3"
+    },
+    "scn-midi-france": {
+      "texte": "Il est midi pile : à table ! Le soleil est tout en haut.",
+      "hash": "dd9964cfacfc",
+      "fichier": "scn-midi-france.mp3"
+    },
+    "phrase-10fi091": {
+      "texte": "C’est la même heure que chez nous, il est aussi midi : le soleil brille, on déjeune.",
+      "hash": "2351670b00ae",
+      "fichier": "phrase-10fi091.mp3"
+    },
+    "phrase-1tuzdj6": {
+      "texte": "Il est 14 heures 30 : le soleil brille, on joue dehors.",
+      "hash": "4cda2551ad7c",
+      "fichier": "phrase-1tuzdj6.mp3"
+    },
+    "phrase-132pgcg": {
+      "texte": "Il est 16 heures 30 : le soleil brille, on joue dehors.",
+      "hash": "5334bbb680a8",
+      "fichier": "phrase-132pgcg.mp3"
+    },
+    "phrase-1vuq02": {
+      "texte": "Il est 16 heures 45 : le soleil brille, on joue dehors.",
+      "hash": "088e9a634ac5",
+      "fichier": "phrase-1vuq02.mp3"
+    },
+    "phrase-1bxe02r": {
+      "texte": "Il est 19 heures : il fait nuit, on dîne.",
+      "hash": "2fce8891fa79",
+      "fichier": "phrase-1bxe02r.mp3"
+    },
+    "phrase-1giwdua": {
+      "texte": "Il est 22 heures : il fait nuit, on dort profondément.",
+      "hash": "0eb45d143363",
+      "fichier": "phrase-1giwdua.mp3"
+    },
+    "phrase-zkyetv": {
+      "texte": "Il est 23 heures : il fait nuit, on dort profondément.",
+      "hash": "c41e96316ded",
+      "fichier": "phrase-zkyetv.mp3"
+    },
+    "phrase-1hbudie": {
+      "texte": "Il est 5 heures : le soleil se lève, on dort profondément.",
+      "hash": "122127fe5346",
+      "fichier": "phrase-1hbudie.mp3"
+    },
+    "phrase-19s9md8": {
+      "texte": "Il est 7 heures : le soleil se lève, on se réveille, petit-déjeuner !",
+      "hash": "6fc6d2591699",
+      "fichier": "phrase-19s9md8.mp3"
+    },
+    "phrase-1ra4vkx": {
+      "texte": "Il est 7 heures : le soleil brille, on se réveille, petit-déjeuner !",
+      "hash": "33b51634e8ee",
+      "fichier": "phrase-1ra4vkx.mp3"
+    },
+    "phrase-s4ip6q": {
+      "texte": "Il est 7 heures 30 : le soleil brille, on se réveille, petit-déjeuner !",
+      "hash": "2574f4f4bf43",
+      "fichier": "phrase-s4ip6q.mp3"
+    },
+    "phrase-1kafl6n": {
+      "texte": "Il est 19 heures : le soleil brille, on dîne.",
+      "hash": "dcb6e4036969",
+      "fichier": "phrase-1kafl6n.mp3"
+    },
+    "phrase-1hkedp3": {
+      "texte": "Il est 8 heures : le soleil se lève, on joue, on apprend.",
+      "hash": "712e1227532a",
+      "fichier": "phrase-1hkedp3.mp3"
+    },
+    "scn-dodo-france": {
+      "texte": "Il est 8 heures du soir : un bisou, et au dodo !",
+      "hash": "7c87079b45a6",
+      "fichier": "scn-dodo-france.mp3"
+    },
+    "phrase-ua0j8n": {
+      "texte": "C’est la même heure que chez nous, il est aussi 20 heures : il fait nuit, on dîne.",
+      "hash": "36b5a6895f4b",
+      "fichier": "phrase-ua0j8n.mp3"
+    },
+    "phrase-b27equ": {
+      "texte": "C’est la même heure que chez nous, il est aussi 20 heures : le soleil se couche, on dîne.",
+      "hash": "eef8cc3de2b2",
+      "fichier": "phrase-b27equ.mp3"
+    },
+    "phrase-nph501": {
+      "texte": "Il est 22 heures 30 : il fait nuit, on dort profondément.",
+      "hash": "cb1afefc7137",
+      "fichier": "phrase-nph501.mp3"
+    },
+    "phrase-r6b1o0": {
+      "texte": "Il est 23 heures 30 : il fait nuit, on dort profondément.",
+      "hash": "c506b3503e94",
+      "fichier": "phrase-r6b1o0.mp3"
+    },
+    "phrase-o5krhm": {
+      "texte": "Il est presque 7 heures 30 : le soleil se lève, on se réveille, petit-déjeuner !",
+      "hash": "f81d489e418f",
+      "fichier": "phrase-o5krhm.mp3"
+    },
+    "phrase-14h4jor": {
+      "texte": "Il est presque 6 heures 30 : le soleil se lève, on se réveille, petit-déjeuner !",
+      "hash": "bbe51ab01cdd",
+      "fichier": "phrase-14h4jor.mp3"
+    },
+    "phrase-u7stiz": {
+      "texte": "Il est presque 8 heures : le soleil brille, on se réveille, petit-déjeuner !",
+      "hash": "2ac94df7f40c",
+      "fichier": "phrase-u7stiz.mp3"
+    },
+    "phrase-1ulqryh": {
+      "texte": "Il est presque 7 heures : le soleil se lève, on se réveille, petit-déjeuner !",
+      "hash": "b65b3700b286",
+      "fichier": "phrase-1ulqryh.mp3"
+    },
+    "phrase-1wi49to": {
+      "texte": "Il est presque 8 heures 30 : le soleil brille, on joue, on apprend.",
+      "hash": "1d53b4233604",
+      "fichier": "phrase-1wi49to.mp3"
+    },
+    "phrase-8foh1g": {
+      "texte": "C’est la même heure que chez nous, il est aussi presque 7 heures 30 : le soleil se lève, on se réveille, petit-déjeuner !",
+      "hash": "c0c4539bc503",
+      "fichier": "phrase-8foh1g.mp3"
+    },
+    "phrase-a86luv": {
+      "texte": "C’est la même heure que chez nous, il est aussi presque 7 heures : le soleil se lève, on se réveille, petit-déjeuner !",
+      "hash": "0864891de08f",
+      "fichier": "phrase-a86luv.mp3"
+    },
+    "phrase-q9dyyt": {
+      "texte": "C’est la même heure que chez nous, il est aussi presque 6 heures 30 : le soleil se lève, on se réveille, petit-déjeuner !",
+      "hash": "7f4a25500156",
+      "fichier": "phrase-q9dyyt.mp3"
+    },
+    "phrase-j6or75": {
+      "texte": "Il est presque 6 heures : il fait nuit, on dort profondément.",
+      "hash": "14e30ed0f149",
+      "fichier": "phrase-j6or75.mp3"
+    },
+    "phrase-udy7z2": {
+      "texte": "C’est la même heure que chez nous, il est aussi presque 6 heures : le soleil se lève, on dort profondément.",
+      "hash": "132ff0efbe59",
+      "fichier": "phrase-udy7z2.mp3"
+    },
+    "phrase-tzk1vu": {
+      "texte": "Il est presque 6 heures 30 : il fait nuit, on se réveille, petit-déjeuner !",
+      "hash": "ee95e2992e5d",
+      "fichier": "phrase-tzk1vu.mp3"
+    },
+    "phrase-1xc4j8x": {
+      "texte": "Il est presque 5 heures 30 : il fait nuit, on dort profondément.",
+      "hash": "4b2bb965e519",
+      "fichier": "phrase-1xc4j8x.mp3"
+    },
+    "phrase-1qx9vea": {
+      "texte": "Il est presque 5 heures : il fait nuit, on dort profondément.",
+      "hash": "cc55e7a3b26b",
+      "fichier": "phrase-1qx9vea.mp3"
+    },
+    "phrase-17go84w": {
+      "texte": "Il est presque 6 heures : le soleil se lève, on dort profondément.",
+      "hash": "534ae353633b",
+      "fichier": "phrase-17go84w.mp3"
+    },
+    "phrase-1lq9jol": {
+      "texte": "Il est 4 heures 30 : il fait nuit, on dort profondément.",
+      "hash": "8f4cf2c2c7d9",
+      "fichier": "phrase-1lq9jol.mp3"
+    },
+    "phrase-gixrum": {
+      "texte": "Il est 6 heures 30 : le soleil se lève, on se réveille, petit-déjeuner !",
+      "hash": "b41afae0d4ee",
+      "fichier": "phrase-gixrum.mp3"
+    },
+    "phrase-7q6can": {
+      "texte": "Il est 7 heures 30 : le soleil se lève, on se réveille, petit-déjeuner !",
+      "hash": "0d100838ca48",
+      "fichier": "phrase-7q6can.mp3"
+    },
+    "phrase-sqa501": {
+      "texte": "C’est la même heure que chez nous, il est aussi 7 heures 30 : le soleil se lève, on se réveille, petit-déjeuner !",
+      "hash": "47401e1d846b",
+      "fichier": "phrase-sqa501.mp3"
+    },
+    "phrase-1o6ndwm": {
+      "texte": "Il est presque 8 heures : le soleil se lève, on se réveille, petit-déjeuner !",
+      "hash": "b5a101152c74",
+      "fichier": "phrase-1o6ndwm.mp3"
+    },
+    "phrase-h94kso": {
+      "texte": "C’est la même heure que chez nous, il est aussi presque 8 heures : le soleil se lève, on se réveille, petit-déjeuner !",
+      "hash": "59e56eec1a86",
+      "fichier": "phrase-h94kso.mp3"
+    },
+    "phrase-1f2dlw0": {
+      "texte": "Il est presque 4 heures 30 : il fait nuit, on dort profondément.",
+      "hash": "801ccf6cc1ad",
+      "fichier": "phrase-1f2dlw0.mp3"
+    },
+    "phrase-p03kqb": {
+      "texte": "Il est presque 4 heures : il fait nuit, on dort profondément.",
+      "hash": "50aafcace860",
+      "fichier": "phrase-p03kqb.mp3"
+    },
+    "phrase-slduwn": {
+      "texte": "Il est presque 3 heures 30 : il fait nuit, on dort profondément.",
+      "hash": "7acb56b457fb",
+      "fichier": "phrase-slduwn.mp3"
+    },
+    "phrase-nsmjx2": {
+      "texte": "Il est presque 2 heures 30 : il fait nuit, on dort profondément.",
+      "hash": "4aed55254475",
+      "fichier": "phrase-nsmjx2.mp3"
+    },
+    "phrase-1ix3k8k": {
+      "texte": "Il est presque 3 heures : il fait nuit, on dort profondément.",
+      "hash": "ca58639b6a20",
+      "fichier": "phrase-1ix3k8k.mp3"
+    },
+    "phrase-1ebw4ol": {
+      "texte": "Il est presque 2 heures : il fait nuit, on dort profondément.",
+      "hash": "84d61ee05b33",
+      "fichier": "phrase-1ebw4ol.mp3"
+    },
+    "phrase-1dhqwq5": {
+      "texte": "Il est presque minuit : il fait nuit, on dort profondément.",
+      "hash": "79e9f898225c",
+      "fichier": "phrase-1dhqwq5.mp3"
+    },
+    "phrase-1e4tx5x": {
+      "texte": "Il est presque 23 heures 30 : il fait nuit, on dort profondément.",
+      "hash": "3e96e1c5bdf2",
+      "fichier": "phrase-1e4tx5x.mp3"
+    },
+    "phrase-6d1tgm": {
+      "texte": "Il est presque 23 heures : il fait nuit, on dort profondément.",
+      "hash": "2b5e0c9ca837",
+      "fichier": "phrase-6d1tgm.mp3"
+    },
+    "phrase-1qfxghw": {
+      "texte": "Il est presque 22 heures 30 : il fait nuit, on dort profondément.",
+      "hash": "9200646761f6",
+      "fichier": "phrase-1qfxghw.mp3"
+    },
+    "phrase-1i4ex7g": {
+      "texte": "Il est presque 20 heures : il fait nuit, on dîne.",
+      "hash": "a9853017c68a",
+      "fichier": "phrase-1i4ex7g.mp3"
+    },
+    "phrase-o63h6c": {
+      "texte": "Il est presque 19 heures 30 : le soleil se couche, on dîne.",
+      "hash": "56086ec52881",
+      "fichier": "phrase-o63h6c.mp3"
+    },
+    "phrase-1wrrahu": {
+      "texte": "Il est presque 18 heures 30 : le soleil se couche, c’est l’heure du bain.",
+      "hash": "e9052742fdf8",
+      "fichier": "phrase-1wrrahu.mp3"
+    },
+    "phrase-1wxb87": {
+      "texte": "Il est presque 17 heures : le soleil brille, on joue dehors.",
+      "hash": "b661764e0fb3",
+      "fichier": "phrase-1wxb87.mp3"
+    },
+    "phrase-2yevv9": {
+      "texte": "Il est presque 16 heures 30 : le soleil brille, on joue dehors.",
+      "hash": "e4e27825f424",
+      "fichier": "phrase-2yevv9.mp3"
+    },
+    "phrase-1i5lyhu": {
+      "texte": "Il est 17 heures : le soleil brille, on joue dehors.",
+      "hash": "fbfd70c6c255",
+      "fichier": "phrase-1i5lyhu.mp3"
+    },
+    "phrase-dmc2wm": {
+      "texte": "Il est presque 15 heures 30 : le soleil brille, on joue dehors.",
+      "hash": "07c50f2af9fd",
+      "fichier": "phrase-dmc2wm.mp3"
+    },
+    "phrase-1vt5zpx": {
+      "texte": "Il est presque 15 heures : le soleil brille, on joue dehors.",
+      "hash": "600da247bbb2",
+      "fichier": "phrase-1vt5zpx.mp3"
+    },
+    "phrase-r3gpkf": {
+      "texte": "Il est 14 heures : le soleil brille, on déjeune.",
+      "hash": "f4c2fe98281f",
+      "fichier": "phrase-r3gpkf.mp3"
+    },
+    "phrase-nkkczp": {
+      "texte": "Il est 6 heures : le soleil se lève, on dort profondément.",
+      "hash": "a7c062a1e1ac",
+      "fichier": "phrase-nkkczp.mp3"
+    },
+    "phrase-qgc4rb": {
+      "texte": "Il est presque 14 heures 30 : le soleil brille, on joue dehors.",
+      "hash": "67e51f12d243",
+      "fichier": "phrase-qgc4rb.mp3"
+    },
+    "phrase-1anak2i": {
+      "texte": "Il est presque 14 heures : le soleil brille, on déjeune.",
+      "hash": "9bd02221da4c",
+      "fichier": "phrase-1anak2i.mp3"
+    },
+    "phrase-11wbyjh": {
+      "texte": "Il est presque 13 heures : le soleil brille, on déjeune.",
+      "hash": "9845d7224f8b",
+      "fichier": "phrase-11wbyjh.mp3"
+    },
+    "phrase-16r7wn2": {
+      "texte": "Il est presque 13 heures 30 : le soleil brille, on déjeune.",
+      "hash": "64409506e064",
+      "fichier": "phrase-16r7wn2.mp3"
+    },
+    "phrase-12tpdgm": {
+      "texte": "Il est presque midi : le soleil brille, on joue, on apprend.",
+      "hash": "feefaaf59415",
+      "fichier": "phrase-12tpdgm.mp3"
+    },
+    "phrase-1etj5c4": {
+      "texte": "Il est presque 11 heures 30 : le soleil brille, on joue, on apprend.",
+      "hash": "38b10f0e53ee",
+      "fichier": "phrase-1etj5c4.mp3"
+    },
+    "phrase-21ti87": {
+      "texte": "Il est presque 11 heures : le soleil brille, on joue, on apprend.",
+      "hash": "5c241c36dfb1",
+      "fichier": "phrase-21ti87.mp3"
+    },
+    "phrase-1fl729x": {
+      "texte": "Il est presque 10 heures 30 : le soleil brille, on joue, on apprend.",
+      "hash": "ae8c050eaa9b",
+      "fichier": "phrase-1fl729x.mp3"
+    },
+    "phrase-kjsihy": {
+      "texte": "Il est presque 10 heures : le soleil brille, on joue, on apprend.",
+      "hash": "413bf22095b1",
+      "fichier": "phrase-kjsihy.mp3"
+    },
+    "phrase-awkn2o": {
+      "texte": "C’est la même heure que chez nous, il est aussi 6 heures 30 : le soleil se lève, on se réveille, petit-déjeuner !",
+      "hash": "768158509bb9",
+      "fichier": "phrase-awkn2o.mp3"
+    },
+    "phrase-q6rmg0": {
+      "texte": "Il est presque 19 heures : le soleil se couche, c’est l’heure du bain.",
+      "hash": "eaa694244360",
+      "fichier": "phrase-q6rmg0.mp3"
+    },
+    "phrase-1e4entw": {
+      "texte": "Il est 6 heures : il fait nuit, on dort profondément.",
+      "hash": "047e7f76c183",
+      "fichier": "phrase-1e4entw.mp3"
+    },
+    "phrase-1n91svf": {
+      "texte": "C’est la même heure que chez nous, il est aussi 6 heures : le soleil se lève, on dort profondément.",
+      "hash": "bd92a9a84848",
+      "fichier": "phrase-1n91svf.mp3"
+    },
+    "phrase-eeet6l": {
+      "texte": "Il est presque 9 heures 30 : le soleil brille, on joue, on apprend.",
+      "hash": "76b3b1160c5b",
+      "fichier": "phrase-eeet6l.mp3"
+    },
+    "phrase-50mj1s": {
+      "texte": "Il est presque 5 heures 30 : le soleil se lève, on dort profondément.",
+      "hash": "f969784aae8e",
+      "fichier": "phrase-50mj1s.mp3"
+    },
+    "phrase-13inbtr": {
+      "texte": "Il est presque 20 heures 30 : il fait nuit, on dîne.",
+      "hash": "acd69cfa3404",
+      "fichier": "phrase-13inbtr.mp3"
+    },
+    "phrase-1t6cvoe": {
+      "texte": "Il est presque 9 heures : le soleil brille, on joue, on apprend.",
+      "hash": "f52a0d68b7f7",
+      "fichier": "phrase-1t6cvoe.mp3"
+    },
+    "histoire-1": {
+      "texte": "La Terre est une grande boule qui tourne sur elle-même, comme une toupie très lente. Elle met 24 heures, un jour entier, pour faire un tour complet.",
+      "hash": "b7edd8cba900",
+      "fichier": "histoire-1.mp3"
+    },
+    "histoire-2": {
+      "texte": "Le Soleil, lui, ne bouge pas. Il éclaire toujours un seul côté de la Terre. Du côté du Soleil, c’est le jour. De l’autre côté, c’est la nuit.",
+      "hash": "6f3a5412bf35",
+      "fichier": "histoire-2.mp3"
+    },
+    "histoire-3": {
+      "texte": "Quand tu prends ton petit-déjeuner, le soleil se lève chez toi. Au même moment, de l’autre côté de la Terre, le soleil se couche. Des enfants vont bientôt aller dormir.",
+      "hash": "bc0b07c27824",
+      "fichier": "histoire-3.mp3"
+    },
+    "histoire-4": {
+      "texte": "Alors, les grands ont eu une idée. Ils ont découpé la Terre en 24 grandes tranches, comme une orange. Ces tranches s’appellent les fuseaux horaires.",
+      "hash": "99c49033aef6",
+      "fichier": "histoire-4.mp3"
+    },
+    "histoire-5": {
+      "texte": "Dans chaque tranche, tout le monde lit la même heure sur son horloge. Et quand tu passes dans la tranche d’à côté, l’horloge change d’une heure. Juste une !",
+      "hash": "9bc93a36e41d",
+      "fichier": "histoire-5.mp3"
+    },
+    "phrase-xxjgqw": {
+      "texte": "Il est midi 30 : le soleil brille, on déjeune.",
+      "hash": "b54322bf4a4c",
+      "fichier": "phrase-xxjgqw.mp3"
+    },
+    "phrase-11ahqgx": {
+      "texte": "Il est 20 heures : il fait nuit, on dîne. Et là-bas, on est encore hier !",
+      "hash": "cc47116b8ebc",
+      "fichier": "phrase-11ahqgx.mp3"
+    },
+    "phrase-e1u44q": {
+      "texte": "Il est 19 heures : le soleil se couche, on dîne. Et là-bas, on est encore hier !",
+      "hash": "7d9649599114",
+      "fichier": "phrase-e1u44q.mp3"
+    },
+    "phrase-1lcmqje": {
+      "texte": "Il est 22 heures : il fait nuit, on dort profondément. Et là-bas, on est encore hier !",
+      "hash": "ccbaa1e73163",
+      "fichier": "phrase-1lcmqje.mp3"
+    },
+    "phrase-1ryqi3f": {
+      "texte": "Il est 23 heures : il fait nuit, on dort profondément. Et là-bas, on est encore hier !",
+      "hash": "d81429f72729",
+      "fichier": "phrase-1ryqi3f.mp3"
+    },
+    "phrase-11plu8b": {
+      "texte": "Il est une heure : il fait nuit, on dort profondément.",
+      "hash": "20514ee7c94a",
+      "fichier": "phrase-11plu8b.mp3"
+    },
+    "phrase-ytew3g": {
+      "texte": "Il est 17 heures 30 : le soleil se couche, on joue dehors.",
+      "hash": "06283e6251ed",
+      "fichier": "phrase-ytew3g.mp3"
+    },
+    "phrase-1tl7ce5": {
+      "texte": "Il est minuit : il fait nuit, on dort profondément. Et c’est déjà demain !",
+      "hash": "05763fe569f6",
+      "fichier": "phrase-1tl7ce5.mp3"
+    },
+    "phrase-788d1q": {
+      "texte": "Il est une heure : il fait nuit, on dort profondément. Et c’est déjà demain !",
+      "hash": "75116879ef23",
+      "fichier": "phrase-788d1q.mp3"
+    },
+    "phrase-fjwb1k": {
+      "texte": "Il est une heure 30 : il fait nuit, on dort profondément.",
+      "hash": "484ecae47e90",
+      "fichier": "phrase-fjwb1k.mp3"
+    },
+    "phrase-4y6wv2": {
+      "texte": "Il est minuit 30 : il fait nuit, on dort profondément. Et c’est déjà demain !",
+      "hash": "5d47656fffdf",
+      "fichier": "phrase-4y6wv2.mp3"
+    },
+    "phrase-u9ivng": {
+      "texte": "Il est minuit 45 : il fait nuit, on dort profondément. Et c’est déjà demain !",
+      "hash": "6795e9804701",
+      "fichier": "phrase-u9ivng.mp3"
+    },
+    "phrase-1k3iukt": {
+      "texte": "Il est une heure 30 : il fait nuit, on dort profondément. Et c’est déjà demain !",
+      "hash": "89ef43a36a1f",
+      "fichier": "phrase-1k3iukt.mp3"
+    },
+    "phrase-1108611": {
+      "texte": "Il est 2 heures : il fait nuit, on dort profondément. Et c’est déjà demain !",
+      "hash": "12634e9ea04f",
+      "fichier": "phrase-1108611.mp3"
+    },
+    "phrase-18n6dwk": {
+      "texte": "Il est 3 heures : il fait nuit, on dort profondément. Et c’est déjà demain !",
+      "hash": "046292d65f6b",
+      "fichier": "phrase-18n6dwk.mp3"
+    },
+    "phrase-1ww2d37": {
+      "texte": "Il est 4 heures : il fait nuit, on dort profondément. Et c’est déjà demain !",
+      "hash": "2e23fc5151a6",
+      "fichier": "phrase-1ww2d37.mp3"
+    },
+    "phrase-nojyg2": {
+      "texte": "Il est 5 heures : il fait nuit, on dort profondément. Et c’est déjà demain !",
+      "hash": "50a35ad973ba",
+      "fichier": "phrase-nojyg2.mp3"
+    },
+    "phrase-w5i468": {
+      "texte": "Il est 4 heures 30 : il fait nuit, on dort profondément. Et c’est déjà demain !",
+      "hash": "d6b35cbe3434",
+      "fichier": "phrase-w5i468.mp3"
+    },
+    "phrase-vt83e7": {
+      "texte": "Il est 8 heures : le soleil brille, on joue, on apprend. Et c’est déjà demain !",
+      "hash": "5ffdaa81cad6",
+      "fichier": "phrase-vt83e7.mp3"
+    },
+    "phrase-1f6amjy": {
+      "texte": "Il est 9 heures : le soleil brille, on joue, on apprend. Et c’est déjà demain !",
+      "hash": "77c9224ac34b",
+      "fichier": "phrase-1f6amjy.mp3"
+    },
+    "phrase-hng719": {
+      "texte": "Il est presque une heure 30 : il fait nuit, on dort profondément.",
+      "hash": "aaf89c599f63",
+      "fichier": "phrase-hng719.mp3"
+    },
+    "phrase-6uw2vy": {
+      "texte": "Il est presque une heure : il fait nuit, on dort profondément.",
+      "hash": "d3e4c85a2d3e",
+      "fichier": "phrase-6uw2vy.mp3"
+    },
+    "phrase-136czbi": {
+      "texte": "Il est presque minuit 30 : il fait nuit, on dort profondément.",
+      "hash": "7649b429cce6",
+      "fichier": "phrase-136czbi.mp3"
+    },
+    "phrase-fab1jp": {
+      "texte": "Il est presque 6 heures : le soleil se lève, on dort profondément. Et c’est déjà demain !",
+      "hash": "6489cbef6e18",
+      "fichier": "phrase-fab1jp.mp3"
+    },
+    "phrase-nx289t": {
+      "texte": "Il est 17 heures 30 : le soleil brille, on joue dehors.",
+      "hash": "4cc1c890c439",
+      "fichier": "phrase-nx289t.mp3"
+    },
+    "phrase-1p5ivzo": {
+      "texte": "Il est presque 17 heures 30 : le soleil brille, on joue dehors.",
+      "hash": "1a88eb39d634",
+      "fichier": "phrase-1p5ivzo.mp3"
+    },
+    "phrase-17dhkm0": {
+      "texte": "Il est presque 18 heures : le soleil brille, on joue dehors.",
+      "hash": "1f16d09225c2",
+      "fichier": "phrase-17dhkm0.mp3"
+    },
+    "phrase-8m6j8d": {
+      "texte": "Il est presque midi 30 : le soleil brille, on déjeune.",
+      "hash": "6961b81d3a0a",
+      "fichier": "phrase-8m6j8d.mp3"
+    },
+    "phrase-g3cs45": {
+      "texte": "Il est presque 5 heures 30 : le soleil se lève, on dort profondément. Et c’est déjà demain !",
+      "hash": "534ec7c297ed",
+      "fichier": "phrase-g3cs45.mp3"
+    },
+    "phrase-1j6o7q1": {
+      "texte": "Il est 6 heures : le soleil se lève, on se réveille, petit-déjeuner. Et c’est déjà demain !",
+      "hash": "df85ea522c66",
+      "fichier": "phrase-1j6o7q1.mp3"
+    },
+    "phrase-vf2y05": {
+      "texte": "Il est 7 heures : le soleil brille, on se réveille, petit-déjeuner. Et c’est déjà demain !",
+      "hash": "0cf3988be3dc",
+      "fichier": "phrase-vf2y05.mp3"
+    },
+    "phrase-1yvccpk": {
+      "texte": "Il est 7 heures : le soleil se lève, on se réveille, petit-déjeuner. Et c’est déjà demain !",
+      "hash": "790500f0ea0d",
+      "fichier": "phrase-1yvccpk.mp3"
+    },
+    "phrase-5kvd7z": {
+      "texte": "Il est presque 6 heures 30 : le soleil se lève, on se réveille, petit-déjeuner. Et c’est déjà demain !",
+      "hash": "6b31028aa16e",
+      "fichier": "phrase-5kvd7z.mp3"
+    },
+    "phrase-d91afh": {
+      "texte": "Il est presque 7 heures : le soleil se lève, on se réveille, petit-déjeuner. Et c’est déjà demain !",
+      "hash": "9ab79b48cb3b",
+      "fichier": "phrase-d91afh.mp3"
+    },
+    "phrase-vtxia6": {
+      "texte": "Il est presque 7 heures 30 : le soleil se lève, on se réveille, petit-déjeuner. Et c’est déjà demain !",
+      "hash": "52fddf515c0b",
+      "fichier": "phrase-vtxia6.mp3"
+    },
+    "phrase-9xqtzu": {
+      "texte": "Il est 6 heures 30 : le soleil se lève, on se réveille, petit-déjeuner. Et c’est déjà demain !",
+      "hash": "d4eeb0693099",
+      "fichier": "phrase-9xqtzu.mp3"
+    },
+    "histoire-6": {
+      "texte": "Grâce à elles, partout sur la Terre, il est midi quand le soleil est haut dans le ciel, et la nuit tombe quand il fait sombre. C’est bien pratique. Et quand c’est l’heure du dodo chez toi… quelque part, très loin, des enfants se réveillent !",
+      "hash": "8f5f4555ec45",
+      "fichier": "histoire-6.mp3"
+    },
+    "phrase-1gvmxfz": {
+      "texte": "Il est 20 heures 30 : il fait nuit, on lit un livre avant de dormir. Et là-bas, on est encore hier !",
+      "hash": "327c5491aa30",
+      "fichier": "phrase-1gvmxfz.mp3"
+    },
+    "phrase-1yecrav": {
+      "texte": "Il est vingt et une heures : il fait nuit, on lit un livre avant de dormir. Et là-bas, on est encore hier !",
+      "hash": "317b27d7ef60",
+      "fichier": "phrase-1yecrav.mp3"
+    },
+    "phrase-cylv9b": {
+      "texte": "Il est vingt et une heures : il fait nuit, on lit un livre avant de dormir.",
+      "hash": "c4196971b7f7",
+      "fichier": "phrase-cylv9b.mp3"
+    },
+    "phrase-5k3j9j": {
+      "texte": "Il est 20 heures 30 : il fait nuit, on lit un livre avant de dormir.",
+      "hash": "71ced5c27164",
+      "fichier": "phrase-5k3j9j.mp3"
+    },
+    "phrase-iu2m2b": {
+      "texte": "Il est presque 22 heures : il fait nuit, on lit un livre avant de dormir.",
+      "hash": "0c0113e1620e",
+      "fichier": "phrase-iu2m2b.mp3"
+    },
+    "phrase-qkwzd6": {
+      "texte": "Il est presque vingt et une heures : il fait nuit, on lit un livre avant de dormir.",
+      "hash": "ad5b871d8bec",
+      "fichier": "phrase-qkwzd6.mp3"
+    },
+    "phrase-5fwd0p": {
+      "texte": "Il est presque vingt et une heures 30 : il fait nuit, on lit un livre avant de dormir.",
+      "hash": "1244fa7e1a46",
+      "fichier": "phrase-5fwd0p.mp3"
+    }
+  },
+  "format": "mp3_44100_64",
+  "reglages": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "style": 0.3
+  }
 }
