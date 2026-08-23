@@ -437,6 +437,12 @@ function makePinch(onPinch) {
   };
 }
 
+// Safari iOS ignore user-scalable=no depuis iOS 10 : on neutralise aussi le
+// zoom pincé de la PAGE par son événement propriétaire (inconnu ailleurs,
+// donc sans effet). Les vues du jeu ne passent pas par là : leur pince à
+// elles vit dans makePinch, sur des éléments en touch-action: none.
+document.addEventListener('gesturestart', (e) => { e.preventDefault(); });
+
 // ---- retour au zoom 1 en douceur (saut sec en mouvement réduit) : `run`
 // anime la vue de son état capturé par `snap` vers apply(état, 1) ; `cancel`
 // dès que la main reprend la vue ----

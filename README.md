@@ -88,7 +88,12 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
   (un ou deux — tant qu'elle est zoomée, glisser la promène sans toucher à l'heure ; le
   glisser-heure revient au dézoom) — noms, points et icônes gardent leur taille, et pincer
   ne change jamais l'heure ni la destination. Et sur une vue zoomée, **taper deux fois**
-  la ramène en douceur à la vue entière, sans rien sélectionner.
+  la ramène en douceur à la vue entière, sans rien sélectionner. Pour que ces gestes restent
+  ceux du jeu, la page elle-même est **verrouillée** : le zoom du navigateur est désactivé
+  (un enfant qui pince partout ne se retrouve plus avec une page minuscule) et le double-tap
+  ne sélectionne plus ni texte ni image — choix assumé pour un site d'enfant ; les zooms
+  d'accessibilité du système (triple-tap iOS, loupe Android, « forcer le zoom » de Chrome)
+  continuent de fonctionner.
 - **Le Soleil du globe reste à sa place, et l'image reste lisible.** Il se pose sur l'axe
   horizontal, du côté d'où vient la lumière — et le cadrage garde **toujours la limite
   jour/nuit à l'écran** : jamais la face éclairée pile en face, jamais le Soleil coincé
