@@ -19,7 +19,7 @@
 // Après génération, réécouter tout d'une traite : tools/ecoute.html.
 // Zéro dépendance npm (Node ≥ 18 : fetch natif).
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync, unlinkSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, unlinkSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { corpus, empreinteBloc } from './voix-lib.mjs';
 
@@ -88,7 +88,13 @@ function lireManifeste() {
 // marques persistent (localStorage) et la barre du bas donne les commandes
 // --only toutes prêtes. Vitesse réglable, reprise là où on s'était arrêté.
 function ecrirePageEcoute(blocs) {
-  const data = blocs.map((b) => ({ id: b.id, texte: b.texte }));
+  // v : la date du fichier — le navigateur met les mp3 en cache par URL, et
+  // sans elle un re-tirage se réécoute... dans sa vieille version
+  const fraicheur = (id) => {
+    try { return Math.round(statSync(dossierAudio + id + '.mp3').mtimeMs); }
+    catch (e) { return 0; }
+  };
+  const data = blocs.map((b) => ({ id: b.id, texte: b.texte, v: fraicheur(b.id) }));
   writeFileSync(racine + 'tools/ecoute.html', `<!doctype html><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Écoute de contrôle</title>
@@ -210,7 +216,7 @@ function joue(i) {
   courant = i;
   lignes[i].classList.add('actif');
   lignes[i].scrollIntoView({ block: 'center', behavior: 'smooth' });
-  audio.src = '../assets/audio/' + DATA[i].id + '.mp3';
+  audio.src = '../assets/audio/' + DATA[i].id + '.mp3?v=' + (DATA[i].v || 0);
   audio.playbackRate = parseFloat(document.getElementById('vitesse').value);
   enLecture = true;
   audio.play().catch(() => erreurClip(i));

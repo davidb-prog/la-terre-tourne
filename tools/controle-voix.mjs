@@ -359,7 +359,7 @@ const esc = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
 const lignes = bilans.filter((b) => b.raisons.length).map((b) =>
   '<div class="bloc"><h2>' + esc(b.id) +
   (b.score !== null ? ' <span class="score">score ' + b.score.toFixed(2) + '</span>' : '') + '</h2>' +
-  '<audio controls preload="none" src="../assets/audio/' + esc(b.fichier) + '"></audio>' +
+  '<audio controls preload="none" src="../assets/audio/' + esc(b.fichier) + '?v=' + esc(b.hash || '0') + '"></audio>' +
   '<ul>' + b.raisons.map((r) => '<li>' + esc(r) + '</li>').join('') + '</ul>' +
   '<p><strong>Attendu :</strong> ' + esc(b.texte) + '</p>' +
   (b.entendu !== undefined ? '<p><strong>Entendu :</strong> ' + esc(b.entendu) + '</p>' : '') +
