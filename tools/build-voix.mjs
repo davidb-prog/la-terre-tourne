@@ -319,5 +319,6 @@ manifeste.format = FORMAT_SORTIE;
 manifeste.reglages = REGLAGES_VOIX;
 writeFileSync(cheminManifeste, JSON.stringify(manifeste, null, 2) + '\n');
 ecrirePageEcoute(blocs);
-console.log('\nManifeste écrit. Réécouter : servir le dépôt puis ouvrir /tools/ecoute.html');
+console.log('\nManifeste écrit. Réécouter SEULEMENT cette fournée (servir le dépôt, puis) :');
+console.log('  /tools/ecoute.html#ids=' + aFaire.map((b) => b.id).join(','));
 console.log('Puis committer assets/audio/ (mp3 + manifest.json).');
