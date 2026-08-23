@@ -22,6 +22,25 @@
 
 * { box-sizing: border-box; }
 
+/* le site se manipule, il ne se sélectionne pas : un double-tap d'enfant ne
+   doit ni surligner un mot ni « attraper » un canvas, et l'appui long ne doit
+   pas ouvrir le menu copier/coller d'iOS. Seuls les champs de recherche
+   redeviennent sélectionnables (corriger, coller). */
+body {
+  -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+input {
+  -webkit-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text;
+}
+
+/* pan-x pan-y : le doigt fait défiler la page, mais ni le pincement ni le
+   double-tap ne zooment la page elle-même (Safari iOS ignore user-scalable=no ;
+   main.js ajoute le filet gesturestart). Les vues du jeu gardent leur pince à
+   elles : leurs règles touch-action: none, plus spécifiques, gagnent. */
+* { touch-action: pan-x pan-y; }
+
 body {
   margin: 0;
   background-color: var(--bg);
