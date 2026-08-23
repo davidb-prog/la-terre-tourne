@@ -124,10 +124,14 @@ const ACTIVITIES = [
   { until: 8, emoji: '🥐', text: 'On se réveille, petit-déjeuner !' },
   { until: 12, emoji: '🎨', text: 'On joue, on apprend' },
   { until: 14, emoji: '🍽️', text: 'On déjeune' },
-  { until: 17, emoji: '⚽', text: 'On joue dehors' },
+  { until: 18, emoji: '⚽', text: 'On joue dehors' },
   { until: 19, emoji: '🛁', text: 'C’est l’heure du bain' },
   { until: 20.5, emoji: '🍲', text: 'On dîne' },
-  { until: 22, emoji: '📖', text: 'Une histoire… et au lit' },
+  // à l'oral, une phrase pleine — et SANS le mot « histoire », sur lequel la
+  // voix enregistrée bute prise après prise (constaté sur 4 formulations) ;
+  // l'écran garde son « … » d'invitation
+  { until: 22, emoji: '📖', text: 'Une histoire… et au lit',
+    oral: 'on lit un livre avant de dormir' },
   { until: 24, emoji: '😴', text: 'On dort profondément' },
 ];
 export function activityFor(localHours) {
@@ -144,25 +148,32 @@ export function dayBadge(dayShift) {
   return '';
 }
 
-// Une phrase courte sur un lieu à cet instant, à lire à voix haute : l'heure,
-// l'état du ciel, l'activité — et le report de jour s'il y en a un. Quand le
-// lieu vit sur le même fuseau que la France (sameAsHome), on ne répète pas
-// l'heure platement : on célèbre la coïncidence.
-export function placePhrase(homeH, place, sameAsHome) {
+// Les morceaux d'une phrase de lieu, partagés entre la version écrite
+// (bulles) et la version orale (conteur) pour qu'elles ne divergent jamais.
+function phraseBits(homeH, place) {
   const c = localClock(homeH, place);
-  const hm = formatHM(c.hours);
   const s = skyState(solarHours(homeH, place.lonDeg));
   const skyTxt = s === 'dawn' ? 'le soleil se lève' : s === 'day' ? 'le soleil brille'
     : s === 'dusk' ? 'le soleil se couche' : 'il fait nuit';
   const act = activityFor(c.hours);
   const actTxt = act.text.charAt(0).toLowerCase() + act.text.slice(1);
+  return { clock: c, skyTxt: skyTxt, act: act, actTxt: actTxt };
+}
+
+// Une phrase courte sur un lieu à cet instant, à lire à voix haute : l'heure,
+// l'état du ciel, l'activité — et le report de jour s'il y en a un. Quand le
+// lieu vit sur le même fuseau que la France (sameAsHome), on ne répète pas
+// l'heure platement : on célèbre la coïncidence.
+export function placePhrase(homeH, place, sameAsHome) {
+  const b = phraseBits(homeH, place);
+  const hm = formatHM(b.clock.hours);
   if (sameAsHome) {
     return 'C’est la même heure que chez nous — il est aussi ' + hm.text + ' : ' +
-      skyTxt + ', ' + actTxt + ' ' + act.emoji + '.';
+      b.skyTxt + ', ' + b.actTxt + ' ' + b.act.emoji + '.';
   }
-  let txt = 'Il est ' + hm.text + ' : ' + skyTxt + ', ' + actTxt + ' ' + act.emoji;
-  if (c.dayShift > 0) txt += ' — et c’est déjà demain !';
-  else if (c.dayShift < 0) txt += ' — et là-bas, on est encore hier !';
+  let txt = 'Il est ' + hm.text + ' : ' + b.skyTxt + ', ' + b.actTxt + ' ' + b.act.emoji;
+  if (b.clock.dayShift > 0) txt += ' — et c’est déjà demain !';
+  else if (b.clock.dayShift < 0) txt += ' — et là-bas, on est encore hier !';
   else txt += '.';
   return txt;
 }
@@ -208,12 +219,154 @@ export function offsetDiffText(place) {
   return d > 0 ? fmt + ' d’avance sur nous' : fmt + ' de retard sur nous';
 }
 
+// ------------------------------------------------------- la voix du conteur
+// Les textes dits à voix haute, purs et partagés entre le site (js/main.js),
+// l'outil de génération ElevenLabs (tools/voix-lib.mjs) et les tests — la
+// voix enregistrée ne doit jamais dire autre chose que ce que le site raconte.
+
+// les émojis sont imprononçables
+export const EMOJI_RE = /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}]/gu;
+
+// Texte oral : émojis retirés, « 7 h 00 » → « 7 heures » et « 6 h 30 » →
+// « 6 heures 30 » (l'heure écrite se lit mal par certaines voix), guillemets
+// français retirés et tirets cadratins changés en virgules (la synthèse
+// trébuche dessus), espaces recollés devant la ponctuation — un « . » isolé se
+// fait lire « point » — et le point orphelin d'un émoji retiré après « ! »
+// disparaît (« petit-déjeuner ! 🥐. » doit finir sur le « ! »).
+export function texteOral(t) {
+  return t.replace(EMOJI_RE, '')
+    .replace(/[«»]/g, ' ')
+    .replace(/\s+—\s+/g, ', ')
+    .replace(/(\d+)\s*h\s*00\b/g, '$1 h')
+    .replace(/(\d+)\s*h\s+(\d+)/g, '$1 heures $2')
+    .replace(/(\d+)\s*h\b/g, '$1 heures')
+    .replace(/\b1 heures\b/g, '1 heure') // « 1 heure », singulier — sinon la voix accroche
+    .replace(/\s+/g, ' ')
+    .replace(/\s+([.,…])/g, '$1')
+    .replace(/([!?…])\s*\./g, '$1')
+    .trim();
+}
+
+// L'heure en mots pour l'oreille : « minuit », « midi » et « une heure »
+// plutôt que « 0 h », « 12 h » et « 1 h » — les voix lisent « zéro heures »
+// et « un heure » (constaté à l'enregistrement), jamais un enfant. Les
+// minutes restent accolées (« minuit 30 », « une heure 30 », « midi 30 »).
+// Avec approx (le scénario « le soleil se lève là-bas », dont les minutes
+// dépendent de la longitude, continue), l'oral s'arrondit à la demi-heure
+// SUPÉRIEURE et l'assume : « presque 7 h 30 » — jamais une heure déjà
+// passée, jamais un mensonge. L'écran garde la minute.
+export function heureOrale(hours, approx) {
+  const c = formatHM(hours);
+  let total = c.h * 60 + c.m;
+  let presque = false;
+  if (approx) {
+    const up = Math.ceil(total / 30) * 30;
+    presque = up !== total;
+    total = up % (24 * 60);
+  }
+  const h = Math.floor(total / 60);
+  const m = total % 60;
+  const mn = m === 0 ? '' : ' ' + (m < 10 ? '0' + m : String(m));
+  // « 21 » : le moteur vocal oralise « vingt-et-un heures », faute de genre
+  // systématique — on écrit « vingt et une heures » en toutes lettres
+  const mot = h === 0 ? 'minuit' + mn : h === 12 ? 'midi' + mn
+    : h === 1 ? 'une heure' + mn
+    : h === 21 ? 'vingt et une heures' + mn
+    : h + ' h' + mn;
+  return { mot: mot, presque: presque };
+}
+
+// La phrase de lieu version conteur : mêmes morceaux que placePhrase (ciel,
+// activité, report de jour), mais l'heure passe par heureOrale, l'émoji
+// d'activité, imprononçable, n'y entre jamais — et deux aménagements
+// d'oreille appris à l'enregistrement : les points de suspension en plein
+// flux (« une histoire… et au lit ») font caler la voix, ils deviennent une
+// virgule ; et le report de jour se dit en phrase séparée (« … Et là-bas,
+// on est encore hier ! ») au lieu d'allonger la première d'un « , et ».
+export function placePhraseOrale(homeH, place, sameAsHome, approx) {
+  const b = phraseBits(homeH, place);
+  const t = heureOrale(b.clock.hours, approx);
+  const est = (t.presque ? 'presque ' : '') + t.mot;
+  const act = b.act.oral || b.actTxt.replace('… ', ', ');
+  if (sameAsHome) {
+    return 'C’est la même heure que chez nous — il est aussi ' + est + ' : ' +
+      b.skyTxt + ', ' + act + '.';
+  }
+  let txt = 'Il est ' + est + ' : ' + b.skyTxt + ', ' + act + '.';
+  if (b.clock.dayShift !== 0) {
+    // deux exclamations enchaînées (« petit-déjeuner ! Et c'est déjà
+    // demain ! ») s'entendent mal : celle de l'activité s'adoucit en point
+    txt = txt.replace(/\s*!\.$/, '.');
+    txt += b.clock.dayShift > 0 ? ' Et c’est déjà demain !' : ' Et là-bas, on est encore hier !';
+  }
+  return txt;
+}
+
+// Les enchaînements du conteur. Pour un lieu des « idées de voyage » (puces),
+// la transition le nomme ; pour les ~560 autres lieux du répertoire, le
+// conteur dit « là-bas » — l'écran montre déjà le nom et le drapeau, et c'est
+// ce qui permet à la voix enregistrée de couvrir TOUT le répertoire sans
+// enregistrer 560 noms.
+export const VOIX_CHEZ_NOUS = 'Chez nous…';
+export const VOIX_AILLEURS = 'Et pendant ce temps, là-bas…';
+export function voixTransition(place) {
+  return 'Et pendant ce temps, ' + placeLocative(place) + '…';
+}
+
+// Identifiant de fichier en kebab-case pour un nom de lieu (« La Réunion » →
+// la-reunion) — pour les transitions enregistrées des puces.
+export function slugLieu(name) {
+  return name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+// Identifiant stable d'une phrase générée : préfixe lisible + empreinte
+// courte du texte (djb2) — deux textes différents donnent deux blocs (donc
+// deux fichiers) différents, et un texte inchangé garde son id.
+export function idBloc(prefix, texte) {
+  let h = 5381;
+  for (let i = 0; i < texte.length; i++) {
+    h = ((h * 33) ^ texte.charCodeAt(i)) >>> 0;
+  }
+  return prefix + '-' + h.toString(36);
+}
+
+// Les blocs parlés d'un scénario, dans l'ordre du récit — LA source commune
+// du site, de l'outil de génération et des tests. `estPuce` : le lieu fait
+// partie des idées de voyage (sa transition nommée est enregistrée). Les
+// pauses courtes (120 ms) suivent les annonces : leurs mp3 finissent déjà
+// sur la suspension du « … », la respiration pleine ferait un long blanc.
+export function blocsScenario(scn, atH, place, estPuce) {
+  const approx = !!scn.sunriseAt;
+  const same = place.utcOffset === HOME.utcOffset;
+  const blocs = [{ id: 'voix-chez-nous', texte: VOIX_CHEZ_NOUS, pause: 120 }];
+  if (scn.france) {
+    blocs.push({ id: 'scn-' + scn.id + '-france', texte: scn.france });
+  } else {
+    const t = placePhraseOrale(atH, HOME, false, approx);
+    blocs.push({ id: idBloc('phrase', t), texte: t });
+  }
+  if (estPuce) {
+    blocs.push({ id: 'trans-' + slugLieu(place.name), texte: voixTransition(place), pause: 120 });
+  } else {
+    blocs.push({ id: 'trans-ailleurs', texte: VOIX_AILLEURS, pause: 120 });
+  }
+  // le préfixe « phrase » ne porte ni le scénario ni le rôle (France ou
+  // destination) : la même phrase, où qu'elle se dise, est le même bloc —
+  // donc un seul fichier enregistré
+  const d = placePhraseOrale(atH, place, same, approx);
+  blocs.push({ id: idBloc('phrase', d), texte: d });
+  return blocs;
+}
+
 // Les boutons-scénarios : la Terre tourne en douceur jusqu'au moment choisi,
 // puis on raconte la France (texte fixe) et le lieu choisi (phrase générée).
 // Le dernier scénario est dynamique : le lever du soleil chez l'invité.
 export const SCENARIOS = [
+  // « Debout ! » seul en ouverture se disait trop sec (piège documenté :
+  // jamais une ouverture d'un seul mot) — on lui donne un appui
   { id: 'reveil', emoji: '☀️', label: 'Quand je me réveille', sub: '7 h chez nous', homeH: 7,
-    france: 'Debout ! Il est 7 h du matin, le soleil se lève.' },
+    france: 'C’est le matin, debout ! Il est 7 h, le soleil se lève.' },
   { id: 'midi', emoji: '🥖', label: 'Quand je déjeune', sub: 'midi chez nous', homeH: 12,
     france: 'Il est midi pile : à table ! Le soleil est tout en haut.' },
   { id: 'dodo', emoji: '🌙', label: 'Quand je vais au dodo', sub: '20 h chez nous', homeH: 20,

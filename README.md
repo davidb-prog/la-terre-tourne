@@ -50,9 +50,10 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
   jour toute seule. Un bouton 🔇/🔊 active la **version sonore** : à chaque moment choisi, le
   conteur dit ce qui se passe chez nous et là-bas — même voix et même ton que l'histoire des
   fuseaux, avec les enchaînements ajoutés pour l'oral (« Chez nous… Et pendant ce temps, à
-  Bali… »), la bonne préposition pour chaque lieu (« en Guadeloupe », « au Japon »,
-  « aux Fidji », « au Caire »… — `placeLocative`, testée) et sans les émojis, imprononçables.
-  Le choix est retenu.
+  Bali… »), la bonne préposition pour chaque idée de voyage (« en Guadeloupe », « au Japon »…
+  — `placeLocative`, testée) et sans les émojis, imprononçables. Pour un lieu trouvé à la
+  recherche, le conteur dit « là-bas » — le nom et le drapeau sont déjà à l'écran. Le choix
+  est retenu.
 - **La carte du monde à plat** (mêmes contours que le globe) : les 24 fuseaux en bandes
   étiquetées **par leur décalage UTC** (−11 … UTC … +11), la nuit qui balaie la carte d'est en
   ouest, un **halo doré** centré sur le vrai midi solaire, « Greenwich » écrit sous « UTC »,
@@ -62,10 +63,12 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
 ![La carte à plat : bandes UTC, halo doré de midi, cadre des deux heures](docs/screenshot-map.png)
 
 - **« Pourquoi les fuseaux horaires ? »** : la petite histoire des 24 tranches d'orange, à lire
-  ou à **écouter** — la synthèse vocale du navigateur la raconte phrase à phrase, sur un ton de
-  conteur (pauses, exclamations, suspens). Le site choisit d'office la voix française la plus
-  naturelle de l'appareil, un menu 🗣 permet d'en changer (choix retenu), et un conseil
-  s'affiche quand l'appareil n'a que des voix robotiques.
+  ou à **écouter**. Le conteur joue la **voix enregistrée** (mp3 commités dans `assets/audio/`)
+  quand elle existe et dit encore exactement le texte du site ; sinon, la **synthèse vocale**
+  du navigateur prend le relais, phrase à phrase, sur un ton de conteur (pauses, exclamations,
+  suspens). Le site choisit d'office la voix française la plus naturelle de l'appareil, un
+  menu 🗣 permet d'en changer (choix retenu), et un conseil s'affiche quand l'appareil n'a que
+  des voix robotiques.
 - **Le jeu « Amuse-toi à trouver l'heure qu'il est dans les pays que tu connais ! »**, après
   l'histoire : le **globe en 3D** puis la **carte à plat**. Le globe montre les vrais
   continents et les frontières des ~180 pays (Natural Earth, embarqué dans `js/geo.js` —
@@ -120,11 +123,11 @@ puis ouvrir <http://localhost:8000>.
 
 ## Tests
 
-Le modèle horaire, la géographie et le répertoire de lieux sont purs et se testent sous Node,
-sans navigateur :
+Le modèle horaire, la géographie, le répertoire de lieux et les textes du conteur sont purs
+et se testent sous Node, sans navigateur :
 
 ```bash
-node test/model.test.mjs && node test/geo.test.mjs
+node test/model.test.mjs && node test/geo.test.mjs && node test/voix.test.mjs
 ```
 
 **63 vérifications horaires**, dont les données exactes du récit : 12 h en France (hiver) → 7 h
@@ -138,6 +141,13 @@ jour/nuit toujours à l'écran, le Soleil jamais caché derrière la Terre aprè
 **25 vérifications géographiques** : Paris tombe dans la France surlignée, Tokyo au Japon, le
 milieu du Pacifique dans l'océan, Bali/La Réunion/Tahiti ont leur île, la recherche trouve
 « reunion » sans accent, chaque pays du répertoire a son polygone…
+
+**47 vérifications de la voix** : le texte oral (émojis retirés, « 6 h 30 » → « 6 heures 30 »,
+espaces recollés), l'arrondi assumé du scénario du lever (« presque 7 h 30 », jamais une heure
+déjà passée), les blocs du conteur — et surtout la **couverture** : le corpus vocal est
+ré-énuméré sur chaque scénario × chaque lieu du répertoire, aucune histoire que le site peut
+raconter ne manque à l'appel. Quand les mp3 existent, le manifeste est vérifié bloc par bloc :
+la voix enregistrée ne dit jamais autre chose que le texte du site.
 
 Le site est aussi vérifié en navigateur (Playwright/Chromium, desktop + mobile 390 px) : zéro
 erreur de console, structure de la page (heures chez nous/là-bas d'abord puis « Depuis
@@ -197,11 +207,31 @@ Tout est dans [`js/model.js`](js/model.js) (aucun accès DOM, toutes les constan
 - **Les cartes** viennent de Natural Earth 110m (domaine public), simplifiées ; seules les
   frontières des pays sont tracées, pas les régions ; Bali, La Réunion, Tahiti et les Antilles
   sont redessinées à la main (trop petites pour cette résolution).
-- **La voix de lecture** est celle de l'appareil (rien ne part sur Internet) : sa qualité varie
-  beaucoup. Le site note les voix françaises disponibles et prend la plus naturelle ; sur
-  Chrome ou Edge, ou avec une voix « améliorée » téléchargée, la lecture devient vraiment douce.
+- **La voix du conteur.** Quand la voix enregistrée est là, le site joue ses mp3 (rien ne part
+  de l'appareil) ; sinon la synthèse de l'appareil prend le relais — le site note les voix
+  françaises disponibles et prend la plus naturelle (sur Chrome ou Edge, ou avec une voix
+  « améliorée » téléchargée, la lecture devient vraiment douce). Deux libertés d'oral,
+  documentées dans la note aux parents : « là-bas » pour les lieux hors idées de voyage (le
+  nom est à l'écran), et l'arrondi assumé à la demi-heure qui vient (« presque 7 h 30 ») dans
+  le scénario « Le soleil se lève là-bas », dont les minutes dépendent de la longitude.
 - **Un joli hasard, exact et vérifié** : Bali (UTC+8) et la Guadeloupe (UTC−4) ont 12 h d'écart
   pile — quand le soleil se lève sur l'une, il se couche sur l'autre (à ~13 min près).
+
+## La voix enregistrée
+
+Le conteur peut jouer des **mp3 commités** dans `assets/audio/` au lieu de la synthèse (bien
+moins robotique) — le guide de la famille est
+[`docs/voix-conteur.md` de l'épisode 2](https://github.com/davidb-prog/ou-va-le-soleil/blob/main/docs/voix-conteur.md).
+La particularité de cet épisode : les histoires des scénarios sont **générées** (elles
+dépendent du lieu choisi et de l'heure), le corpus s'obtient donc par **énumération** —
+`tools/voix-lib.mjs` fait passer chaque scénario × chaque lieu du répertoire par la même
+fonction `blocsScenario()` que le site, et déduplique : **~165 blocs** couvrent tout ce que le
+site peut raconter. Génération hors site par `tools/build-voix.mjs` (Node ≥ 18, zéro
+dépendance, clés ElevenLabs en variables d'environnement — jamais commitées), manifeste
+`assets/audio/manifest.json` vérifié par `test/voix.test.mjs` : un mp3 ne joue que s'il dit
+**encore exactement** le texte du site, et une histoire entière garde **une seule voix** (un
+bloc manquant → tout le récit passe en synthèse). Tant que les mp3 n'existent pas, le site
+parle à la synthèse, comme avant.
 
 ## Structure
 
@@ -217,9 +247,18 @@ js/views.js           rendus canvas/SVG maison (carte du monde, Terre vue du pô
 js/view3d.js          globe 3D (projection orthographique maison, découpe à l'horizon, nuit
                       en calottes, Soleil ancré sur l'axe horizontal)
 js/main.js            boucle d'animation + interactions (curseur, glissers, sélection,
-                      boutons de lieux, vol de caméra, scénarios, plein écran, voix)
+                      boutons de lieux, vol de caméra, scénarios, plein écran, conteur :
+                      voix enregistrée + repli synthèse)
+assets/audio/         la voix enregistrée : 165 mp3 + manifest.json (texte oral exact de chaque bloc)
+tools/build-voix.mjs  génération ElevenLabs hors site (--dry-run, --essai, --only, --calme)
+                      + la page d'écoute-marathon tools/ecoute.html (lecture enchaînée, marquage,
+                      écoute ciblée #ids=…, anti-cache)
+tools/voix-lib.mjs    le corpus vocal par énumération (scénarios × lieux, dédupliqué)
+tools/controle-voix.mjs  contrôle « sans oreilles » des clips (durées, blancs, ré-écoute
+                      Whisper comparée au manifeste) → tools/controle.html, les suspects seuls
 test/model.test.mjs   tests Node du modèle horaire (63 vérifications)
 test/geo.test.mjs     tests Node de la géographie et de la recherche (25 vérifications)
+test/voix.test.mjs    tests Node du conteur : textes oraux, couverture, manifeste (47 vérifications)
 ```
 
 ## La série

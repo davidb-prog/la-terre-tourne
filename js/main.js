@@ -4,10 +4,11 @@
 
 import { TAU, DEG, PLACES, HOME, SCENARIOS, wrap24, localClock, formatHM,
          periodWord, activityFor, dayBadge, sunriseHomeH,
-         placePhrase, offsetDiffText, cameraFrame, placeLocative } from './model.js';
+         placePhrase, offsetDiffText, cameraFrame,
+         texteOral, blocsScenario } from './model.js';
 import { MapView, SkyView, PoleView, buildClock, pointInRing } from './views.js';
 import { Globe3D } from './view3d.js';
-import { GAZETTEER, DECOR, searchPlaces, flagEmoji } from './places.js';
+import { GAZETTEER, DECOR, searchPlaces, flagEmoji, IDEES_VOYAGE } from './places.js';
 import { COUNTRIES } from './geo.js';
 
 const $ = (id) => document.getElementById(id);
@@ -207,14 +208,17 @@ wireSearch('place-search', 'search-results');
 wireSearch('place-search-map', 'search-results-map');
 
 // quelques idées de voyage prêtes à cliquer — en haut de page et, sur grand
-// écran, répliquées sous la carte à plat du jeu
+// écran, répliquées sous la carte à plat du jeu. Le conteur retient leurs
+// noms résolus : ces lieux-là ont une transition nommée (« Et pendant ce
+// temps, à Tahiti… ») enregistrée — les autres s'entendent « là-bas ».
+const puceNames = {};
 for (const boxId of ['search-chips', 'search-chips-map']) {
   const chipsBox = $(boxId);
   if (!chipsBox) continue;
-  for (const idea of ['Guadeloupe', 'Bali', 'Tahiti', 'Tokyo', 'New York', 'Sydney',
-    'La Réunion', 'Nouméa', 'Thaïlande']) {
+  for (const idea of IDEES_VOYAGE) {
     const found = searchPlaces(idea, 1);
     if (!found.length) continue;
+    puceNames[found[0].n] = true;
     const b = document.createElement('button');
     b.type = 'button';
     b.textContent = flag(found[0].iso) + ' ' + found[0].n;
@@ -856,10 +860,41 @@ function sentenceChunks(text, endPara) {
   return out;
 }
 
+// ---- la voix enregistrée : un manifeste (assets/audio/manifest.json) liste
+// les blocs disponibles avec leur texte oral exact. On ne joue un fichier que
+// si son texte correspond ENCORE au texte du site — sinon, repli synthèse (la
+// voix enregistrée ne ment jamais). Manifeste vide ou absent : tout passe par
+// la synthèse, comme avant. Fichiers générés par tools/build-voix.mjs. ----
+
+let audioBlocs = {};
+if (window.__VOIX_MANIFESTE && window.__VOIX_MANIFESTE.blocs) {
+  // l'artifact de test familial embarque le manifeste dans la page
+  audioBlocs = window.__VOIX_MANIFESTE.blocs;
+} else if (window.fetch) {
+  fetch('assets/audio/manifest.json')
+    .then((r) => (r.ok ? r.json() : null))
+    .then((m) => {
+      if (m && m.blocs) audioBlocs = m.blocs;
+      // le conseil « voix robotiques » ne concerne que le repli synthèse
+      if (Object.keys(audioBlocs).length > 0) {
+        const vh = $('voice-hint');
+        if (vh) vh.hidden = true;
+      }
+    })
+    .catch(() => { /* hors ligne ou manifeste absent : synthèse seule */ });
+}
+
+function audioSrc(id, text) {
+  const b = audioBlocs[id];
+  if (!b || b.texte !== text || !b.fichier) return null;
+  // l'artifact embarque les sons en data URI ; le site sert des fichiers
+  return b.fichier.indexOf('data:') === 0 ? b.fichier : 'assets/audio/' + b.fichier;
+}
+
 const listenBtn = $('btn-listen');
 const voiceSel = $('voice-pick');
 const voiceHint = $('voice-hint');
-let narrator = null; // { speak(chunks, onDone), stop() } — null sans synthèse vocale
+let narrator = null; // { narrate(items, onDone), stop() } — null sans synthèse vocale
 
 if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
   let frVoices = [];
@@ -915,9 +950,10 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
     }
     if (voiceHint) {
       // en dessous de ce score, l'appareil n'a que des voix métalliques :
-      // on souffle aux parents comment en obtenir une plus douce
+      // on souffle aux parents comment en obtenir une plus douce — sauf si
+      // la voix enregistrée est là (le conseil ne concerne que le repli)
       const best = frVoices.length ? voiceScore(frVoices[0]) : -1;
-      voiceHint.hidden = best >= 84;
+      voiceHint.hidden = best >= 84 || Object.keys(audioBlocs).length > 0;
     }
   };
   refreshVoices();
@@ -934,22 +970,36 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
   // le onDone de la lecture précédente est toujours prévenu qu'elle s'achève
   let gen = 0;
   let curDone = null;
+  // UN SEUL élément audio, réutilisé pour tous les blocs : une fois débloqué
+  // par un geste (iOS ne permet play() que dans la foulée d'un toucher), il
+  // peut rejouer SANS geste — indispensable pour l'histoire qui se rejoue
+  // quand la destination change pendant qu'un scénario est affiché.
+  let lecteur = null;
+  const getLecteur = () => {
+    if (!lecteur) lecteur = new Audio();
+    return lecteur;
+  };
   const settle = () => { const d = curDone; curDone = null; if (d) d(); };
-  const stopSpeaking = () => { gen++; window.speechSynthesis.cancel(); settle(); };
+  const stopSpeaking = () => {
+    gen++;
+    window.speechSynthesis.cancel();
+    if (lecteur) {
+      try { lecteur.pause(); } catch (e) { /* déjà arrêté */ }
+      lecteur.onended = null;
+      lecteur.onerror = null;
+    }
+    settle();
+  };
 
-  // ton de conteur : les phrases s'enchaînent avec de vraies pauses, sur un
-  // débit posé, et un peu de relief là où le texte s'exclame ou questionne
-  // (la synthèse du navigateur n'offre que rate et pitch — on s'en sert)
-  const speakChunks = (chunks, onDone) => {
-    stopSpeaking();
-    refreshVoices(); // certaines listes de voix n'arrivent qu'après le chargement
-    const myGen = gen;
-    curDone = onDone || null;
+  // ton de conteur (le repli synthèse) : les phrases s'enchaînent avec de
+  // vraies pauses, sur un débit posé, et un peu de relief là où le texte
+  // s'exclame ou questionne (le navigateur n'offre que rate et pitch)
+  const speakSeq = (chunks, myGen, done) => {
     const voice = pickVoice();
     let at = 0;
     const speakNext = () => {
       if (myGen !== gen) return;
-      if (at >= chunks.length) { settle(); return; }
+      if (at >= chunks.length) { done(); return; }
       const c = chunks[at++];
       const u = new SpeechSynthesisUtterance(c.text);
       u.lang = voice ? voice.lang : 'fr-FR';
@@ -962,12 +1012,60 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
         if (myGen !== gen) return;
         window.setTimeout(speakNext, c.endPara ? 620 : 300);
       };
-      u.onerror = () => { if (myGen === gen) settle(); };
+      u.onerror = () => { if (myGen === gen) done(); };
       window.speechSynthesis.speak(u);
     };
     speakNext();
   };
-  narrator = { speak: speakChunks, stop: stopSpeaking };
+
+  // Le conteur : une suite de blocs { id, text, pause? }. Chaque bloc joue son
+  // fichier enregistré s'il existe ET dit encore le bon texte ; sinon la
+  // synthèse lit le texte phrase à phrase. Une histoire = UNE voix : si un
+  // seul bloc n'a pas son fichier (texte changé, phrase générée inédite…),
+  // tout le récit passe à la synthèse — jamais de voix chaleureuse
+  // interrompue par une phrase robotique. Entre blocs, la respiration par
+  // défaut (620 ms) ; `pause` la raccourcit pour les fichiers qui portent
+  // déjà leur suspension (les annonces en « … »).
+  const narrate = (items, onDone) => {
+    stopSpeaking();
+    refreshVoices(); // certaines listes de voix n'arrivent qu'après le chargement
+    const myGen = gen;
+    curDone = onDone || null;
+    const enregistre = items.every((it) => audioSrc(it.id, it.text));
+    let at = 0;
+    const next = () => {
+      if (myGen !== gen) return;
+      if (at >= items.length) { settle(); return; }
+      const it = items[at++];
+      const after = () => { if (myGen === gen) window.setTimeout(next, 0); };
+      let fell = false; // onerror ET promesse rejetée peuvent tomber tous les deux
+      const fallback = () => {
+        if (fell || myGen !== gen) return;
+        fell = true;
+        speakSeq(sentenceChunks(it.text, true), myGen, after);
+      };
+      const src = enregistre ? audioSrc(it.id, it.text) : null;
+      if (!src) { fallback(); return; }
+      const a = getLecteur();
+      const pause = typeof it.pause === 'number' ? it.pause : 620;
+      a.onended = () => { if (myGen === gen) window.setTimeout(after, pause); };
+      a.onerror = fallback;
+      a.src = src;
+      const p = a.play();
+      if (p && p.then) p.then(null, fallback);
+      // pendant que ce bloc joue, préchauffer le fichier du suivant : son
+      // chargement se fait d'avance (cache HTTP) et ne s'ajoute plus au
+      // blanc entre les blocs au premier passage en ligne
+      if (at < items.length && window.fetch) {
+        const nx = audioSrc(items[at].id, items[at].text);
+        if (nx && nx.indexOf('data:') !== 0) {
+          fetch(nx).catch(() => { /* le lecteur retentera au vrai chargement */ });
+        }
+      }
+    };
+    next();
+  };
+  narrator = { narrate: narrate, stop: stopSpeaking };
 
   // -- « Écouter l'histoire » : la boîte des fuseaux, phrase à phrase --
   listenBtn.hidden = false;
@@ -978,12 +1076,13 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
     listenBtn.setAttribute('aria-pressed', 'false');
   };
   const startReading = () => {
-    const chunks = [];
+    // un bloc par paragraphe : les ids histoire-1…5 des fichiers enregistrés
+    const items = [];
     const paras = $('explain-text').querySelectorAll('p');
-    for (const para of paras) {
-      for (const c of sentenceChunks(para.textContent, true)) chunks.push(c);
+    for (let i = 0; i < paras.length; i++) {
+      items.push({ id: 'histoire-' + (i + 1), text: texteOral(paras[i].textContent) });
     }
-    speakChunks(chunks, resetListen);
+    narrate(items, resetListen);
     reading = true;
     listenBtn.textContent = '⏹ Arrêter';
     listenBtn.setAttribute('aria-pressed', 'true');
@@ -999,7 +1098,13 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
       if (reading) startReading(); // on réécoute tout de suite avec la nouvelle voix
     });
   }
-  window.addEventListener('pagehide', () => { window.speechSynthesis.cancel(); });
+  // partir ailleurs (autre application, autre onglet, écran verrouillé)
+  // coupe le conteur net — synthèse ET mp3 : la voix ne parle jamais dans le
+  // vide. Pas de reprise au retour : rien ne parle tout seul, on re-tape.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') stopSpeaking();
+  });
+  window.addEventListener('pagehide', stopSpeaking); // vieux Safari sans visibilitychange fiable
 } else {
   $('btn-scn-voice').hidden = true; // pas de synthèse vocale : pas de version sonore
 }
@@ -1027,24 +1132,16 @@ scnVoiceBtn.addEventListener('click', () => {
   if (scnVoiceOn) tellScenario(); else narrator.stop();
 });
 
-const EMOJI_RE = /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}]/gu;
-
+// Les blocs du récit viennent du modèle (blocsScenario) : mêmes ids et mêmes
+// textes que le corpus enregistré (tools/voix-lib.mjs) et que les tests.
 function spokenStory(scn, atH) {
-  // retirer un émoji laisse un espace orphelin devant le point final — et un
-  // « . » isolé se fait lire « point » par certaines voix : on le recolle
-  const clean = (t) => t.replace(EMOJI_RE, '').replace(/\s+/g, ' ')
-    .replace(/\s+\./g, '.').trim();
-  const chunks = [{ text: 'Chez nous…', endPara: false }];
-  for (const c of sentenceChunks(clean(scn.france || placePhrase(atH, FRANCE)), true)) chunks.push(c);
-  chunks.push({ text: 'Et pendant ce temps, ' + placeLocative(selected) + '…', endPara: false });
-  const same = selected.utcOffset === FRANCE.utcOffset;
-  for (const c of sentenceChunks(clean(placePhrase(atH, selected, same)), true)) chunks.push(c);
-  return chunks;
+  const blocs = blocsScenario(scn, atH, selected, !!puceNames[selected.name]);
+  return blocs.map((b) => ({ id: b.id, text: texteOral(b.texte), pause: b.pause }));
 }
 
 function tellScenario() {
   if (narrator && scnVoiceOn && activeScn) {
-    narrator.speak(spokenStory(activeScn.scn, activeScn.atH));
+    narrator.narrate(spokenStory(activeScn.scn, activeScn.atH));
   }
 }
 

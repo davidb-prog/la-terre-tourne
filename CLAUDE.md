@@ -92,7 +92,10 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
 - `js/model.js` — logique horaire pure (lieux, horloges locales, report de jour, heure solaire,
   hauteur du soleil, scénarios et phrases générées — dont le cas « même fuseau que la
   France » —, écarts en toutes lettres, prépositions de lieu `placeLocative`, cadrage caméra
-  borné `cameraFrame`)
+  borné `cameraFrame`) + les textes du conteur (`texteOral`, `heureOrale` — minuit, midi et « une heure » en mots, minutes accolées, et
+  l'arrondi assumé « presque X h 30 » du scénario du lever —, `placePhraseOrale`,
+  `blocsScenario` : les blocs `{id, texte, pause}` d'un récit, ids par empreinte du texte
+  `idBloc` — LA source commune du site, du corpus et des tests)
 - `js/geo.js` — GÉNÉRÉ : ~177 pays Natural Earth 110m avec ISO (~10 700 points), lacs, glaces
   (AQ/GL), arc des Antilles et petites îles (`SPECKS` : Bali, La Réunion, Tahiti…) à la main
 - `js/places.js` — répertoire hors-ligne (≈ 220 lieux `{n, c|pays, q, iso, lat, lon, tz}`,
@@ -101,7 +104,8 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
   émoji (avec repli 📍 dans main.js quand l'OS ne les rend pas — Windows — détecté par
   **mesure de largeur** : la paire 🇹🇭 se ligature en un glyphe si les drapeaux existent ;
   surtout pas un test de couleur, les lettres de Windows sont en couleur aussi), `DECOR`
-  (9 villes toujours dessinées — la nuit, elles s'allument)
+  (9 villes toujours dessinées — la nuit, elles s'allument), `IDEES_VOYAGE` (les 9 puces,
+  partagées interface/corpus vocal : seuls ces lieux ont une transition nommée enregistrée)
 - `js/views.js` — `MapView` (planisphère : bandes UTC étiquetées, halo doré du midi solaire,
   nuit qui balaie, Greenwich sous UTC, hitTest), `PoleView` (la **vue principale** : Terre vue
   du pôle Nord, 24 tranches tournantes, moitié nuit fixe, Soleil à droite rapproché si la
@@ -127,13 +131,73 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
   jumeaux (`''`/`-globe`/`-sticky` — la barre collante mobile apparaît quand les
   cartes-horloges sortent de l'écran par le haut, `IntersectionObserver` avec garde : sans
   lui elle reste masquée ; même garde `matchMedia` pour replier `explain-fold` sur mobile et
-  le rouvrir sur ordinateur), et le **conteur** `narrator` : un seul moteur de synthèse vocale
-  (score des voix françaises, ton conteur phrase à phrase, menu 🗣, choix retenu en
-  localStorage) partagé entre l'histoire des fuseaux et la **version sonore des scénarios**
-  (bouton 🔇/🔊, choix retenu ; on ne lit pas les bulles telles quelles — enchaînements
-  « Chez nous… / Et pendant ce temps, [préposition `placeLocative`] … » ajoutés à l'oral,
-  émojis retirés, espace recollé avant le point final sinon lu « point »)
-- `test/model.test.mjs` — 63 vérifications ; `test/geo.test.mjs` — 25 vérifications
+  le rouvrir sur ordinateur), et le **conteur** `narrator` (patron canonique de la famille,
+  porté depuis `ou-va-le-soleil/js/main.js`) : UN seul moteur `narrate(items)`/`stop()`
+  partagé entre l'histoire des fuseaux et la **version sonore des scénarios** (bouton 🔇/🔊,
+  choix retenu). Chaque bloc joue son **mp3 enregistré** si le manifeste dit qu'il porte
+  encore le texte exact (`audioSrc`), sinon **synthèse** (score des voix françaises, ton
+  conteur phrase à phrase, menu 🗣, choix retenu en localStorage) — avec la règle propre à
+  cet épisode : **une histoire = une voix** (un seul bloc sans fichier → tout le récit passe
+  en synthèse). Un seul élément `<audio>` réutilisé (iOS rejoue sans geste), préchargement
+  `fetch` du bloc suivant, pauses par bloc (120 ms après les annonces en « … »),
+  `visibilitychange → stop()` (+ `pagehide` en secours). Les blocs viennent de
+  `blocsScenario` (model.js) : mêmes ids et textes que le corpus et les tests ; les lieux
+  hors puces s'entendent « là-bas » (`trans-ailleurs`), les 9 `IDEES_VOYAGE` (places.js) ont
+  leur transition nommée
+- `tools/voix-lib.mjs` — le **corpus vocal par énumération** : chaque scénario × chaque lieu
+  du répertoire (+ la Guadeloupe par défaut de model.js) passe par `blocsScenario`, dédupliqué
+  par id → 165 blocs, ~11 600 caractères. `tools/build-voix.mjs` — génération ElevenLabs
+  HORS site (copié de l'épisode 2 : `--dry-run`, `--essai`, `--only`, manifeste idempotent) +
+  les acquis de cet épisode : `--calme` (réglages posés style 0/stabilité 0,75, contexte de
+  prosodie `previous_text`, diction « : » dit comme un point et heures en toutes lettres —
+  pour les clips qui accrochent prise après prise ; le manifeste garde le texte officiel,
+  seuls les mots PRONONCÉS doivent rester identiques), et la page d'écoute-marathon
+  `tools/ecoute.html` (gitignorée, régénérée à chaque run) : lecture enchaînée des 165 clips,
+  marquage 🚩 → commandes `--only … --calme`, écoute ciblée d'une fournée par `#ids=…`
+  (build-voix imprime l'URL de ce qu'il vient de générer), et anti-cache `?v=` sur chaque
+  mp3 — SANS lui, le navigateur ressert l'ancienne version d'un clip re-tiré (leçon payée :
+  six « re-tirages ratés » qui étaient le même fichier en cache) ;
+  `assets/audio/manifest.json` — les 165 blocs enregistrés (la synthèse reste le repli)
+- `test/model.test.mjs` — 63 vérifications ; `test/geo.test.mjs` — 25 vérifications ;
+  `test/voix.test.mjs` — 47 vérifications (textes oraux, arrondi jamais en retard, blocs,
+  **couverture** : tout ce que le site peut raconter est dans le corpus, manifeste ↔ site)
+
+## La voix enregistrée (ElevenLabs)
+
+Le conteur peut jouer des **mp3 commités** dans `assets/audio/` au lieu de la synthèse. Le
+guide de la famille est `ou-va-le-soleil/docs/voix-conteur.md` ; règles dures :
+
+- **Le site reste 100 % statique** : génération HORS site par `tools/build-voix.mjs`
+  (Node ≥ 18, zéro dépendance, `ELEVENLABS_API_KEY` + `ELEVENLABS_VOICE_ID` en variables
+  d'environnement — jamais commitées, jamais côté site). Modèle `eleven_multilingual_v2`,
+  sortie 64 kb/s.
+- **La clé API vit sur la machine de David** (`~/.zshrc`), JAMAIS dans un cloud environment
+  (`api.elevenlabs.io` y est bloqué par le réseau). La génération se fait en local ; depuis le
+  cloud on prépare corpus et outillage, puis on passe la main.
+- **La voix enregistrée ne ment jamais** : le manifeste stocke le texte oral exact de chaque
+  bloc, `audioSrc` ne joue un mp3 que si son texte correspond ENCORE, `node test/voix.test.mjs`
+  échoue si un texte a changé sans régénération — et la **couverture par énumération** (propre
+  à cet épisode : les histoires sont générées) garantit qu'aucune combinaison scénario × lieu
+  ne manque au corpus. Corollaire : **tout changement des phrases de `model.js` ou des textes
+  parlés d'`index.html` invalide des blocs** — re-passer par `--dry-run` et régénérer avant de
+  committer.
+- **Une histoire = une voix** : un bloc manquant fait passer tout le récit en synthèse (règle
+  d'oreille, dans `narrate` de main.js) — ne pas « optimiser » en mélangeant.
+- **Figer les textes avant d'enregistrer**, valider à l'écoute (`tools/ecoute.html`,
+  gitignoré), puis UN seul commit d'`assets/audio/` (mp3 + manifeste) — l'audio commité ne se
+  delta-compresse pas, chaque régénération commitée est un blob mort à vie.
+- **La revue des ~165 clips ne se fait pas à l'oreille un par un** :
+  `node tools/controle-voix.mjs` (local, comme build-voix — prérequis `brew install ffmpeg`
+  et `pip3 install -U openai-whisper`) vérifie chaque mp3 mécaniquement (durée plausible
+  pour son texte, blancs au milieu, silence de fin mesuré) puis le transcrit (Whisper,
+  horodatage des mots) et compare au texte du manifeste (normalisation « 7 h 30 » ↔ « sept
+  heures trente », seuil 0,82, détecteur de bégaiement : n-gramme doublé dans l'entendu,
+  absent de l'attendu, blancs ≥ 0,8 s en pleine phrase et mots étirés — calibré voix de
+  conteur : pauses inter-segments et bords de clip exclus, l'oreille reste la référence) ; il écrit `tools/controle.html` (gitignoré) avec SEULEMENT les suspects — lecteur,
+  attendu/entendu, commande `--only` prête. Cache par empreinte de fichier
+  (`tools/controle-cache.json`, gitignoré) : après un re-tirage, seul le fichier refait est
+  re-transcrit. Un clip signalé n'est pas forcément raté — c'est la courte liste de
+  réécoute ; l'oreille reste juge en dernier ressort.
 
 ## Vérification navigateur
 
