@@ -363,8 +363,10 @@ export function blocsScenario(scn, atH, place, estPuce) {
 // puis on raconte la France (texte fixe) et le lieu choisi (phrase générée).
 // Le dernier scénario est dynamique : le lever du soleil chez l'invité.
 export const SCENARIOS = [
+  // « Debout ! » seul en ouverture se disait trop sec (piège documenté :
+  // jamais une ouverture d'un seul mot) — on lui donne un appui
   { id: 'reveil', emoji: '☀️', label: 'Quand je me réveille', sub: '7 h chez nous', homeH: 7,
-    france: 'Debout ! Il est 7 h du matin, le soleil se lève.' },
+    france: 'C’est le matin, debout ! Il est 7 h, le soleil se lève.' },
   { id: 'midi', emoji: '🥖', label: 'Quand je déjeune', sub: 'midi chez nous', homeH: 12,
     france: 'Il est midi pile : à table ! Le soleil est tout en haut.' },
   { id: 'dodo', emoji: '🌙', label: 'Quand je vais au dodo', sub: '20 h chez nous', homeH: 20,
