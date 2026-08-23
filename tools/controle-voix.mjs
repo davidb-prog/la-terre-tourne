@@ -93,6 +93,32 @@ export function normaliser(texte) {
   return t.replace(/\s+/g, ' ').trim();
 }
 
+// Blocages : la voix « cale » parfois en pleine phrase (blanc d'une demi-
+// seconde, syllabe étirée) — les mots restent justes, Whisper transcrit
+// proprement, la comparaison de texte ne voit RIEN. On regarde donc le
+// TEMPS : l'horodatage des mots (word_timestamps) révèle les trous en
+// pleine phrase (une pause après une ponctuation est normale) et les mots
+// anormalement étirés.
+export function pausesSuspectes(mots) {
+  const suspects = [];
+  for (let i = 0; i < mots.length; i++) {
+    const [w, debut, fin] = mots[i];
+    const mot = String(w).trim();
+    if (i + 1 < mots.length) {
+      const trou = mots[i + 1][1] - fin;
+      if (trou >= 0.55 && !/[.!?…:;,]$/.test(mot)) {
+        suspects.push('blanc de ' + trou.toFixed(1) + ' s en pleine phrase, après « ' + mot + ' »');
+      }
+    }
+    // parole normale ≈ 0,07–0,09 s par lettre : au double, le mot traîne
+    const duree = fin - debut;
+    if (duree >= 1.0 && duree / Math.max(2, mot.replace(/[^a-zà-ÿ]/gi, '').length) >= 0.17) {
+      suspects.push('mot étiré (« ' + mot + ' », ' + duree.toFixed(1) + ' s)');
+    }
+  }
+  return suspects;
+}
+
 // Bégaiement : la voix répète parfois un bout de phrase (« 24 grandes
 // tranches grandes tranches »). La transcription l'entend — on cherche un
 // n-gramme (2 à 4 mots) immédiatement doublé dans l'entendu qui ne l'est
@@ -234,13 +260,18 @@ for (const id of ids) {
     ? duree - plages[plages.length - 1][0] : 0;
   bilan.silenceFin = Math.max(0, Math.min(fin, duree));
 
-  // filet 3 : la ré-écoute automatique (transcription à comparer)
+  // filet 3 : la ré-écoute automatique (transcription à comparer + horodatage
+  // des mots — les entrées de cache sans `mots` datent d'avant, on les refait)
   if (sttActif) {
     const h = hashFichier(chemin);
     bilan.hash = h;
     const connu = cache[id];
-    if (connu && connu.hash === h) bilan.entendu = connu.entendu;
-    else aTranscrire.push({ id: id, chemin: chemin });
+    if (connu && connu.hash === h && connu.mots) {
+      bilan.entendu = connu.entendu;
+      bilan.mots = connu.mots;
+    } else {
+      aTranscrire.push({ id: id, chemin: chemin });
+    }
   }
 }
 
@@ -251,8 +282,8 @@ if (aTranscrire.length) {
   const res = spawnSync('whisper', [
     ...aTranscrire.map((t) => t.chemin),
     '--model', MODELE, '--language', 'French', '--task', 'transcribe',
-    '--output_format', 'txt', '--output_dir', tmp, '--verbose', 'False',
-    '--fp16', 'False',
+    '--output_format', 'json', '--word_timestamps', 'True',
+    '--output_dir', tmp, '--verbose', 'False', '--fp16', 'False',
   ], { encoding: 'utf8', stdio: ['ignore', 'inherit', 'inherit'] });
   if (res.status !== 0) {
     console.error('whisper a échoué — réessayer, ou --sans-stt pour les filets mécaniques.');
@@ -260,11 +291,20 @@ if (aTranscrire.length) {
   }
   for (const t of aTranscrire) {
     const base = t.chemin.split('/').pop().replace(/\.mp3$/, '');
-    const txt = join(tmp, base + '.txt');
-    const entendu = existsSync(txt) ? readFileSync(txt, 'utf8').replace(/\s+/g, ' ').trim() : '';
+    const fjson = join(tmp, base + '.json');
+    let entendu = '';
+    let mots = [];
+    if (existsSync(fjson)) {
+      const data = JSON.parse(readFileSync(fjson, 'utf8'));
+      entendu = String(data.text || '').replace(/\s+/g, ' ').trim();
+      for (const seg of data.segments || []) {
+        for (const w of seg.words || []) mots.push([w.word, w.start, w.end]);
+      }
+    }
     const bilan = bilans.find((b) => b.id === t.id);
     bilan.entendu = entendu;
-    cache[t.id] = { hash: bilan.hash, entendu: entendu };
+    bilan.mots = mots;
+    cache[t.id] = { hash: bilan.hash, entendu: entendu, mots: mots };
   }
   rmSync(tmp, { recursive: true, force: true });
   writeFileSync(cheminCache, JSON.stringify(cache, null, 1) + '\n');
@@ -281,6 +321,7 @@ if (sttActif) {
     }
     const rep = begaiement(entendu, attendu);
     if (rep) b.raisons.push('bégaiement possible : « ' + rep + ' » entendu deux fois de suite');
+    for (const p of pausesSuspectes(b.mots || [])) b.raisons.push(p);
   }
 }
 

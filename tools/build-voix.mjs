@@ -7,6 +7,9 @@
 //   --dry-run          liste les blocs (à générer / à jour) et le coût en
 //                      crédits, sans rien appeler — marche sans clé
 //   --only <id>        (re)génère uniquement ce bloc, même s'il est à jour
+//   --calme            réglages posés (style 0, stabilité 0,75) + contexte de
+//                      prosodie previous_text — pour les clips qui « bloquent »
+//                      prise après prise (à combiner avec --only)
 //   --essai id1,id2…   phrase-test avec chaque voix candidate, pour choisir :
 //                      écrit tools/essais/essai-<voiceId>.mp3 (non commité)
 //   --voice <id>       équivalent de ELEVENLABS_VOICE_ID
@@ -24,6 +27,13 @@ const MODELE = 'eleven_multilingual_v2';
 // de la parole : 64 kb/s suffisent largement (moitié du poids de 128)
 const FORMAT_SORTIE = 'mp3_44100_64';
 const REGLAGES_VOIX = { stability: 0.5, similarity_boost: 0.75, style: 0.3 };
+// --calme : pour les clips qui « bloquent » prise après prise. Les clips
+// courts sans contexte sont le point faible du modèle (pauses dramatiques,
+// syllabes étirées) : on re-tire avec des réglages posés (style 0, stabilité
+// haute) ET un contexte de prosodie previous_text (la phrase qui précède le
+// bloc dans le récit — entendue par le modèle, jamais prononcée). Le texte ne
+// change pas : ni id ni manifeste ne bougent.
+const REGLAGES_CALMES = { stability: 0.75, similarity_boost: 0.75, style: 0 };
 // la phrase-test du mode --essai : expressive, avec suspens et exclamation
 const PHRASE_ESSAI = 'Quand tu prends ton petit-déjeuner, à Bali le soleil se couche déjà… '
   + 'La Terre est ronde, et elle tourne — c’est pour ça qu’il n’est pas la même heure partout !';
@@ -45,10 +55,11 @@ const cle = process.env.ELEVENLABS_API_KEY || '';
 // retenue dans le manifeste (pratique pour les retouches --only)
 const voix = valeur('--voice') || process.env.ELEVENLABS_VOICE_ID || manifeste.voix || '';
 
-async function genererMp3(texte, voiceId, precedent) {
+async function genererMp3(texte, voiceId, precedent, calme) {
   const url = 'https://api.elevenlabs.io/v1/text-to-speech/' + voiceId
     + '?output_format=' + FORMAT_SORTIE;
-  const corps = { text: texte, model_id: MODELE, voice_settings: REGLAGES_VOIX };
+  const corps = { text: texte, model_id: MODELE,
+    voice_settings: calme ? REGLAGES_CALMES : REGLAGES_VOIX };
   // le contexte de prosodie des fragments (« …et fabrique… ») : influence le
   // ton sans être prononcé
   if (precedent) corps.previous_text = precedent;
@@ -246,6 +257,21 @@ if (repris >= 0 && repris < DATA.length) lignes[repris].scrollIntoView({ block: 
 
 const blocs = corpus();
 
+// Le contexte de prosodie du mode --calme : la phrase qui précède le bloc
+// dans le récit. Envoyée en previous_text (jamais prononcée), elle ancre le
+// ton du modèle — le point faible des clips courts isolés.
+function contexteDe(b) {
+  if (b.id.indexOf('histoire-') === 0) {
+    const n = parseInt(b.id.slice('histoire-'.length), 10);
+    const prev = blocs.find((x) => x.id === 'histoire-' + (n - 1));
+    return prev ? prev.texte : null;
+  }
+  if (b.id.indexOf('phrase-') === 0) return 'Et pendant ce temps, là-bas…';
+  if (b.id.indexOf('scn-') === 0) return 'Chez nous…';
+  if (b.id.indexOf('trans-') === 0) return 'Il est midi pile : à table !';
+  return null;
+}
+
 // -- mode essai : une phrase-test par voix candidate, pour choisir la voix --
 if (drapeau('--essai') || valeur('--essai')) {
   const ids = (valeur('--essai') || '').split(',').filter(Boolean);
@@ -297,10 +323,12 @@ if (!cle || !voix) {
 }
 
 // -- génération (séquentielle : respecte les limites de débit du plan) --
+const calme = drapeau('--calme');
+if (calme) console.log('mode --calme : réglages posés + contexte de prosodie previous_text');
 mkdirSync(dossierAudio, { recursive: true });
 for (const b of aFaire) {
-  process.stdout.write(b.id + ' … ');
-  const mp3 = await genererMp3(b.texte, voix, b.precedent);
+  process.stdout.write(b.id + (calme ? ' (calme)' : '') + ' … ');
+  const mp3 = await genererMp3(b.texte, voix, b.precedent || (calme ? contexteDe(b) : null), calme);
   writeFileSync(dossierAudio + b.id + '.mp3', mp3);
   manifeste.blocs[b.id] = { texte: b.texte, hash: empreinteBloc(b), fichier: b.id + '.mp3' };
   console.log('ok (' + Math.round(mp3.length / 1024) + ' ko)');
