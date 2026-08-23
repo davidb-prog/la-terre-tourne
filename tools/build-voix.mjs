@@ -325,11 +325,28 @@ if (!cle || !voix) {
 // -- génération (séquentielle : respecte les limites de débit du plan) --
 const calme = drapeau('--calme');
 if (calme) console.log('mode --calme : réglages posés + contexte de prosodie previous_text');
-// en mode calme, le deux-points SE DIT comme un point : la voix termine sa
-// syllabe et marque un vrai arrêt au lieu d'enchaîner (une prise avalait la
-// fin de « trente » juste avant un « : »). Les mots prononcés sont les
-// mêmes — le manifeste garde le texte officiel, seule la diction change.
-const diction = (t) => (calme ? t.replace(/\s*:\s+/g, '. ') : t);
+// en mode calme, la DICTION change (jamais les mots prononcés — le manifeste
+// garde le texte officiel) : le deux-points se dit comme un point (la voix
+// termine sa syllabe et marque un vrai arrêt au lieu d'enchaîner), et les
+// heures en chiffres passent en toutes lettres — l'oralisation interne du
+// moteur (« 30 » → « tren… ») est justement ce qui déraillait sur certaines
+// prises, on ne lui laisse plus le choix.
+const MOTS = ['zéro', 'une', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit',
+  'neuf', 'dix', 'onze', 'douze', 'treize', 'quatorze', 'quinze', 'seize',
+  'dix-sept', 'dix-huit', 'dix-neuf', 'vingt', 'vingt et une', 'vingt-deux',
+  'vingt-trois', 'vingt-quatre', 'vingt-cinq', 'vingt-six', 'vingt-sept',
+  'vingt-huit', 'vingt-neuf', 'trente', 'trente et un', 'trente-deux',
+  'trente-trois', 'trente-quatre', 'trente-cinq', 'trente-six', 'trente-sept',
+  'trente-huit', 'trente-neuf', 'quarante', 'quarante et un', 'quarante-deux',
+  'quarante-trois', 'quarante-quatre', 'quarante-cinq'];
+const diction = (t) => {
+  if (!calme) return t;
+  return t.replace(/\s*:\s+/g, '. ')
+    .replace(/(\d+) heures( (\d+))?/g, (m, h, _g, mn) => {
+      const hh = MOTS[parseInt(h, 10)] || h;
+      return hh + ' heures' + (mn ? ' ' + (MOTS[parseInt(mn, 10)] || mn) : '');
+    });
+};
 mkdirSync(dossierAudio, { recursive: true });
 for (const b of aFaire) {
   process.stdout.write(b.id + (calme ? ' (calme)' : '') + ' … ');
