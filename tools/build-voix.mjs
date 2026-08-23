@@ -109,7 +109,7 @@ footer .inner{max-width:760px;margin:0 auto;display:flex;gap:.8rem;align-items:c
 pre{background:#0b1020;border:1px solid #345;border-radius:8px;padding:.5rem;overflow-x:auto;font-size:.8rem;width:100%;user-select:all;margin:.4rem 0 0}
 </style>
 <header>
-<h1>Écoute de contrôle — ${data.length} clips à la suite</h1>
+<h1 id="titre">Écoute de contrôle — ${data.length} clips à la suite</h1>
 <div class="ctrl">
   <button id="lecture">▶ Écouter tout</button>
   <button id="prec">⏮</button>
@@ -127,14 +127,32 @@ pre{background:#0b1020;border:1px solid #345;border-radius:8px;padding:.5rem;ove
   <pre id="cmds" hidden></pre>
 </div></footer>
 <script>
-const DATA = ${JSON.stringify(data)};
+const TOUT = ${JSON.stringify(data)};
+// réécoute ciblée d'une fournée : ecoute.html#ids=id1,id2,… ne garde que
+// ces clips-là (lecture enchaînée, marques et commandes inchangées)
+let DATA = TOUT;
+let filtre = false;
+(function () {
+  const m = location.hash.match(/ids=([^&]+)/);
+  if (!m) return;
+  const voulu = {};
+  for (const id of decodeURIComponent(m[1]).split(',')) voulu[id.trim()] = true;
+  const f = TOUT.filter((b) => voulu[b.id]);
+  if (f.length) { DATA = f; filtre = true; }
+})();
+window.addEventListener('hashchange', () => location.reload());
+document.getElementById('titre').textContent = filtre
+  ? 'Écoute ciblée — ' + DATA.length + ' clips (sur ' + TOUT.length + ')'
+  : 'Écoute de contrôle — ' + DATA.length + ' clips à la suite';
 const audio = new Audio();
 const liste = document.getElementById('liste');
 let courant = -1, enLecture = false;
 let refaire = {};
 try { refaire = JSON.parse(localStorage.getItem('ltt-ecoute-refaire') || '{}'); } catch (e) {}
 let repris = -1;
-try { repris = parseInt(localStorage.getItem('ltt-ecoute-position') || '-1', 10); } catch (e) {}
+if (!filtre) {
+  try { repris = parseInt(localStorage.getItem('ltt-ecoute-position') || '-1', 10); } catch (e) {}
+}
 
 const lignes = DATA.map((b, i) => {
   const el = document.createElement('div');
@@ -152,7 +170,8 @@ const lignes = DATA.map((b, i) => {
 function sauve() {
   try {
     localStorage.setItem('ltt-ecoute-refaire', JSON.stringify(refaire));
-    localStorage.setItem('ltt-ecoute-position', String(courant));
+    // en écoute ciblée, ne pas écraser la position de l'écoute complète
+    if (!filtre) localStorage.setItem('ltt-ecoute-position', String(courant));
   } catch (e) {}
 }
 function marque(i) {
