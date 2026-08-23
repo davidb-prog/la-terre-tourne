@@ -16,7 +16,7 @@
 // Après génération, réécouter tout d'une traite : tools/ecoute.html.
 // Zéro dépendance npm (Node ≥ 18 : fetch natif).
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, unlinkSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { corpus, empreinteBloc } from './voix-lib.mjs';
 
@@ -286,9 +286,13 @@ for (const b of aFaire) {
   manifeste.blocs[b.id] = { texte: b.texte, hash: empreinteBloc(b), fichier: b.id + '.mp3' };
   console.log('ok (' + Math.round(mp3.length / 1024) + ' ko)');
 }
-// les blocs disparus du site ne doivent pas hanter le manifeste
+// les blocs disparus du site ne doivent pas hanter le manifeste — ni leurs
+// mp3 traîner sur le disque (quand un texte change, son id change avec lui)
 for (const id of Object.keys(manifeste.blocs)) {
-  if (!blocs.some((b) => b.id === id)) delete manifeste.blocs[id];
+  if (blocs.some((b) => b.id === id)) continue;
+  const mort = dossierAudio + manifeste.blocs[id].fichier;
+  if (existsSync(mort)) unlinkSync(mort);
+  delete manifeste.blocs[id];
 }
 manifeste.voix = voix;
 manifeste.modele = MODELE;

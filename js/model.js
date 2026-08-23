@@ -265,20 +265,24 @@ export function heureOrale(hours, approx) {
 }
 
 // La phrase de lieu version conteur : mêmes morceaux que placePhrase (ciel,
-// activité, report de jour), mais l'heure passe par heureOrale et l'émoji
-// d'activité, imprononçable, n'y entre jamais.
+// activité, report de jour), mais l'heure passe par heureOrale, l'émoji
+// d'activité, imprononçable, n'y entre jamais — et deux aménagements
+// d'oreille appris à l'enregistrement : les points de suspension en plein
+// flux (« une histoire… et au lit ») font caler la voix, ils deviennent une
+// virgule ; et le report de jour se dit en phrase séparée (« … Et là-bas,
+// on est encore hier ! ») au lieu d'allonger la première d'un « , et ».
 export function placePhraseOrale(homeH, place, sameAsHome, approx) {
   const b = phraseBits(homeH, place);
   const t = heureOrale(b.clock.hours, approx);
   const est = (t.presque ? 'presque ' : '') + t.mot;
+  const act = b.actTxt.replace('… ', ', ');
   if (sameAsHome) {
     return 'C’est la même heure que chez nous — il est aussi ' + est + ' : ' +
-      b.skyTxt + ', ' + b.actTxt + '.';
+      b.skyTxt + ', ' + act + '.';
   }
-  let txt = 'Il est ' + est + ' : ' + b.skyTxt + ', ' + b.actTxt;
-  if (b.clock.dayShift > 0) txt += ' — et c’est déjà demain !';
-  else if (b.clock.dayShift < 0) txt += ' — et là-bas, on est encore hier !';
-  else txt += '.';
+  let txt = 'Il est ' + est + ' : ' + b.skyTxt + ', ' + act + '.';
+  if (b.clock.dayShift > 0) txt += ' Et c’est déjà demain !';
+  else if (b.clock.dayShift < 0) txt += ' Et là-bas, on est encore hier !';
   return txt;
 }
 

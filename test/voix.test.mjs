@@ -73,8 +73,11 @@ const bali = PLACES[2];
 check('à midi chez nous, la phrase orale de Bali dit 19 h sans émoji',
   placePhraseOrale(12, bali, false, false) ===
   'Il est 19 h : le soleil se couche, on dîne.');
-check('au dodo (20 h), Bali est « déjà demain » à l’oral aussi',
-  placePhraseOrale(20, bali, false, false).indexOf('et c’est déjà demain !') !== -1);
+check('au dodo (20 h), Bali est « déjà demain » — en phrase séparée à l’oral',
+  placePhraseOrale(20, bali, false, false).indexOf('. Et c’est déjà demain !') !== -1);
+check('« une histoire… et au lit » perd ses points de suspension à l’oral (la voix calait)',
+  placePhraseOrale(20.75, HOME, false, false).indexOf('une histoire, et au lit') !== -1 &&
+  placePhraseOrale(20.75, HOME, false, false).indexOf('…') === -1);
 check('même fuseau que la France : la coïncidence se célèbre à l’oral',
   placePhraseOrale(12, HOME, true, false).indexOf('la même heure que chez nous') === 0 ||
   placePhraseOrale(12, HOME, true, false).indexOf('C’est la même heure') === 0);
