@@ -8,8 +8,8 @@
       "fichier": "voix-chez-nous.mp3"
     },
     "scn-reveil-france": {
-      "texte": "Debout ! Il est 7 heures du matin, le soleil se lève.",
-      "hash": "ee1a070322a5",
+      "texte": "C’est le matin, debout ! Il est 7 heures, le soleil se lève.",
+      "hash": "2822377f730d",
       "fichier": "scn-reveil-france.mp3"
     },
     "trans-ailleurs": {
