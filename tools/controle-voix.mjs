@@ -175,6 +175,15 @@ if (!ids.length) {
   process.exit(1);
 }
 
+// un bloc du corpus absent du manifeste n'a PAS de fichier : le site lira ses
+// histoires à la synthèse — le signaler tout de suite, pas en silence
+const pasEnregistres = Object.keys(blocsCorpus).filter((id) => !manifeste.blocs[id]);
+if (pasEnregistres.length) {
+  console.error('⚠ ' + pasEnregistres.length + ' bloc(s) du corpus ne sont pas encore enregistrés');
+  console.error('  (' + pasEnregistres.slice(0, 5).join(', ') + (pasEnregistres.length > 5 ? ', …' : '') + ')');
+  console.error('  → node tools/build-voix.mjs pour les générer, puis relancer ce contrôle.');
+}
+
 if (!existe('ffprobe') || !existe('ffmpeg')) {
   console.error('ffmpeg/ffprobe introuvables — brew install ffmpeg');
   process.exit(1);
