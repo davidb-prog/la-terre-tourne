@@ -124,7 +124,7 @@ const ACTIVITIES = [
   { until: 8, emoji: '🥐', text: 'On se réveille, petit-déjeuner !' },
   { until: 12, emoji: '🎨', text: 'On joue, on apprend' },
   { until: 14, emoji: '🍽️', text: 'On déjeune' },
-  { until: 17, emoji: '⚽', text: 'On joue dehors' },
+  { until: 18, emoji: '⚽', text: 'On joue dehors' },
   { until: 19, emoji: '🛁', text: 'C’est l’heure du bain' },
   { until: 20.5, emoji: '🍲', text: 'On dîne' },
   { until: 22, emoji: '📖', text: 'Une histoire… et au lit' },
@@ -243,11 +243,14 @@ export function texteOral(t) {
     .trim();
 }
 
-// L'heure en mots pour l'oreille : « minuit » et « midi » plutôt que
-// « 0 h 00 » et « 12 h 00 ». Avec approx (le scénario « le soleil se lève
-// là-bas », dont les minutes dépendent de la longitude, continue), l'oral
-// s'arrondit à la demi-heure SUPÉRIEURE et l'assume : « presque 7 h 30 » —
-// jamais une heure déjà passée, jamais un mensonge. L'écran garde la minute.
+// L'heure en mots pour l'oreille : « minuit », « midi » et « une heure »
+// plutôt que « 0 h », « 12 h » et « 1 h » — les voix lisent « zéro heures »
+// et « un heure » (constaté à l'enregistrement), jamais un enfant. Les
+// minutes restent accolées (« minuit 30 », « une heure 30 », « midi 30 »).
+// Avec approx (le scénario « le soleil se lève là-bas », dont les minutes
+// dépendent de la longitude, continue), l'oral s'arrondit à la demi-heure
+// SUPÉRIEURE et l'assume : « presque 7 h 30 » — jamais une heure déjà
+// passée, jamais un mensonge. L'écran garde la minute.
 export function heureOrale(hours, approx) {
   const c = formatHM(hours);
   let total = c.h * 60 + c.m;
@@ -259,8 +262,10 @@ export function heureOrale(hours, approx) {
   }
   const h = Math.floor(total / 60);
   const m = total % 60;
-  const mot = (h === 0 && m === 0) ? 'minuit' : (h === 12 && m === 0) ? 'midi'
-    : m === 0 ? h + ' h' : h + ' h ' + (m < 10 ? '0' + m : String(m));
+  const mn = m === 0 ? '' : ' ' + (m < 10 ? '0' + m : String(m));
+  const mot = h === 0 ? 'minuit' + mn : h === 12 ? 'midi' + mn
+    : h === 1 ? 'une heure' + mn
+    : h + ' h' + mn;
   return { mot: mot, presque: presque };
 }
 

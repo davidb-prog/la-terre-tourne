@@ -82,13 +82,31 @@ export function normaliser(texte) {
     const v = parseInt(n, 10);
     return v <= 60 ? MOTS_NOMBRES[v] : m;
   });
-  // tolérances d'oreille : Whisper entend parfois « et demie » pour « trente »,
-  // et « une heure » pour « 1 heure »
-  t = t.replace(/\bheures et demie\b/g, 'heures trente')
+  // tolérances d'oreille : Whisper entend parfois « et demie » pour
+  // « trente », « une heure » pour « 1 heure », le singulier pour le pluriel
+  t = t.replace(/\bune heure\b/g, 'un heure')
+    .replace(/\bheure\b/g, 'heures')
+    .replace(/\bheures et demie\b/g, 'heures trente')
     .replace(/\bheures et quart\b/g, 'heures quinze')
-    .replace(/\bune heure\b/g, 'un heure')
-    .replace(/\bheure\b/g, 'heures');
+    .replace(/\b(minuit|midi) et demie?\b/g, '$1 trente')
+    .replace(/\b(minuit|midi) et quart\b/g, '$1 quinze');
   return t.replace(/\s+/g, ' ').trim();
+}
+
+// Bégaiement : la voix répète parfois un bout de phrase (« 24 grandes
+// tranches grandes tranches »). La transcription l'entend — on cherche un
+// n-gramme (2 à 4 mots) immédiatement doublé dans l'entendu qui ne l'est
+// pas dans l'attendu. Sur textes normalisés.
+export function begaiement(entendu, attendu) {
+  const T = entendu.split(' ').filter(Boolean);
+  for (let n = 4; n >= 2; n--) {
+    for (let i = 0; i + 2 * n <= T.length; i++) {
+      const a = T.slice(i, i + n).join(' ');
+      const b = T.slice(i + n, i + 2 * n).join(' ');
+      if (a === b && attendu.indexOf(a + ' ' + a) === -1) return a;
+    }
+  }
+  return null;
 }
 
 // Distance d'édition entre listes de mots → score de ressemblance dans [0, 1].
@@ -246,10 +264,14 @@ if (aTranscrire.length) {
 if (sttActif) {
   for (const b of bilans) {
     if (b.entendu === undefined) continue;
-    b.score = ressemblance(normaliser(b.texte), normaliser(b.entendu));
+    const attendu = normaliser(b.texte);
+    const entendu = normaliser(b.entendu);
+    b.score = ressemblance(attendu, entendu);
     if (b.score < SEUIL) {
       b.raisons.push('la ré-écoute entend autre chose (score ' + b.score.toFixed(2) + ')');
     }
+    const rep = begaiement(entendu, attendu);
+    if (rep) b.raisons.push('bégaiement possible : « ' + rep + ' » entendu deux fois de suite');
   }
 }
 

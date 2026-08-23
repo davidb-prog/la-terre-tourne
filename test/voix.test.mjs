@@ -44,6 +44,10 @@ check('le tiret cadratin devient une virgule',
 console.log('L’heure orale');
 check('« 0 h 00 » se dit « minuit », « 12 h 00 » se dit « midi »',
   heureOrale(0, false).mot === 'minuit' && heureOrale(12, false).mot === 'midi');
+check('minuit, midi et une heure gardent leurs minutes en mots (jamais « zéro heures » ni « un heure »)',
+  heureOrale(0.5, false).mot === 'minuit 30' && heureOrale(12.5, false).mot === 'midi 30' &&
+  heureOrale(1, false).mot === 'une heure' && heureOrale(1.5, false).mot === 'une heure 30' &&
+  heureOrale(0.75, false).mot === 'minuit 45');
 check('sans approximation, l’heure est exacte (7 h 23 reste 7 h 23)',
   heureOrale(7 + 23 / 60, false).mot === '7 h 23' && !heureOrale(7 + 23 / 60, false).presque);
 check('avec approximation, l’arrondi monte à la demi-heure : 7 h 23 → presque 7 h 30',
@@ -54,13 +58,17 @@ check('23 h 53 → presque minuit (l’arrondi reboucle sur le jour)',
   heureOrale(23 + 53 / 60, true).mot === 'minuit' && heureOrale(23 + 53 / 60, true).presque);
 check('la phrase orale n’annonce jamais une heure déjà passée',
   (() => {
+    // reconstruire les minutes annoncées depuis le mot (« minuit 30 »,
+    // « une heure », « midi », « 7 h 30 »…) et comparer à l'heure réelle
+    const minutesDe = (mot) => {
+      const m = mot.match(/^(minuit|midi|une heure|\d+ h)( (\d+))?$/);
+      const base = m[1] === 'minuit' ? 0 : m[1] === 'midi' ? 12 * 60
+        : m[1] === 'une heure' ? 60 : parseInt(m[1], 10) * 60;
+      return base + (m[3] ? parseInt(m[3], 10) : 0);
+    };
     for (let h = 0; h < 24; h += 7 / 60) {
       const t = heureOrale(h, true);
-      // reconstruire les minutes annoncées et comparer à l'heure réelle
-      const m = t.mot === 'minuit' ? 0 : t.mot === 'midi' ? 12 * 60
-        : t.mot.indexOf(' h ') !== -1
-          ? parseInt(t.mot, 10) * 60 + parseInt(t.mot.split(' h ')[1], 10)
-          : parseInt(t.mot, 10) * 60;
+      const m = minutesDe(t.mot);
       const reel = Math.round(((h % 24) + 24) % 24 * 60) % (24 * 60);
       const annonce = m === 0 && reel > 12 * 60 ? 24 * 60 : m; // minuit = fin du jour
       if (annonce < reel) return false;
@@ -143,6 +151,16 @@ check('aucun émoji dans les textes oraux',
   blocs.every((b) => !emojiUne.test(b.texte)));
 check('aucune heure en chiffres non oralisée (« N h ») ne subsiste',
   blocs.every((b) => !/\d\s*h\b/.test(b.texte)));
+// les leçons payées à l'enregistrement : ces tournures font trébucher la voix
+check('jamais « 0 heures », « 1 heure(s) » ni « 12 heures » en chiffres à l’oral',
+  blocs.every((b) => !/\b(0|1|12) heures?\b/.test(b.texte)),
+  blocs.filter((b) => /\b(0|1|12) heures?\b/.test(b.texte)).map((b) => b.id).join(', '));
+// (les paragraphes d'histoire, écrits main, gardent le droit au « … » de
+// suspense — ils se valident à l'oreille ; les phrases GÉNÉRÉES, jamais)
+check('jamais de points de suspension en plein flux dans les phrases générées',
+  blocs.every((b) => b.id.indexOf('histoire-') === 0 || !/… [a-zà-öø-ÿ]/.test(b.texte)),
+  blocs.filter((b) => b.id.indexOf('histoire-') !== 0 && /… [a-zà-öø-ÿ]/.test(b.texte))
+    .map((b) => b.id).join(', '));
 check('aucun guillemet ni tiret cadratin dans les textes oraux',
   blocs.every((b) => !/[«»—]/.test(b.texte)));
 check('apostrophes typographiques « ’ » partout (jamais le « \' » droit)',

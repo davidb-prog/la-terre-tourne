@@ -92,7 +92,7 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
 - `js/model.js` — logique horaire pure (lieux, horloges locales, report de jour, heure solaire,
   hauteur du soleil, scénarios et phrases générées — dont le cas « même fuseau que la
   France » —, écarts en toutes lettres, prépositions de lieu `placeLocative`, cadrage caméra
-  borné `cameraFrame`) + les textes du conteur (`texteOral`, `heureOrale` — midi/minuit, et
+  borné `cameraFrame`) + les textes du conteur (`texteOral`, `heureOrale` — minuit, midi et « une heure » en mots, minutes accolées, et
   l'arrondi assumé « presque X h 30 » du scénario du lever —, `placePhraseOrale`,
   `blocsScenario` : les blocs `{id, texte, pause}` d'un récit, ids par empreinte du texte
   `idBloc` — LA source commune du site, du corpus et des tests)
@@ -151,7 +151,7 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
   `tools/ecoute.html` gitignoré) ; `assets/audio/manifest.json` — vide tant que rien n'est
   généré, le site reste 100 % synthèse
 - `test/model.test.mjs` — 63 vérifications ; `test/geo.test.mjs` — 25 vérifications ;
-  `test/voix.test.mjs` — 36 vérifications (textes oraux, arrondi jamais en retard, blocs,
+  `test/voix.test.mjs` — 40 vérifications (textes oraux, arrondi jamais en retard, blocs,
   **couverture** : tout ce que le site peut raconter est dans le corpus, manifeste ↔ site)
 
 ## La voix enregistrée (ElevenLabs)
@@ -183,7 +183,7 @@ guide de la famille est `ou-va-le-soleil/docs/voix-conteur.md` ; règles dures :
   et `pip3 install -U openai-whisper`) vérifie chaque mp3 mécaniquement (durée plausible
   pour son texte, blancs au milieu, silence de fin mesuré) puis le transcrit (Whisper) et
   compare au texte du manifeste (normalisation « 7 h 30 » ↔ « sept heures trente », seuil
-  0,82) ; il écrit `tools/controle.html` (gitignoré) avec SEULEMENT les suspects — lecteur,
+  0,82, détecteur de bégaiement : n-gramme doublé dans l’entendu, absent de l’attendu) ; il écrit `tools/controle.html` (gitignoré) avec SEULEMENT les suspects — lecteur,
   attendu/entendu, commande `--only` prête. Cache par empreinte de fichier
   (`tools/controle-cache.json`, gitignoré) : après un re-tirage, seul le fichier refait est
   re-transcrit. Un clip signalé n'est pas forcément raté — c'est la courte liste de
