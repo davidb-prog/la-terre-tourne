@@ -356,7 +356,7 @@ const lignes = bilans.filter((b) => b.raisons.length).map((b) =>
   '<ul>' + b.raisons.map((r) => '<li>' + esc(r) + '</li>').join('') + '</ul>' +
   '<p><strong>Attendu :</strong> ' + esc(b.texte) + '</p>' +
   (b.entendu !== undefined ? '<p><strong>Entendu :</strong> ' + esc(b.entendu) + '</p>' : '') +
-  '<code>node tools/build-voix.mjs --only ' + esc(b.id) + '</code></div>').join('\n');
+  '<code>node tools/build-voix.mjs --only ' + esc(b.id) + ' --calme</code></div>').join('\n');
 writeFileSync(racine + 'tools/controle.html',
   '<!doctype html><meta charset="utf-8"><title>Clips à réécouter</title>\n' +
   '<style>body{font-family:system-ui;max-width:760px;margin:2rem auto;padding:0 1rem;' +

@@ -127,10 +127,11 @@ const ACTIVITIES = [
   { until: 18, emoji: '⚽', text: 'On joue dehors' },
   { until: 19, emoji: '🛁', text: 'C’est l’heure du bain' },
   { until: 20.5, emoji: '🍲', text: 'On dîne' },
-  // à l'oral, le fragment sans verbe se dit mal (constaté sur 6 clips) : la
-  // voix reçoit une phrase pleine, l'écran garde son « … » d'invitation
+  // à l'oral, une phrase pleine — et SANS le mot « histoire », sur lequel la
+  // voix enregistrée bute prise après prise (constaté sur 4 formulations) ;
+  // l'écran garde son « … » d'invitation
   { until: 22, emoji: '📖', text: 'Une histoire… et au lit',
-    oral: 'on écoute une histoire avant d’aller au lit' },
+    oral: 'on lit un livre avant de dormir' },
   { until: 24, emoji: '😴', text: 'On dort profondément' },
 ];
 export function activityFor(localHours) {

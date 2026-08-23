@@ -84,10 +84,9 @@ check('à midi chez nous, la phrase orale de Bali dit 19 h sans émoji',
   'Il est 19 h : le soleil se couche, on dîne.');
 check('au dodo (20 h), Bali est « déjà demain » — en phrase séparée à l’oral',
   placePhraseOrale(20, bali, false, false).indexOf('. Et c’est déjà demain !') !== -1);
-check('« une histoire… et au lit » devient une phrase pleine à l’oral (la voix calait)',
-  placePhraseOrale(20.75, HOME, false, false)
-    .indexOf('on écoute une histoire avant d’aller au lit') !== -1 &&
-  placePhraseOrale(20.75, HOME, false, false).indexOf('…') === -1);
+check('« une histoire… et au lit » devient une phrase pleine SANS le mot « histoire » à l’oral',
+  placePhraseOrale(20.75, HOME, false, false).indexOf('on lit un livre avant de dormir') !== -1 &&
+  placePhraseOrale(20.75, HOME, false, false).indexOf('istoire') === -1);
 check('21 h se dit « vingt et une heures » (le moteur fait la faute de genre en chiffres)',
   heureOrale(21, false).mot === 'vingt et une heures' &&
   heureOrale(21.5, false).mot === 'vingt et une heures 30');

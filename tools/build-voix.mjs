@@ -198,7 +198,7 @@ function majPied() {
   document.getElementById('vider').hidden = !ids.length;
   const pre = document.getElementById('cmds');
   pre.hidden = !ids.length;
-  pre.textContent = ids.map((id) => 'node tools/build-voix.mjs --only ' + id).join('\\n');
+  pre.textContent = ids.map((id) => 'node tools/build-voix.mjs --only ' + id + ' --calme').join('\\n');
 }
 function majEtat() {
   document.getElementById('etat').textContent = courant >= 0 ? (courant + 1) + ' / ' + DATA.length : '—';
