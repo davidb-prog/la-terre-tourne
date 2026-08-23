@@ -99,20 +99,27 @@ export function normaliser(texte) {
 // TEMPS : l'horodatage des mots (word_timestamps) révèle les trous en
 // pleine phrase (une pause après une ponctuation est normale) et les mots
 // anormalement étirés.
+// Calibré sur une voix de CONTEUR (les premières valeurs signalaient des
+// clips validés à l'oreille) : les pauses expressives vont jusqu'à ~0,8 s,
+// une pause entre deux segments Whisper est une respiration de phrase, et
+// les horodatages débordent en bord de clip (le dernier mot « absorbe » le
+// silence de fin gravé) — premier et dernier mots exclus de l'étirement.
 export function pausesSuspectes(mots) {
   const suspects = [];
   for (let i = 0; i < mots.length; i++) {
-    const [w, debut, fin] = mots[i];
+    const [w, debut, fin, seg] = mots[i];
     const mot = String(w).trim();
     if (i + 1 < mots.length) {
+      const memeSegment = seg === undefined || mots[i + 1][3] === undefined || mots[i + 1][3] === seg;
       const trou = mots[i + 1][1] - fin;
-      if (trou >= 0.55 && !/[.!?…:;,]$/.test(mot)) {
+      if (trou >= 0.8 && memeSegment && !/[.!?…:;,]$/.test(mot)) {
         suspects.push('blanc de ' + trou.toFixed(1) + ' s en pleine phrase, après « ' + mot + ' »');
       }
     }
-    // parole normale ≈ 0,07–0,09 s par lettre : au double, le mot traîne
+    // parole normale ≈ 0,07–0,09 s par lettre : bien au-delà, le mot traîne
     const duree = fin - debut;
-    if (duree >= 1.0 && duree / Math.max(2, mot.replace(/[^a-zà-ÿ]/gi, '').length) >= 0.17) {
+    if (i > 0 && i < mots.length - 1 &&
+        duree >= 1.2 && duree / Math.max(2, mot.replace(/[^a-zà-ÿ]/gi, '').length) >= 0.2) {
       suspects.push('mot étiré (« ' + mot + ' », ' + duree.toFixed(1) + ' s)');
     }
   }
@@ -297,9 +304,9 @@ if (aTranscrire.length) {
     if (existsSync(fjson)) {
       const data = JSON.parse(readFileSync(fjson, 'utf8'));
       entendu = String(data.text || '').replace(/\s+/g, ' ').trim();
-      for (const seg of data.segments || []) {
-        for (const w of seg.words || []) mots.push([w.word, w.start, w.end]);
-      }
+      (data.segments || []).forEach((seg, si) => {
+        for (const w of seg.words || []) mots.push([w.word, w.start, w.end, si]);
+      });
     }
     const bilan = bilans.find((b) => b.id === t.id);
     bilan.entendu = entendu;
