@@ -692,7 +692,7 @@ for (const scn of SCENARIOS) {
   sub.className = 'scn-sub';
   sub.textContent = scn.sub;
   btn.appendChild(em); btn.appendChild(lab); btn.appendChild(sub);
-  btn.addEventListener('click', () => runScenario(scn));
+  btn.addEventListener('click', () => { runScenario(scn); showPoleView(); });
   scnBox.appendChild(btn);
   scnButtons[scn.id] = btn;
 }
@@ -755,6 +755,33 @@ function runScenario(scn) {
     from: sim.homeH, delta: delta, target: atH,
     start: performance.now(), dur: Math.min(2600, 700 + delta * 90),
   };
+}
+
+// Sur un appui-scénario, la vue du pôle est plus haut dans la page : on la
+// ramène à l'écran pour que l'enfant VOIE la Terre glisser jusqu'au moment
+// choisi (patron d'ou-va-le-soleil). Vues empilées (mobile) : à CHAQUE appui,
+// on cale la vue sous la barre collante des heures. Côte à côte (grand
+// écran) : on ne bouge que si elle est vraiment hors champ. Appelée SEULEMENT
+// par le clic des boutons : les rejouages automatiques (changement de
+// destination pendant qu'un moment est affiché) ne défilent pas — la page ne
+// doit jamais bouger sous le doigt qui vient de choisir un pays.
+function showPoleView() {
+  const panel = $('pole-panel');
+  const pr = panel.getBoundingClientRect();
+  const homeCol = document.querySelector('.home-col');
+  const stacked = pr.top >= homeCol.getBoundingClientRect().bottom - 1;
+  if (stacked) {
+    const target = Math.max(0, window.scrollY + pr.top - $('sticky-times').offsetHeight - 8);
+    if (Math.abs(window.scrollY - target) > 30) {
+      if (!reduceMotion && 'scrollBehavior' in document.documentElement.style) {
+        window.scrollTo({ top: target, behavior: 'smooth' });
+      } else {
+        window.scrollTo(0, target);
+      }
+    }
+  } else if (pr.bottom < 120 || pr.top > window.innerHeight - 120) {
+    panel.scrollIntoView(reduceMotion ? true : { behavior: 'smooth', block: 'start' });
+  }
 }
 
 // ---- mise à jour des textes (seulement quand ils changent) ----

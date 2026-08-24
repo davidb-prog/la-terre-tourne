@@ -159,7 +159,11 @@ se partage.
   `cameraFrame`, contournement par la face nuit si le Soleil change de côté, saut sec en
   `prefers-reduced-motion`), boutons de lieux (🏠 chez nous / destination à son nom),
   recherche jumelle, scénarios (le scénario actif `activeScn` se rejoue quand la destination
-  change : l'histoire suit sans re-clic ; il s'efface dès qu'on reprend la main), cadres
+  change : l'histoire suit sans re-clic ; il s'efface dès qu'on reprend la main ; un **appui**
+  sur un bouton remonte la page en douceur jusqu'à la vue du pôle — `showPoleView`, patron
+  d'ou-va-le-soleil : calée sous la barre collante sur mobile, seulement si hors champ sur
+  grand écran, jamais lors des rejouages automatiques pour ne pas défiler sous le doigt qui
+  choisit un pays), cadres
   jumeaux (`''`/`-globe`/`-sticky` — la barre collante mobile apparaît quand les
   cartes-horloges sortent de l'écran par le haut, `IntersectionObserver` avec garde : sans
   lui elle reste masquée ; même garde `matchMedia` pour replier `explain-fold` sur mobile et
