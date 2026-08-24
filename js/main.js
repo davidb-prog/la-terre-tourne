@@ -308,7 +308,7 @@ function setPlaying(p) {
   // les deux libellés vivent empilés dans chaque bouton (largeur stable) :
   // basculer aria-pressed montre l'un, cache l'autre — l'ancien libellé long
   // « ▶ Elle tourne toute seule » décalait toute la page à chaque clic
-  for (const id of ['btn-spin', 'btn-spin-globe', 'btn-spin-map']) { // boutons jumeaux
+  for (const id of ['btn-spin', 'btn-spin-globe']) { // boutons jumeaux (la carte n'a plus le sien)
     const btn = $(id);
     if (!btn) continue;
     btn.setAttribute('aria-pressed', p ? 'true' : 'false');
@@ -347,7 +347,6 @@ function toggleSpin() {
 }
 $('btn-spin').addEventListener('click', toggleSpin);
 $('btn-spin-globe').addEventListener('click', toggleSpin);
-$('btn-spin-map').addEventListener('click', toggleSpin);
 document.addEventListener('keydown', (e) => {
   if (e.code === 'Space' && !e.target.closest('button, input, a, summary')) {
     e.preventDefault();
@@ -1096,7 +1095,7 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
 // à Bali… », et retire les émojis, imprononçables. ----
 
 const scnVoiceBtn = $('btn-scn-voice');
-const scnVoiceBtnJeu = $('btn-scn-voice-jeu'); // le jumeau posé sur le jeu
+const scnVoiceBtnJeu = $('btn-scn-voice-jeu'); // le jumeau posé sur le titre du globe, à côté du ⏸/▶
 let scnVoiceOn = false;
 // clé de famille (même origine petit-labo.fr : le réglage suit l'enfant d'un
 // épisode à l'autre), avec l'ancienne clé de l'épisode lue en secours

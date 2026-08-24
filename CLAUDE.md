@@ -71,13 +71,17 @@ se partage.
   qu'il ne choisisse pas un pays au passage, la sélection au tap est différée de
   `DBL_TAP_MS` tant que la vue est zoomée (fenêtre du double-tap et délai égaux exprès) ;
   à zoom 1 la sélection reste immédiate.
-- **Boutons à largeur stable** (patron de la famille) : les trois boutons ⏸/▶ jumeaux
-  (`btn-spin`, `-globe`, `-map`) et le 🔇/🔊 portent leurs deux libellés **empilés**
-  (grille 1×1, `aria-pressed` montre l'un et cache l'autre) — l'ancien libellé
+- **Boutons à largeur stable** (patron de la famille) : les deux boutons ⏸/▶ jumeaux
+  (`btn-spin`, `-globe` — la carte à plat a perdu le sien, demandé par David : le globe
+  suffit, les deux vues tournent ensemble) et le 🔇/🔊 portent leurs deux libellés
+  **empilés** (grille 1×1, `aria-pressed` montre l'un et cache l'autre) — l'ancien libellé
   « ▶ Elle tourne toute seule » changeait la largeur des boutons et décalait toute la
   page à chaque clic. Libellés harmonisés : « ⏸ Pause » / « ▶ Lecture » et
   « 🔊 avec la voix » / « 🔇 sans la voix » — le bouton de voix a un **jumeau posé sur le
-  jeu** (`btn-scn-voice-jeu`, même état, même clé). Les couleurs des 4 boutons-scénarios
+  titre du globe 3D, à côté du ⏸/▶** (`btn-scn-voice-jeu`, même état, même clé ; il vivait
+  dans `.game-head` mais un bouton seul sous un titre laisse une rangée à moitié vide —
+  même raison pour laquelle `.scenario-title` garde titre et bouton sur UNE ligne sans
+  repli : le texte se replie, pas le bouton). Les couleurs des 4 boutons-scénarios
   sont celles de la famille (reprises d'ou-va-le-soleil : matin rose, midi bleu, soir or,
   nuit violet — la classe du 4ᵉ est `scn-lever-la-bas`, l'ancienne `scn-bali-lever` ne
   s'appliquait plus). Sans moment affiché, cliquer un pays reste **silencieux** — le
@@ -102,7 +106,8 @@ se partage.
   ≤ 640 px** — le résumé ne s'affiche qu'en mobile et duplique le h2 de `.explain-head`,
   chacun masqué à l'autre taille ; main.js la garde ouverte sur ordinateur) ;
   **jeu** « Amuse-toi à trouver l'heure… »
-  (`.game-head` puis `.game-grid` : globe 3D avec les 2 boutons de lieux 🏠 chez nous /
+  (`.game-head` — titre + consigne seuls — puis `.game-grid` : globe 3D avec ⏸/▶ et le
+  jumeau de voix 🔇/🔊 côte à côte dans son titre, les 2 boutons de lieux 🏠 chez nous /
   destination **incrustés dans son ciel, sous la Terre** (toutes tailles ; `width:
   max-content` sinon l'absolu `left:50%` replie les boutons), carte à plat avec sa recherche
   jumelle et les 9 idées répliquées (masquées sur mobile), et le bloc `.game-side` — le cadre
