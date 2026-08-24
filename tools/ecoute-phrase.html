@@ -86,21 +86,23 @@
         <span class="l-stop">⏹ Stop</span>
       </span>
     </button>
-    <p class="note" id="note">La phrase est lue par la synthèse vocale du navigateur,
-      avec la meilleure voix française trouvée sur l'appareil.</p>
+    <p class="note" id="note">La phrase est lue par la voix enregistrée du conteur
+      (assets/audio/phrase-1s9xf4w.mp3) ; s'il manque, la synthèse du navigateur prend le relais.</p>
   </main>
 
   <script>
     (function () {
-      var PHRASE = 'Il est quinze heures, le soleil brille, on joue dehors.';
+      // le texte EXACT du bloc phrase-1s9xf4w du manifeste (la voix enregistrée
+      // ne ment jamais) — il sert aussi de repli synthèse si le mp3 manque
+      var PHRASE = 'Il est 15 heures : le soleil brille, on joue dehors.';
+      var MP3 = '../assets/audio/phrase-1s9xf4w.mp3';
       var btn = document.getElementById('btn-ecouter');
       var note = document.getElementById('note');
 
-      if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
-        btn.disabled = true;
-        note.textContent = 'Ce navigateur n’a pas de synthèse vocale.';
-        return;
-      }
+      // un seul élément audio réutilisé (patron du site : iOS rejoue sans geste)
+      var lecteur = new Audio(MP3);
+      var mp3KO = false;
+      lecteur.addEventListener('error', function () { mp3KO = true; });
 
       // même score que js/main.js : le français de France d'abord, les voix
       // neurales avant les métalliques, les voix rigolotes en dernier
@@ -130,22 +132,29 @@
         }
         frVoices.sort(function (a, b) { return voiceScore(b) - voiceScore(a); });
       };
-      refreshVoices();
-      if ('onvoiceschanged' in window.speechSynthesis) {
-        window.speechSynthesis.onvoiceschanged = refreshVoices;
+      if (window.speechSynthesis) {
+        refreshVoices();
+        if ('onvoiceschanged' in window.speechSynthesis) {
+          window.speechSynthesis.onvoiceschanged = refreshVoices;
+        }
       }
 
       var setPlaying = function (on) {
         btn.setAttribute('aria-pressed', on ? 'true' : 'false');
       };
 
-      btn.addEventListener('click', function () {
-        if (btn.getAttribute('aria-pressed') === 'true') {
-          window.speechSynthesis.cancel();
+      var stop = function () {
+        if (window.speechSynthesis) window.speechSynthesis.cancel();
+        try { lecteur.pause(); } catch (e) { /* déjà arrêté */ }
+        setPlaying(false);
+      };
+
+      var direEnSynthese = function () {
+        if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
+          note.textContent = 'Le mp3 est introuvable et ce navigateur n’a pas de synthèse vocale.';
           setPlaying(false);
           return;
         }
-        window.speechSynthesis.cancel();
         var u = new SpeechSynthesisUtterance(PHRASE);
         var voice = frVoices.length ? frVoices[0] : null;
         u.lang = voice ? voice.lang : 'fr-FR';
@@ -154,8 +163,20 @@
         u.pitch = 1.04;
         u.onend = function () { setPlaying(false); };
         u.onerror = function () { setPlaying(false); };
-        setPlaying(true);
         window.speechSynthesis.speak(u);
+      };
+
+      btn.addEventListener('click', function () {
+        if (btn.getAttribute('aria-pressed') === 'true') { stop(); return; }
+        stop();
+        setPlaying(true);
+        if (mp3KO) { direEnSynthese(); return; }
+        lecteur.currentTime = 0;
+        lecteur.onended = function () { setPlaying(false); };
+        var p = lecteur.play();
+        if (p && p.catch) {
+          p.catch(function () { mp3KO = true; direEnSynthese(); });
+        }
       });
     })();
   </script>
