@@ -428,8 +428,31 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 .site-footer {
   max-width: 1180px; margin: 40px auto 0; padding: 22px 20px 34px;
   border-top: 1px solid var(--border); color: var(--muted); font-size: .88rem;
+  text-align: center;
 }
 .site-footer a { color: var(--sun); }
+.footer-serie { margin: 0 0 10px; }
+.footer-episodes {
+  list-style: none; margin: 0 0 16px; padding: 0;
+  display: flex; flex-wrap: wrap; gap: 8px 22px; justify-content: center;
+}
+.footer-episodes a { text-decoration: underline; }
+.footer-menu { margin: 0; }
+.btn-menu-labo {
+  display: inline-block; padding: 10px 20px; border-radius: 999px;
+  border: 1px solid var(--sun-deep); color: var(--sun); text-decoration: none;
+  font-weight: 700; background: linear-gradient(180deg, #4a3a0d, #332807);
+}
+.btn-menu-labo:focus-visible { outline: 2px solid var(--sun-deep); }
+
+/* libellés empilés (grille 1×1) : le bouton garde la largeur du plus long des
+   deux états — basculer pause/lecture ou la voix ne décale jamais la page */
+.scn-voice-btn, .play-btn { display: inline-grid; align-items: center; justify-items: center; }
+.scn-voice-btn > span, .play-btn > span { grid-row: 1; grid-column: 1; white-space: nowrap; }
+.scn-voice-btn[aria-pressed="false"] .scn-voice-on,
+.scn-voice-btn[aria-pressed="true"] .scn-voice-off,
+.play-btn[aria-pressed="true"] .play-off,
+.play-btn[aria-pressed="false"] .play-on { visibility: hidden; }
 
 /* ---------- petits écrans ---------- */
 

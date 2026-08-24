@@ -70,6 +70,14 @@ se partage.
   qu'il ne choisisse pas un pays au passage, la sélection au tap est différée de
   `DBL_TAP_MS` tant que la vue est zoomée (fenêtre du double-tap et délai égaux exprès) ;
   à zoom 1 la sélection reste immédiate.
+- **Boutons à largeur stable** (patron de la famille) : les trois boutons ⏸/▶ jumeaux
+  (`btn-spin`, `-globe`, `-map`) et le 🔇/🔊 portent leurs deux libellés **empilés**
+  (grille 1×1, `aria-pressed` montre l'un et cache l'autre) — l'ancien libellé
+  « ▶ Elle tourne toute seule » changeait la largeur des boutons et décalait toute la
+  page à chaque clic. Libellés harmonisés : « ⏸ Pause » / « ▶ Lecture » et
+  « 🔊 avec la voix » / « 🔇 sans la voix ». Pied de page harmonisé : les autres épisodes
+  en liens cliquables (sans « La mécanique des éclipses ») + bouton « 🧪 Tous les
+  épisodes » vers <https://petit-labo.fr/>.
 - Boucle rAF résiliente (`try/finally`), `prefers-reduced-motion` respecté (pas de rotation
   automatique), aria-labels sur tous les canvas.
 

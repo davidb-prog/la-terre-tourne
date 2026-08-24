@@ -303,12 +303,16 @@ let sliderHeld = false;
 
 function setPlaying(p) {
   sim.playing = p;
-  const txt = p ? '⏸ Pause' : '▶ Elle tourne toute seule';
+  // les deux libellés vivent empilés dans chaque bouton (largeur stable) :
+  // basculer aria-pressed montre l'un, cache l'autre — l'ancien libellé long
+  // « ▶ Elle tourne toute seule » décalait toute la page à chaque clic
   for (const id of ['btn-spin', 'btn-spin-globe', 'btn-spin-map']) { // boutons jumeaux
     const btn = $(id);
     if (!btn) continue;
-    btn.textContent = txt;
     btn.setAttribute('aria-pressed', p ? 'true' : 'false');
+    btn.setAttribute('aria-label', p
+      ? 'Mettre en pause (la Terre tourne toute seule)'
+      : 'Relancer la Terre qui tourne toute seule');
   }
 }
 
@@ -1098,7 +1102,7 @@ try {
 } catch (e) { /* mode privé */ }
 
 function setScnVoiceUi() {
-  scnVoiceBtn.textContent = scnVoiceOn ? '🔊 la voix raconte' : '🔇 sans la voix';
+  // libellés empilés dans le HTML : aria-pressed montre l'un, cache l'autre
   scnVoiceBtn.setAttribute('aria-pressed', scnVoiceOn ? 'true' : 'false');
 }
 setScnVoiceUi();
