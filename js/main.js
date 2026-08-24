@@ -158,7 +158,9 @@ function choosePlace(entry) {
   globe3d.pulse = { lonDeg: entry.lon, latDeg: entry.lat, k: 1 };
   centerCameraOn(entry.lon, entry.lat);
   // si un moment est affiché dans « Joue avec la Terre », son histoire (et sa
-  // version sonore) suit la nouvelle destination sans attendre un re-clic
+  // version sonore) suit la nouvelle destination sans attendre un re-clic —
+  // sans moment affiché, cliquer un pays reste silencieux (essayé puis
+  // retiré : le commentaire audio à chaque clic était de trop)
   if (activeScn) runScenario(activeScn.scn);
 }
 
@@ -303,12 +305,16 @@ let sliderHeld = false;
 
 function setPlaying(p) {
   sim.playing = p;
-  const txt = p ? '⏸ Pause' : '▶ Elle tourne toute seule';
+  // les deux libellés vivent empilés dans chaque bouton (largeur stable) :
+  // basculer aria-pressed montre l'un, cache l'autre — l'ancien libellé long
+  // « ▶ Elle tourne toute seule » décalait toute la page à chaque clic
   for (const id of ['btn-spin', 'btn-spin-globe', 'btn-spin-map']) { // boutons jumeaux
     const btn = $(id);
     if (!btn) continue;
-    btn.textContent = txt;
     btn.setAttribute('aria-pressed', p ? 'true' : 'false');
+    btn.setAttribute('aria-label', p
+      ? 'Mettre en pause (la Terre tourne toute seule)'
+      : 'Relancer la Terre qui tourne toute seule');
   }
 }
 
@@ -898,14 +904,11 @@ function audioSrc(id, text) {
 }
 
 const listenBtn = $('btn-listen');
-const voiceSel = $('voice-pick');
 const voiceHint = $('voice-hint');
 let narrator = null; // { narrate(items, onDone), stop() } — null sans synthèse vocale
 
 if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
   let frVoices = [];
-  let chosenURI = null;
-  try { chosenURI = window.localStorage.getItem('ltt-voice'); } catch (e) { /* mode privé */ }
 
   const voiceScore = (v) => {
     const lang = (v.lang || '').replace('_', '-').toLowerCase();
@@ -925,15 +928,6 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
     return s;
   };
 
-  const prettyName = (v) => {
-    let n = v.name.replace(/^microsoft\s+/i, '')
-      .replace(/\s*[-–—]\s*(french|fran[çc]ais).*$/i, '')
-      .replace(/\s*\((french|fran[çc]ais)[^)]*\)\s*$/i, '');
-    const lang = (v.lang || '').replace('_', '-');
-    if (lang && lang.toLowerCase().indexOf('fr-fr') !== 0) n += ' · ' + lang;
-    return n;
-  };
-
   const refreshVoices = () => {
     const all = window.speechSynthesis.getVoices();
     frVoices = [];
@@ -941,19 +935,6 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
       if ((v.lang || '').replace('_', '-').toLowerCase().indexOf('fr') === 0) frVoices.push(v);
     }
     frVoices.sort((a, b) => voiceScore(b) - voiceScore(a));
-    if (voiceSel) {
-      voiceSel.innerHTML = '';
-      for (const v of frVoices) {
-        const opt = document.createElement('option');
-        opt.value = v.voiceURI;
-        opt.textContent = prettyName(v);
-        voiceSel.appendChild(opt);
-      }
-      let known = false;
-      for (const v of frVoices) { if (v.voiceURI === chosenURI) known = true; }
-      if (known) voiceSel.value = chosenURI;
-      voiceSel.hidden = frVoices.length < 2;
-    }
     if (voiceHint) {
       // en dessous de ce score, l'appareil n'a que des voix métalliques :
       // on souffle aux parents comment en obtenir une plus douce — sauf si
@@ -967,10 +948,9 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
     window.speechSynthesis.onvoiceschanged = refreshVoices;
   }
 
-  const pickVoice = () => {
-    for (const v of frVoices) { if (v.voiceURI === chosenURI) return v; }
-    return frVoices.length ? frVoices[0] : null;
-  };
+  // le score choisit seul la meilleure voix française : le menu de choix des
+  // premiers épisodes était un héritage d'avant la voix enregistrée
+  const pickVoice = () => (frVoices.length ? frVoices[0] : null);
 
   // une lecture à la fois : gen invalide les onend des lectures annulées, et
   // le onDone de la lecture précédente est toujours prévenu qu'elle s'achève
@@ -1097,13 +1077,6 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
     if (reading) { stopSpeaking(); return; } // le onDone remet le bouton
     startReading();
   });
-  if (voiceSel) {
-    voiceSel.addEventListener('change', () => {
-      chosenURI = voiceSel.value;
-      try { window.localStorage.setItem('ltt-voice', chosenURI); } catch (e) { /* tant pis */ }
-      if (reading) startReading(); // on réécoute tout de suite avec la nouvelle voix
-    });
-  }
   // partir ailleurs (autre application, autre onglet, écran verrouillé)
   // coupe le conteur net — synthèse ET mp3 : la voix ne parle jamais dans le
   // vide. Pas de reprise au retour : rien ne parle tout seul, on re-tape.
@@ -1113,6 +1086,7 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
   window.addEventListener('pagehide', stopSpeaking); // vieux Safari sans visibilitychange fiable
 } else {
   $('btn-scn-voice').hidden = true; // pas de synthèse vocale : pas de version sonore
+  $('btn-scn-voice-jeu').hidden = true;
 }
 
 // ---- la version sonore des scénarios : quand l'enfant choisit un moment,
@@ -1122,21 +1096,31 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
 // à Bali… », et retire les émojis, imprononçables. ----
 
 const scnVoiceBtn = $('btn-scn-voice');
+const scnVoiceBtnJeu = $('btn-scn-voice-jeu'); // le jumeau posé sur le jeu
 let scnVoiceOn = false;
-try { scnVoiceOn = window.localStorage.getItem('ltt-scn-voice') === '1'; } catch (e) { /* mode privé */ }
+// clé de famille (même origine petit-labo.fr : le réglage suit l'enfant d'un
+// épisode à l'autre), avec l'ancienne clé de l'épisode lue en secours
+try {
+  const son = window.localStorage.getItem('petit-labo-son');
+  scnVoiceOn = son !== null ? son === '1' : window.localStorage.getItem('ltt-scn-voice') === '1';
+} catch (e) { /* mode privé */ }
 
 function setScnVoiceUi() {
-  scnVoiceBtn.textContent = scnVoiceOn ? '🔊 la voix raconte' : '🔇 sans la voix';
+  // libellés empilés dans le HTML : aria-pressed montre l'un, cache l'autre.
+  // Les deux boutons (scénarios + jeu) sont jumeaux : même état, même clé.
   scnVoiceBtn.setAttribute('aria-pressed', scnVoiceOn ? 'true' : 'false');
+  scnVoiceBtnJeu.setAttribute('aria-pressed', scnVoiceOn ? 'true' : 'false');
 }
 setScnVoiceUi();
-scnVoiceBtn.addEventListener('click', () => {
+function toggleScnVoice() {
   scnVoiceOn = !scnVoiceOn;
-  try { window.localStorage.setItem('ltt-scn-voice', scnVoiceOn ? '1' : '0'); } catch (e) { /* tant pis */ }
+  try { window.localStorage.setItem('petit-labo-son', scnVoiceOn ? '1' : '0'); } catch (e) { /* tant pis */ }
   setScnVoiceUi();
   if (!narrator) return;
   if (scnVoiceOn) tellScenario(); else narrator.stop();
-});
+}
+scnVoiceBtn.addEventListener('click', toggleScnVoice);
+scnVoiceBtnJeu.addEventListener('click', toggleScnVoice);
 
 // Les blocs du récit viennent du modèle (blocsScenario) : mêmes ids et mêmes
 // textes que le corpus enregistré (tools/voix-lib.mjs) et que les tests.

@@ -66,9 +66,8 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
   ou à **écouter**. Le conteur joue la **voix enregistrée** (mp3 commités dans `assets/audio/`)
   quand elle existe et dit encore exactement le texte du site ; sinon, la **synthèse vocale**
   du navigateur prend le relais, phrase à phrase, sur un ton de conteur (pauses, exclamations,
-  suspens). Le site choisit d'office la voix française la plus naturelle de l'appareil, un
-  menu 🗣 permet d'en changer (choix retenu), et un conseil s'affiche quand l'appareil n'a que
-  des voix robotiques.
+  suspens). Le site choisit d'office la voix française la plus naturelle de l'appareil, et
+  un conseil s'affiche quand l'appareil n'a que des voix robotiques.
 - **Le jeu « Amuse-toi à trouver l'heure qu'il est dans les pays que tu connais ! »**, après
   l'histoire : le **globe en 3D** puis la **carte à plat**. Le globe montre les vrais
   continents et les frontières des ~180 pays (Natural Earth, embarqué dans `js/geo.js` —
@@ -268,12 +267,12 @@ test/voix.test.mjs    tests Node du conteur : textes oraux, couverture, manifest
 
 ## La série
 
-- 🌒 [La mécanique des éclipses](https://davidb-prog.github.io/eclipse-explorer/) — les deux
+- 🌒 [La mécanique des éclipses](https://petit-labo.fr/eclipse-explorer/) — les deux
   coïncidences qui fabriquent une éclipse.
-- 🌅 [Où va le Soleil la nuit ?](https://davidb-prog.github.io/ou-va-le-soleil/) — le Soleil
+- 🌅 [Où va le Soleil la nuit ?](https://petit-labo.fr/ou-va-le-soleil/) — le Soleil
   ne bouge pas : c'est la Terre qui tourne, et la nuit c'est quand ta maison lui tourne le dos.
 - 🌍 **Quelle heure est-il là-bas ?** (ce site) — la Terre tourne, et il n'est pas la même
   heure partout.
-- 🌙 [Pourquoi la Lune change de forme ?](https://davidb-prog.github.io/la-lune-change-de-forme/) —
+- 🌙 [Pourquoi la Lune change de forme ?](https://petit-labo.fr/la-lune-change-de-forme/) —
   la Lune est toujours à moitié éclairée ; c'est nous qui la voyons d'un côté différent
   chaque nuit.

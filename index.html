@@ -61,7 +61,10 @@
       <div class="panel canvas-panel globe-panel" id="pole-panel">
         <div class="canvas-title">
           <span>🚀 Depuis l’espace <span class="hint">(glisse pour faire tourner la Terre)</span></span>
-          <button id="btn-spin" class="spin-btn" aria-pressed="true">⏸ Pause</button>
+          <!-- libellés empilés (grille 1×1) : largeur stable, rien ne se décale au clic -->
+          <button id="btn-spin" class="spin-btn play-btn" aria-pressed="true"><span
+              class="play-on" aria-hidden="true">⏸ Pause</span><span
+              class="play-off" aria-hidden="true">▶ Lecture</span></button>
         </div>
         <div class="globe-stage">
           <div class="canvas-wrap ratio-square">
@@ -100,8 +103,12 @@
     <div class="panel scenario-panel">
       <div class="scenario-title">
         <span>🎲 Joue avec la Terre :</span>
-        <button id="btn-scn-voice" class="spin-btn" aria-pressed="false"
-          aria-label="Activer la voix qui raconte chaque moment choisi, chez nous et là-bas">🔇 sans la voix</button>
+        <!-- les deux libellés vivent empilés dans le bouton (grille 1×1) : sa largeur
+             est celle du plus long des deux, donc rien ne bouge quand on bascule -->
+        <button id="btn-scn-voice" class="spin-btn scn-voice-btn" aria-pressed="false"
+          aria-label="Activer la voix qui raconte chaque moment choisi, chez nous et là-bas"><span
+            class="scn-voice-on" aria-hidden="true">🔊 avec la voix</span><span
+            class="scn-voice-off" aria-hidden="true">🔇 sans la voix</span></button>
       </div>
       <div class="scenario-buttons" id="scenario-buttons" role="group" aria-label="Choisir un moment de la journée"></div>
       <div id="story" class="story" aria-live="polite"></div>
@@ -117,8 +124,6 @@
       <div class="explain-head">
         <h2>🍊 Pourquoi les fuseaux horaires ?</h2>
         <button id="btn-listen" class="listen-btn" hidden>🔊 Écouter l’histoire</button>
-        <select id="voice-pick" class="voice-pick" hidden
-          aria-label="Choisir la voix qui lit l’histoire"></select>
       </div>
       <p id="voice-hint" class="voice-hint" hidden>💡 La voix de lecture vient de
         l’appareil, et celles d’ici sont un peu robotiques. Pour une voix douce :
@@ -143,7 +148,14 @@
     </details>
 
     <div class="game-head">
-      <h2>🧭 Amuse-toi à trouver l’heure qu’il est dans les pays que tu connais !</h2>
+      <div class="game-head-row">
+        <h2>🧭 Amuse-toi à trouver l’heure qu’il est dans les pays que tu connais !</h2>
+        <!-- le même réglage de voix que les scénarios, à portée de main du jeu -->
+        <button id="btn-scn-voice-jeu" class="spin-btn scn-voice-btn" aria-pressed="false"
+          aria-label="Activer la voix qui raconte chaque moment choisi, chez nous et là-bas"><span
+            class="scn-voice-on" aria-hidden="true">🔊 avec la voix</span><span
+            class="scn-voice-off" aria-hidden="true">🔇 sans la voix</span></button>
+      </div>
       <p class="hint">Clique sur un pays — sur la Terre en 3D ou sur la carte à plat — et lis son
         heure dans le petit cadre.</p>
     </div>
@@ -152,7 +164,9 @@
     <div class="panel canvas-panel globe-panel" id="globe-panel">
       <div class="canvas-title">
         <span>🌍 La Terre en 3D <span class="hint">(glisse pour la tourner · clique sur un pays pour l’observer)</span></span>
-        <button id="btn-spin-globe" class="spin-btn" aria-pressed="true">⏸ Pause</button>
+        <button id="btn-spin-globe" class="spin-btn play-btn" aria-pressed="true"><span
+            class="play-on" aria-hidden="true">⏸ Pause</span><span
+            class="play-off" aria-hidden="true">▶ Lecture</span></button>
       </div>
       <div class="globe-stage">
         <div class="canvas-wrap ratio-square">
@@ -172,7 +186,9 @@
         <span>La même chose, à plat — chaque bande debout est un
           <strong>fuseau horaire</strong> : + ou − quelques heures par rapport à UTC,
           l’heure de Greenwich</span>
-        <button id="btn-spin-map" class="spin-btn" aria-pressed="true">⏸ Pause</button>
+        <button id="btn-spin-map" class="spin-btn play-btn" aria-pressed="true"><span
+            class="play-on" aria-hidden="true">⏸ Pause</span><span
+            class="play-off" aria-hidden="true">▶ Lecture</span></button>
       </div>
       <div class="search-row">
         <div class="search-box">
@@ -258,12 +274,15 @@
   </details>
 </main>
 
+<!-- pied de page harmonisé de la famille : les autres épisodes en liens, puis
+     le bouton de retour au menu petit-labo.fr -->
 <footer class="site-footer">
-  <p>« Quelle heure est-il là-bas ? » — un épisode du <strong>Petit labo d’astronomie</strong>.
-    Les autres épisodes : <a href="https://davidb-prog.github.io/eclipse-explorer/">🌒 La mécanique des
-    éclipses</a>, <a href="https://davidb-prog.github.io/ou-va-le-soleil/">🌅 Où va
-    le Soleil la nuit ?</a> et <a href="https://davidb-prog.github.io/la-lune-change-de-forme/">🌙 Pourquoi
-    la Lune change de forme ?</a></p>
+  <p class="footer-serie">« Quelle heure est-il là-bas ? » — un épisode du <strong>Petit labo d’astronomie</strong> 🌌</p>
+  <ul class="footer-episodes">
+    <li><a href="https://petit-labo.fr/ou-va-le-soleil/">🌅 Où va le Soleil la nuit ?</a></li>
+    <li><a href="https://petit-labo.fr/la-lune-change-de-forme/">🌙 Pourquoi la Lune change de forme ?</a></li>
+  </ul>
+  <p class="footer-menu"><a class="btn-menu-labo" href="https://petit-labo.fr/">🧪 Tous les épisodes du Petit labo</a></p>
 </footer>
 
 <script type="module" src="js/main.js"></script>

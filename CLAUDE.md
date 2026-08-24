@@ -6,8 +6,11 @@ garde son nom de travail `la-terre-tourne` (le refrain de la série) ; le titre 
 « Quelle heure est-il là-bas ? ». L'épisode 1 fait référence pour l'identité visuelle et le
 niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisode 2
 (« Où va le Soleil la nuit ? », lever/coucher) est en ligne :
-<https://davidb-prog.github.io/ou-va-le-soleil/> (dépôt
-<https://github.com/davidb-prog/ou-va-le-soleil>).
+<https://petit-labo.fr/ou-va-le-soleil/> (dépôt
+<https://github.com/davidb-prog/ou-va-le-soleil>). La famille est en ligne sous son domaine
+**petit-labo.fr** : tous les liens croisés (pied de page, README) l'utilisent, jamais
+`github.io` — même origine pour tous les épisodes, donc le réglage localStorage du conteur
+se partage.
 
 ## Contraintes
 
@@ -19,9 +22,18 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
 - **Compat mobiles anciens** : pas d'optional chaining `?.` ni de nullish `??` ; pas de
   lookbehind dans les regex ; repli `@supports` pour `aspect-ratio` ; `top/right/bottom/left`
   plutôt que `inset` ; préfixer `-webkit-backdrop-filter` et `-webkit-transform` ;
-  `touch-action: none` sur les canvas interactifs **et leurs conteneurs**
-  (`.canvas-wrap`, `.globe-stage` — comme l'épisode 2 : un doigt un peu de travers ne part
-  jamais en défilement de page) ; tester à 390 px de large.
+  `touch-action: none` sur les canvas interactifs et leur cadre immédiat `.canvas-wrap`
+  SEULEMENT — pas plus loin : bloquer tout `.globe-stage` interdisait de faire défiler la
+  page en touchant le cadre des heures France/là-bas rangé sous le disque (payé) ; tester à
+  390 px de large.
+- **La page se manipule, elle ne se sélectionne pas** (verrou anti-gestes d'enfant) :
+  `user-select: none` sur `body` (préfixé, + `-webkit-touch-callout: none` et
+  `-webkit-tap-highlight-color: transparent` ; les `input` redeviennent sélectionnables) ;
+  `* { touch-action: pan-x pan-y }` — le doigt défile mais ni pincement ni double-tap ne
+  zooment la page, les `touch-action: none` des canvas, plus spécifiques, gagnent ;
+  viewport `maximum-scale=1, user-scalable=no` AVEC le filet JS `gesturestart` →
+  `preventDefault` (Safari iOS ignore `user-scalable` depuis iOS 10). Les zooms
+  d'accessibilité du système restent utilisables — choix assumé pour un site d'enfant.
 - `js/model.js` est **pur** (aucun accès DOM) et doit le rester : il se teste avec
   `node test/model.test.mjs`. Toutes les constantes de lieux et de décalages vivent dedans —
   ne jamais les recopier ailleurs. Même règle pour `js/geo.js` (contours lon/lat purs) et
@@ -59,6 +71,21 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
   qu'il ne choisisse pas un pays au passage, la sélection au tap est différée de
   `DBL_TAP_MS` tant que la vue est zoomée (fenêtre du double-tap et délai égaux exprès) ;
   à zoom 1 la sélection reste immédiate.
+- **Boutons à largeur stable** (patron de la famille) : les trois boutons ⏸/▶ jumeaux
+  (`btn-spin`, `-globe`, `-map`) et le 🔇/🔊 portent leurs deux libellés **empilés**
+  (grille 1×1, `aria-pressed` montre l'un et cache l'autre) — l'ancien libellé
+  « ▶ Elle tourne toute seule » changeait la largeur des boutons et décalait toute la
+  page à chaque clic. Libellés harmonisés : « ⏸ Pause » / « ▶ Lecture » et
+  « 🔊 avec la voix » / « 🔇 sans la voix » — le bouton de voix a un **jumeau posé sur le
+  jeu** (`btn-scn-voice-jeu`, même état, même clé). Les couleurs des 4 boutons-scénarios
+  sont celles de la famille (reprises d'ou-va-le-soleil : matin rose, midi bleu, soir or,
+  nuit violet — la classe du 4ᵉ est `scn-lever-la-bas`, l'ancienne `scn-bali-lever` ne
+  s'appliquait plus). Sans moment affiché, cliquer un pays reste **silencieux** — le
+  commentaire audio à chaque clic a été essayé puis retiré à la demande de David (la voix ne
+  raconte que les scénarios, et suit la destination quand un scénario est affiché). Pied de
+  page harmonisé : les autres épisodes
+  en liens cliquables (sans « La mécanique des éclipses ») + bouton « 🧪 Tous les
+  épisodes » vers <https://petit-labo.fr/>.
 - Boucle rAF résiliente (`try/finally`), `prefers-reduced-motion` respecté (pas de rotation
   automatique), aria-labels sur tous les canvas.
 
@@ -71,7 +98,7 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
   heures) ; barre d'heures collante `sticky-times` (troisième jumeau du cadre, `aria-hidden`,
   mobile seulement) ; frise du temps pleine largeur (`time-panel`, curseur 0–24 h) ; scénarios +
   histoire (bouton 🔇/🔊 `btn-scn-voice` de version sonore) ; boîte « Pourquoi les fuseaux
-  horaires ? » à écouter (menu de voix ; `<details>` `explain-fold`, **repliée sur mobile
+  horaires ? » à écouter (`<details>` `explain-fold`, **repliée sur mobile
   ≤ 640 px** — le résumé ne s'affiche qu'en mobile et duplique le h2 de `.explain-head`,
   chacun masqué à l'autre taille ; main.js la garde ouverte sur ordinateur) ;
   **jeu** « Amuse-toi à trouver l'heure… »
@@ -134,9 +161,11 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
   le rouvrir sur ordinateur), et le **conteur** `narrator` (patron canonique de la famille,
   porté depuis `ou-va-le-soleil/js/main.js`) : UN seul moteur `narrate(items)`/`stop()`
   partagé entre l'histoire des fuseaux et la **version sonore des scénarios** (bouton 🔇/🔊,
-  choix retenu). Chaque bloc joue son **mp3 enregistré** si le manifeste dit qu'il porte
-  encore le texte exact (`audioSrc`), sinon **synthèse** (score des voix françaises, ton
-  conteur phrase à phrase, menu 🗣, choix retenu en localStorage) — avec la règle propre à
+  choix retenu sous la clé de famille `petit-labo-son` — l'ancienne clé `ltt-scn-voice` se
+  lit en secours). Chaque bloc joue son **mp3 enregistré** si le manifeste dit qu'il porte
+  encore le texte exact (`audioSrc`), sinon **synthèse** (le score des voix françaises
+  choisit seul la meilleure ; le menu 🗣 d'avant la voix enregistrée a été retiré, ton
+  conteur phrase à phrase conservé) — avec la règle propre à
   cet épisode : **une histoire = une voix** (un seul bloc sans fichier → tout le récit passe
   en synthèse). Un seul élément `<audio>` réutilisé (iOS rejoue sans geste), préchargement
   `fetch` du bloc suivant, pauses par bloc (120 ms après les annonces en « … »),
@@ -164,16 +193,19 @@ niveau d'exigence : <https://github.com/davidb-prog/eclipse-explorer>. L'épisod
 
 ## La voix enregistrée (ElevenLabs)
 
-Le conteur peut jouer des **mp3 commités** dans `assets/audio/` au lieu de la synthèse. Le
-guide de la famille est `ou-va-le-soleil/docs/voix-conteur.md` ; règles dures :
+Le conteur peut jouer des **mp3 commités** dans `assets/audio/` au lieu de la synthèse. La
+référence de la famille est le skill `petit-labo` (references/voix-enregistree.md) et son
+compagnon `generer-voix-petit-labo` ; règles dures :
 
 - **Le site reste 100 % statique** : génération HORS site par `tools/build-voix.mjs`
   (Node ≥ 18, zéro dépendance, `ELEVENLABS_API_KEY` + `ELEVENLABS_VOICE_ID` en variables
   d'environnement — jamais commitées, jamais côté site). Modèle `eleven_multilingual_v2`,
   sortie 64 kb/s.
-- **La clé API vit sur la machine de David** (`~/.zshrc`), JAMAIS dans un cloud environment
-  (`api.elevenlabs.io` y est bloqué par le réseau). La génération se fait en local ; depuis le
-  cloud on prépare corpus et outillage, puis on passe la main.
+- **La clé API vit sur la machine de David**, JAMAIS dans un cloud environment
+  (`api.elevenlabs.io` y est bloqué par le réseau). Un seul rangement : le fichier gitignoré
+  `.cle-elevenlabs` (chmod 600) à la racine du dépôt — jamais collée dans une conversation.
+  La génération se fait en local ; depuis le cloud on prépare corpus et outillage, puis on
+  passe la main.
 - **La voix enregistrée ne ment jamais** : le manifeste stocke le texte oral exact de chaque
   bloc, `audioSrc` ne joue un mp3 que si son texte correspond ENCORE, `node test/voix.test.mjs`
   échoue si un texte a changé sans régénération — et la **couverture par énumération** (propre
