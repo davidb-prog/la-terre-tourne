@@ -102,7 +102,9 @@
 
     <div class="panel scenario-panel">
       <div class="scenario-title">
-        <span>🎲 Joue avec la Terre :</span>
+        <!-- espace insécable avant le deux-points : sans elle, un iPhone un peu
+             étroit renvoyait le « : » tout seul à la ligne -->
+        <span>🎲 Joue avec la Terre&nbsp;:</span>
         <!-- les deux libellés vivent empilés dans le bouton (grille 1×1) : sa largeur
              est celle du plus long des deux, donc rien ne bouge quand on bascule -->
         <button id="btn-scn-voice" class="spin-btn scn-voice-btn" aria-pressed="false"
