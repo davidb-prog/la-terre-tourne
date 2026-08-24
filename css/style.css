@@ -263,6 +263,9 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 
 .globe-panel .canvas-title { display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap; }
 .spin-btn { margin-left: auto; padding: 5px 12px; font-size: .8rem; border-radius: 999px; }
+/* ⏸/▶ et 🔇/🔊 côte à côte dans le titre du globe : seul le premier se pousse
+   à droite, le second reste collé à lui (le gap du titre les espace) */
+.canvas-title .spin-btn ~ .spin-btn { margin-left: 0; }
 
 .time-control { margin-top: 12px; padding: 0 4px 2px; }
 .time-readout { font-size: 1.05rem; margin-bottom: 4px; }
@@ -350,10 +353,13 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 /* ---------- boutons-scénarios + histoire ---------- */
 
 .scenario-panel { margin-top: 16px; padding: 14px 16px 16px; }
+/* titre et bouton de voix sur la MÊME ligne, sans repli : sur téléphone, le
+   bouton qui passait dessous laissait toute une rangée vide à sa gauche —
+   le texte du titre se replie sur deux lignes si la place manque, pas le bouton */
 .scenario-title {
   font-weight: 700; font-size: 1.05rem; margin: 2px 2px 10px;
   display: flex; align-items: center; justify-content: space-between;
-  gap: 8px 12px; flex-wrap: wrap;
+  gap: 8px 12px;
 }
 .scenario-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
 @media (max-width: 860px) { .scenario-buttons { grid-template-columns: 1fr 1fr; } }
@@ -551,8 +557,8 @@ button:focus-visible, input:focus-visible, a:focus-visible {
    grand écran seulement (sur téléphone, celles du haut suffisent) */
 .map-panel .search-chips { margin: 10px 2px 0; justify-content: flex-end; }
 @media (max-width: 960px) { .map-panel .search-chips { display: none; } }
-.map-panel .canvas-title { display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap; }
-.map-panel .canvas-title span { flex: 1 1 260px; }
+/* (le titre de la carte n'a plus de bouton ⏸/▶ : le globe suffit à mettre en
+   pause la rotation, les deux vues tournent ensemble) */
 
 /* (sous 640 px, plus aucun cadre n'est incrusté sur une vue : inutile de le
    rapetisser — la règle mobile ci-dessus le grossit au contraire un peu) */
@@ -587,12 +593,10 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 .explain-text p { margin: .55em 0; color: #c9d2ea; font-size: 1.02rem; line-height: 1.7; }
 .explain-text strong { color: var(--text); }
 
-/* l'en-tête du jeu : trouver l'heure dans les pays qu'on connaît */
+/* l'en-tête du jeu : trouver l'heure dans les pays qu'on connaît (le bouton
+   de voix jumeau vit dans le titre du globe, à côté du ⏸/▶ — plus de rangée
+   à lui tout seul ici) */
 .game-head { margin: 22px 4px 12px; }
-.game-head-row {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 8px 12px; flex-wrap: wrap;
-}
 .game-head h2 {
   margin: 0 0 4px; font-size: 1.15rem; color: var(--sun);
 }

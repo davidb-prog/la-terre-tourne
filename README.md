@@ -39,8 +39,8 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
   « **encore hier !** », et le ciel local dessiné en continu — nuit étoilée, aube rose, grand
   jour, coucher orangé.
 - **Grand curseur 0–24 h** (l'heure en France) : sa piste raconte elle-même la journée. La
-  Terre peut aussi tourner toute seule (un tour en 80 s), boutons lecture/pause jumeaux sur le
-  globe et sur la carte.
+  Terre peut aussi tourner toute seule (un tour en 80 s), bouton lecture/pause jumeau sur le
+  globe 3D.
 - **Quatre boutons-scénarios** : « Quand je me réveille (7 h) », « Quand je déjeune (midi) »,
   « Quand je vais au dodo (20 h) », « Le soleil se lève là-bas ». La Terre tourne en douceur —
   toujours vers l'est, son vrai sens ! — puis une petite histoire compare la France et la
