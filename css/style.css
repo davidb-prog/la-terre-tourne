@@ -263,10 +263,6 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 
 .globe-panel .canvas-title { display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap; }
 .spin-btn { margin-left: auto; padding: 5px 12px; font-size: .8rem; border-radius: 999px; }
-/* ⏸/▶ et 🔇/🔊 du globe 3D : un GROUPE rangé à droite, qui se replie d'un seul
-   bloc sous le titre — jamais un bouton orphelin parti de son côté */
-.title-btns { margin-left: auto; display: flex; align-items: center; gap: 12px; }
-.title-btns .spin-btn { margin-left: 0; }
 
 .time-control { margin-top: 12px; padding: 0 4px 2px; }
 .time-readout { font-size: 1.05rem; margin-bottom: 4px; }
@@ -594,9 +590,7 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 .explain-text p { margin: .55em 0; color: #c9d2ea; font-size: 1.02rem; line-height: 1.7; }
 .explain-text strong { color: var(--text); }
 
-/* l'en-tête du jeu : trouver l'heure dans les pays qu'on connaît (le bouton
-   de voix jumeau vit dans le titre du globe, à côté du ⏸/▶ — plus de rangée
-   à lui tout seul ici) */
+/* l'en-tête du jeu : trouver l'heure dans les pays qu'on connaît */
 .game-head { margin: 22px 4px 12px; }
 .game-head h2 {
   margin: 0 0 4px; font-size: 1.15rem; color: var(--sun);

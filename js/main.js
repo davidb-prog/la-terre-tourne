@@ -142,7 +142,7 @@ function buildCards() {
 
 // ---- la recherche de lieux : deux moteurs synchronisés, zéro appel réseau ----
 
-function choosePlace(entry) {
+function choosePlace(entry, opts) {
   selected = {
     id: 'selected', selectable: true, isDefault: false,
     name: entry.n,
@@ -157,11 +157,13 @@ function choosePlace(entry) {
   pole.pulse = { lonDeg: entry.lon, home: false, k: 1 };
   globe3d.pulse = { lonDeg: entry.lon, latDeg: entry.lat, k: 1 };
   centerCameraOn(entry.lon, entry.lat);
-  // si un moment est affiché dans « Joue avec la Terre », son histoire (et sa
-  // version sonore) suit la nouvelle destination sans attendre un re-clic —
-  // sans moment affiché, cliquer un pays reste silencieux (essayé puis
-  // retiré : le commentaire audio à chaque clic était de trop)
-  if (activeScn) runScenario(activeScn.scn);
+  // si un moment est affiché dans « Joue avec la Terre », son histoire suit la
+  // nouvelle destination sans attendre un re-clic — sans moment affiché,
+  // cliquer un pays reste silencieux (essayé puis retiré : le commentaire
+  // audio à chaque clic était de trop). Un clic direct sur le globe 3D ou la
+  // carte à plat (opts.sansVoix) ne relance jamais la version sonore non
+  // plus : seul le texte suit (retiré aussi, à la demande de David).
+  if (activeScn) runScenario(activeScn.scn, opts);
 }
 
 function wireSearch(inputId, resultsId) {
@@ -518,7 +520,7 @@ function wireEarthDrag(canvas) {
   const dtap = makeDoubleTap(() => globe3d.zoom > 1, dezoom.run, (x, y) => {
     const rect = canvas.getBoundingClientRect();
     const hit = resolveHit(globe3d.hitTest(x - rect.left, y - rect.top));
-    if (hit) choosePlace(hit);
+    if (hit) choosePlace(hit, { sansVoix: true });
   });
   canvas.addEventListener('pointerdown', (e) => {
     if (!globe3d.layout) return;
@@ -590,7 +592,7 @@ function wireMapDrag(canvas) {
   const dtap = makeDoubleTap(() => map.zoom > 1, dezoom.run, (x, y) => {
     const rect = canvas.getBoundingClientRect();
     const hit = resolveHit(map.hitTest(x - rect.left, y - rect.top));
-    if (hit) choosePlace(hit);
+    if (hit) choosePlace(hit, { sansVoix: true });
   });
   canvas.addEventListener('pointerdown', (e) => {
     if (!map.layout) return;
@@ -738,13 +740,20 @@ function renderStory(scn, atH) {
 }
 
 // La Terre tourne en douceur (toujours vers l'avant, son vrai sens) jusqu'au moment choisi.
-function runScenario(scn) {
+function runScenario(scn, opts) {
   const atH = scn.sunriseAt ? sunriseHomeH(selected.lonDeg) : scn.homeH;
   setPlaying(false);
   setActiveScenario(scn.id);
   renderStory(scn, atH);
   activeScn = { scn: scn, atH: atH };
-  tellScenario(); // la version sonore, si le parent l'a activée
+  if (opts && opts.sansVoix) {
+    // rejouage déclenché par un clic sur le globe 3D ou la carte à plat : pas
+    // de version sonore — et si elle parlait encore, on la coupe plutôt que
+    // de la laisser raconter l'ancienne destination sous le nouveau texte
+    if (narrator) narrator.stop();
+  } else {
+    tellScenario(); // la version sonore, si le parent l'a activée
+  }
   const delta = wrap24(atH - sim.homeH);
   if (reduceMotion || delta < 0.02) {
     sim.tween = null;
@@ -1112,7 +1121,6 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
   window.addEventListener('pagehide', stopSpeaking); // vieux Safari sans visibilitychange fiable
 } else {
   $('btn-scn-voice').hidden = true; // pas de synthèse vocale : pas de version sonore
-  $('btn-scn-voice-jeu').hidden = true;
 }
 
 // ---- la version sonore des scénarios : quand l'enfant choisit un moment,
@@ -1122,7 +1130,6 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
 // à Bali… », et retire les émojis, imprononçables. ----
 
 const scnVoiceBtn = $('btn-scn-voice');
-const scnVoiceBtnJeu = $('btn-scn-voice-jeu'); // le jumeau posé sur le titre du globe, à côté du ⏸/▶
 let scnVoiceOn = false;
 // clé de famille (même origine petit-labo.fr : le réglage suit l'enfant d'un
 // épisode à l'autre), avec l'ancienne clé de l'épisode lue en secours
@@ -1133,9 +1140,7 @@ try {
 
 function setScnVoiceUi() {
   // libellés empilés dans le HTML : aria-pressed montre l'un, cache l'autre.
-  // Les deux boutons (scénarios + jeu) sont jumeaux : même état, même clé.
   scnVoiceBtn.setAttribute('aria-pressed', scnVoiceOn ? 'true' : 'false');
-  scnVoiceBtnJeu.setAttribute('aria-pressed', scnVoiceOn ? 'true' : 'false');
 }
 setScnVoiceUi();
 function toggleScnVoice() {
@@ -1146,7 +1151,6 @@ function toggleScnVoice() {
   if (scnVoiceOn) tellScenario(); else narrator.stop();
 }
 scnVoiceBtn.addEventListener('click', toggleScnVoice);
-scnVoiceBtnJeu.addEventListener('click', toggleScnVoice);
 
 // Les blocs du récit viennent du modèle (blocsScenario) : mêmes ids et mêmes
 // textes que le corpus enregistré (tools/voix-lib.mjs) et que les tests.
