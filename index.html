@@ -25,7 +25,16 @@
 <body>
 
 <header class="site-header">
-  <p class="kicker">Petit labo d’astronomie</p>
+  <!-- la fiole de la série (l'étoile dedans) à côté du kicker — SVG repris du
+       portail (davidb-prog.github.io), règle de la charte -->
+  <p class="kicker">
+    <svg class="kicker-fiole" viewBox="0 0 100 100" aria-hidden="true">
+      <path d="M43 22 L43 42 L28 68 A9 9 0 0 0 36 81 L64 81 A9 9 0 0 0 72 68 L57 42 L57 22 Z"
+            fill="#0e1530" stroke="#ffcf5c" stroke-width="6" stroke-linejoin="round"/>
+      <path d="M50 51 L52 57 L58 59 L52 61 L50 67 L48 61 L42 59 L48 57 Z" fill="#ffcf5c"/>
+      <rect x="38" y="15" width="24" height="7" rx="3.5" fill="#ffcf5c"/>
+    </svg>
+    <span>Petit labo d’astronomie</span></p>
   <h1>Quelle heure est-il là-bas ?</h1>
   <p class="tagline">La Terre tourne, et le Soleil n’éclaire qu’un côté à la fois : il n’est pas
     la même heure partout ! Cherche une ville, fais défiler les heures, compare avec chez nous.</p>
@@ -280,12 +289,52 @@
 <!-- pied de page harmonisé de la famille : les autres épisodes en liens, puis
      le bouton de retour au menu petit-labo.fr -->
 <footer class="site-footer">
-  <p class="footer-serie">« Quelle heure est-il là-bas ? » — un épisode du <strong>Petit labo d’astronomie</strong> 🌌</p>
+  <p class="footer-serie">« Quelle heure est-il là-bas ? » — un épisode du <strong>Petit labo d’astronomie</strong> 🔭</p>
+  <!-- chaque épisode porte son médaillon SVG (repris de sa carte sur le portail),
+       et le bouton du menu porte la fiole maître au « ? » (version petites
+       tailles : éclats retirés, traits épaissis — règle de la charte) -->
   <ul class="footer-episodes">
-    <li><a href="https://petit-labo.fr/ou-va-le-soleil/">🌅 Où va le Soleil la nuit ?</a></li>
-    <li><a href="https://petit-labo.fr/la-lune-change-de-forme/">🌙 Pourquoi la Lune change de forme ?</a></li>
+    <li><a href="https://petit-labo.fr/ou-va-le-soleil/">
+      <span class="ep-medaillon" aria-hidden="true">
+        <svg viewBox="0 0 100 100">
+          <defs><clipPath id="med-soleil"><rect x="0" y="0" width="100" height="64"/></clipPath></defs>
+          <g clip-path="url(#med-soleil)">
+            <circle cx="50" cy="66" r="17" fill="#ffcf5c"/>
+            <path d="M50 39 L50 31" stroke="#ffcf5c" stroke-width="5" stroke-linecap="round"/>
+            <path d="M30 46 L24.5 40.5" stroke="#ffcf5c" stroke-width="5" stroke-linecap="round"/>
+            <path d="M70 46 L75.5 40.5" stroke="#ffcf5c" stroke-width="5" stroke-linecap="round"/>
+          </g>
+          <path d="M16 66 L84 66" stroke="#46c2a5" stroke-width="4.5" stroke-linecap="round"/>
+          <circle cx="24" cy="25" r="2" fill="#9aa5c3"/>
+          <circle cx="79" cy="21" r="2.4" fill="#e9edf8"/>
+        </svg>
+      </span>
+      <span class="ep-titre">Où va le Soleil la nuit ?</span></a></li>
+    <li><a href="https://petit-labo.fr/la-lune-change-de-forme/">
+      <span class="ep-medaillon" aria-hidden="true">
+        <svg viewBox="0 0 100 100">
+          <circle cx="48" cy="54" r="20" fill="#ffcf5c"/>
+          <circle cx="57" cy="48" r="17.5" fill="#070b17"/>
+          <circle cx="26" cy="26" r="2.2" fill="#a98bff"/>
+          <circle cx="76" cy="30" r="2" fill="#ff6b9d"/>
+          <circle cx="72" cy="74" r="1.8" fill="#9aa5c3"/>
+          <circle cx="22" cy="70" r="1.6" fill="#e9edf8"/>
+        </svg>
+      </span>
+      <span class="ep-titre">Pourquoi la Lune change de forme ?</span></a></li>
   </ul>
-  <p class="footer-menu"><a class="btn-menu-labo" href="https://petit-labo.fr/">🧪 Tous les épisodes du Petit labo</a></p>
+  <p class="footer-menu"><a class="btn-menu-labo" href="https://petit-labo.fr/">
+    <svg class="fiole-labo" viewBox="0 0 100 100" aria-hidden="true">
+      <path d="M44 40 L44 54 L30 72 A8 8 0 0 0 37 84 L63 84 A8 8 0 0 0 70 72 L56 54 L56 40 Z"
+            fill="#0e1530" stroke="#ffcf5c" stroke-width="6.5" stroke-linejoin="round"/>
+      <rect x="39.5" y="34" width="21" height="6.5" rx="3.25" fill="#ffcf5c"/>
+      <g transform="rotate(10 53 17)">
+        <path d="M45.5 13 A7.5 7.5 0 1 1 53 20.5 L53 23"
+              fill="none" stroke="#ffcf5c" stroke-width="7" stroke-linecap="round"/>
+        <circle cx="53" cy="29.5" r="3.6" fill="#ffcf5c"/>
+      </g>
+    </svg>
+    Tous les épisodes du Petit labo</a></p>
 </footer>
 
 <script type="module" src="js/main.js"></script>

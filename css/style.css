@@ -1,8 +1,20 @@
-/* La Terre tourne — épisode 2 du Petit labo d'astronomie.
-   Thème sombre « espace » hérité de l'épisode 1, en plus rond et plus joueur (public : 5 ans).
+/* Quelle heure est-il là-bas ? — un épisode du Petit labo d'astronomie.
+   Thème sombre « espace » de la série, rond et joueur (public : 5 ans).
    Zéro dépendance. Compat mobiles anciens : pas d'inset, repli @supports pour aspect-ratio. */
 
+/* la rondeur des titres de la famille : Baloo 2 auto-hébergée (charte du
+   portail — assets/fonts/, licence OFL) ; le corps du texte reste en pile
+   système, choix assumé de la charte */
+@font-face {
+  font-family: "Baloo 2";
+  src: url("../assets/fonts/baloo2-latin.woff2") format("woff2");
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
+  --titres: "Baloo 2", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
   --bg: #0b1020;
   --bg2: #0e1530;
   --surface: #121a33;
@@ -56,15 +68,14 @@ body {
 /* ---------- entête ---------- */
 
 .site-header { max-width: 900px; margin: 0 auto; padding: 38px 20px 22px; text-align: center; }
+/* le kicker porte la fiole de la série (l'étoile dedans) à côté de son texte,
+   comme le portail porte la fiole maître à côté de son nom — règle de la charte */
 .kicker {
   margin: 0; color: var(--sun); font-size: .8rem; font-weight: 700;
   letter-spacing: .14em; text-transform: uppercase;
+  display: flex; align-items: center; justify-content: center; gap: 9px;
 }
-.episode {
-  display: inline-block; margin-left: 8px; padding: 1px 10px; letter-spacing: .08em;
-  border: 1px solid var(--sun-deep); border-radius: 999px; color: var(--sun);
-  font-size: .72rem; vertical-align: 1px;
-}
+.kicker-fiole { width: 24px; height: 24px; flex: none; }
 .site-header h1 { margin: .22em 0 .3em; font-size: clamp(2.1rem, 5.5vw, 3.1rem); line-height: 1.1; }
 .tagline { margin: 0 auto; max-width: 62ch; color: var(--muted); }
 
@@ -79,6 +90,16 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .hint { color: var(--muted); font-weight: 400; font-size: .78em; }
 .muted { color: var(--muted); }
+
+/* la voix des titres : Baloo 2 sur tout ce qui titre la page — jamais sur le
+   corps du texte ni sur les boutons (leur font: inherit doit rester la pile
+   système, taille partagée par toute la famille). La légende de la carte à
+   plat (.map-panel .canvas-title) est une phrase, pas un titre : elle reste
+   en pile système. */
+.site-header h1, .kicker, .vignette-name, .search-title,
+.globe-panel .canvas-title > span, .scenario-title > span,
+.explain-head h2, .explain-summary h2, .game-head h2,
+.parents summary { font-family: var(--titres); }
 
 /* ---------- grille du simulateur ---------- */
 
@@ -397,9 +418,6 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 /* ---------- carte du monde ---------- */
 
 .map-panel { margin-top: 16px; }
-.map-caption { margin: 10px 4px 0; font-size: .96rem; color: #c9d2ea; }
-.map-caption strong { color: var(--text); }
-.map-caption.muted { font-size: .83rem; color: var(--muted); }
 
 /* ---------- note aux parents (repliée) ---------- */
 
@@ -443,13 +461,24 @@ button:focus-visible, input:focus-visible, a:focus-visible {
   list-style: none; margin: 0 0 16px; padding: 0;
   display: flex; flex-wrap: wrap; gap: 8px 22px; justify-content: center;
 }
-.footer-episodes a { text-decoration: underline; }
+/* les liens d'épisodes portent leur médaillon (le soulignement reste sur le
+   titre seul, pas sur la vignette) */
+.footer-episodes a { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+.footer-episodes .ep-titre { text-decoration: underline; }
+.ep-medaillon {
+  flex: none; width: 30px; height: 30px; border-radius: 9px;
+  background: #070b17; border: 1px solid var(--border);
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.ep-medaillon svg { width: 26px; height: 26px; display: block; }
 .footer-menu { margin: 0; }
 .btn-menu-labo {
-  display: inline-block; padding: 10px 20px; border-radius: 999px;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px; border-radius: 999px;
   border: 1px solid var(--sun-deep); color: var(--sun); text-decoration: none;
   font-weight: 700; background: linear-gradient(180deg, #4a3a0d, #332807);
 }
+.fiole-labo { width: 22px; height: 22px; flex: none; }
 .btn-menu-labo:focus-visible { outline: 2px solid var(--sun-deep); }
 
 /* libellés empilés (grille 1×1) : le bouton garde la largeur du plus long des
@@ -469,7 +498,6 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 /* ---------- petits écrans ---------- */
 
 @media (max-width: 480px) {
-  .story-intro { padding: 16px 18px; font-size: 1.04rem; }
   .clock-slot { width: 70px; height: 70px; }
   .clock-digital { font-size: 1.55rem; }
   .time-readout strong { font-size: 1.35rem; }

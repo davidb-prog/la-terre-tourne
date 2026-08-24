@@ -90,9 +90,19 @@ se partage.
   affiché (`choosePlace(hit, { sansVoix: true })` : le texte de l'histoire suit la
   destination, la voix en cours se coupe au lieu de raconter l'ancienne — retiré aussi à
   la demande de David) ; la voix ne suit la destination que choisie par la recherche, les
-  puces ou le ✕ d'une carte-horloge. Pied de page harmonisé : les autres épisodes
-  en liens cliquables (sans « La mécanique des éclipses ») + bouton « 🧪 Tous les
-  épisodes » vers <https://petit-labo.fr/>.
+  puces ou le ✕ d'une carte-horloge. Pied de page harmonisé (charte `docs/charte.md`
+  du portail, patron repris d'ou-va-le-soleil) : ligne-titre avec l'emoji de série 🔭,
+  les autres épisodes en liens cliquables (sans « La mécanique des éclipses ») portant
+  chacun le **médaillon SVG de sa carte** du portail (tuile ~30 px, soulignement sur le
+  titre seul), et bouton « Tous les épisodes » vers <https://petit-labo.fr/> portant la
+  **fiole maître au « ? »** petites-tailles (plus d'emoji-illustration devant ces liens).
+- **Marque de la famille** (charte du portail) : titres en **Baloo 2 auto-hébergée**
+  (`assets/fonts/baloo2-latin.woff2`, OFL, `font-display: swap`, repli
+  `"Arial Rounded MT Bold", "Trebuchet MS", system-ui` — la pile `--titres`, appliquée à
+  tout ce qui titre, jamais au corps du texte ni aux boutons ; la légende de la carte à
+  plat est une phrase, elle reste en pile système) ; **fiole de la série** (l'étoile
+  dedans) en SVG inline ~24 px à côté du kicker centré ; le favicon reste
+  l'emoji-signature 🌍 (décision de la charte).
 - Boucle rAF résiliente (`try/finally`), `prefers-reduced-motion` respecté (pas de rotation
   automatique), aria-labels sur tous les canvas.
 
