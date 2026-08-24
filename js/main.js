@@ -5,7 +5,7 @@
 import { TAU, DEG, PLACES, HOME, SCENARIOS, wrap24, localClock, formatHM,
          periodWord, activityFor, dayBadge, sunriseHomeH,
          placePhrase, offsetDiffText, cameraFrame,
-         texteOral, blocsScenario } from './model.js';
+         texteOral, blocsScenario, blocsMoment } from './model.js';
 import { MapView, SkyView, PoleView, buildClock, pointInRing } from './views.js';
 import { Globe3D } from './view3d.js';
 import { GAZETTEER, DECOR, searchPlaces, flagEmoji, IDEES_VOYAGE } from './places.js';
@@ -103,6 +103,7 @@ function buildCards() {
         globe3d.pulse = { lonDeg: selected.lonDeg, latDeg: selected.latDeg, k: 1 };
         centerCameraOn(selected.lonDeg, selected.latDeg); // on recadre aussi
         if (activeScn) runScenario(activeScn.scn); // l'histoire suit
+        else tellMoment();
       });
       head.appendChild(close);
     }
@@ -158,8 +159,10 @@ function choosePlace(entry) {
   globe3d.pulse = { lonDeg: entry.lon, latDeg: entry.lat, k: 1 };
   centerCameraOn(entry.lon, entry.lat);
   // si un moment est affiché dans « Joue avec la Terre », son histoire (et sa
-  // version sonore) suit la nouvelle destination sans attendre un re-clic
+  // version sonore) suit la nouvelle destination sans attendre un re-clic ;
+  // sinon, la voix (si elle est activée) raconte l'instant présent
   if (activeScn) runScenario(activeScn.scn);
+  else tellMoment();
 }
 
 function wireSearch(inputId, resultsId) {
@@ -1084,6 +1087,7 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
   window.addEventListener('pagehide', stopSpeaking); // vieux Safari sans visibilitychange fiable
 } else {
   $('btn-scn-voice').hidden = true; // pas de synthèse vocale : pas de version sonore
+  $('btn-scn-voice-jeu').hidden = true;
 }
 
 // ---- la version sonore des scénarios : quand l'enfant choisit un moment,
@@ -1093,6 +1097,7 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
 // à Bali… », et retire les émojis, imprononçables. ----
 
 const scnVoiceBtn = $('btn-scn-voice');
+const scnVoiceBtnJeu = $('btn-scn-voice-jeu'); // le jumeau posé sur le jeu
 let scnVoiceOn = false;
 // clé de famille (même origine petit-labo.fr : le réglage suit l'enfant d'un
 // épisode à l'autre), avec l'ancienne clé de l'épisode lue en secours
@@ -1102,17 +1107,23 @@ try {
 } catch (e) { /* mode privé */ }
 
 function setScnVoiceUi() {
-  // libellés empilés dans le HTML : aria-pressed montre l'un, cache l'autre
+  // libellés empilés dans le HTML : aria-pressed montre l'un, cache l'autre.
+  // Les deux boutons (scénarios + jeu) sont jumeaux : même état, même clé.
   scnVoiceBtn.setAttribute('aria-pressed', scnVoiceOn ? 'true' : 'false');
+  scnVoiceBtnJeu.setAttribute('aria-pressed', scnVoiceOn ? 'true' : 'false');
 }
 setScnVoiceUi();
-scnVoiceBtn.addEventListener('click', () => {
+function toggleScnVoice() {
   scnVoiceOn = !scnVoiceOn;
   try { window.localStorage.setItem('petit-labo-son', scnVoiceOn ? '1' : '0'); } catch (e) { /* tant pis */ }
   setScnVoiceUi();
   if (!narrator) return;
-  if (scnVoiceOn) tellScenario(); else narrator.stop();
-});
+  if (!scnVoiceOn) { narrator.stop(); return; }
+  if (activeScn) tellScenario();
+  else tellMoment(); // activer la voix depuis le jeu raconte tout de suite l'instant présent
+}
+scnVoiceBtn.addEventListener('click', toggleScnVoice);
+scnVoiceBtnJeu.addEventListener('click', toggleScnVoice);
 
 // Les blocs du récit viennent du modèle (blocsScenario) : mêmes ids et mêmes
 // textes que le corpus enregistré (tools/voix-lib.mjs) et que les tests.
@@ -1124,6 +1135,16 @@ function spokenStory(scn, atH) {
 function tellScenario() {
   if (narrator && scnVoiceOn && activeScn) {
     narrator.narrate(spokenStory(activeScn.scn, activeScn.atH));
+  }
+}
+
+// Cliquer un pays sans scénario affiché parle AUSSI (le jeu du globe et de la
+// carte) : la voix racontait seulement quand un moment était choisi — pas
+// « systématiquement », donc jamais dans le jeu après un glisser (payé).
+function tellMoment() {
+  if (narrator && scnVoiceOn && !activeScn) {
+    const blocs = blocsMoment(sim.homeH, selected, !!puceNames[selected.name]);
+    narrator.narrate(blocs.map((b) => ({ id: b.id, text: texteOral(b.texte), pause: b.pause })));
   }
 }
 

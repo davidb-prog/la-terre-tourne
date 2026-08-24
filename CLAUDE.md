@@ -22,9 +22,10 @@ se partage.
 - **Compat mobiles anciens** : pas d'optional chaining `?.` ni de nullish `??` ; pas de
   lookbehind dans les regex ; repli `@supports` pour `aspect-ratio` ; `top/right/bottom/left`
   plutôt que `inset` ; préfixer `-webkit-backdrop-filter` et `-webkit-transform` ;
-  `touch-action: none` sur les canvas interactifs **et leurs conteneurs**
-  (`.canvas-wrap`, `.globe-stage` — comme l'épisode 2 : un doigt un peu de travers ne part
-  jamais en défilement de page) ; tester à 390 px de large.
+  `touch-action: none` sur les canvas interactifs et leur cadre immédiat `.canvas-wrap`
+  SEULEMENT — pas plus loin : bloquer tout `.globe-stage` interdisait de faire défiler la
+  page en touchant le cadre des heures France/là-bas rangé sous le disque (payé) ; tester à
+  390 px de large.
 - **La page se manipule, elle ne se sélectionne pas** (verrou anti-gestes d'enfant) :
   `user-select: none` sur `body` (préfixé, + `-webkit-touch-callout: none` et
   `-webkit-tap-highlight-color: transparent` ; les `input` redeviennent sélectionnables) ;
@@ -75,7 +76,14 @@ se partage.
   (grille 1×1, `aria-pressed` montre l'un et cache l'autre) — l'ancien libellé
   « ▶ Elle tourne toute seule » changeait la largeur des boutons et décalait toute la
   page à chaque clic. Libellés harmonisés : « ⏸ Pause » / « ▶ Lecture » et
-  « 🔊 avec la voix » / « 🔇 sans la voix ». Pied de page harmonisé : les autres épisodes
+  « 🔊 avec la voix » / « 🔇 sans la voix » — le bouton de voix a un **jumeau posé sur le
+  jeu** (`btn-scn-voice-jeu`, même état, même clé). Les couleurs des 4 boutons-scénarios
+  sont celles de la famille (reprises d'ou-va-le-soleil : matin rose, midi bleu, soir or,
+  nuit violet — la classe du 4ᵉ est `scn-lever-la-bas`, l'ancienne `scn-bali-lever` ne
+  s'appliquait plus). **La voix suit AUSSI les clics de pays sans scénario actif**
+  (`blocsMoment` du modèle, appelé par `tellMoment` de main.js — le jeu du globe et de la
+  carte parle : chez nous puis là-bas à l'instant présent ; aux heures hors corpus le
+  conteur passe en synthèse, le repli permanent). Pied de page harmonisé : les autres épisodes
   en liens cliquables (sans « La mécanique des éclipses ») + bouton « 🧪 Tous les
   épisodes » vers <https://petit-labo.fr/>.
 - Boucle rAF résiliente (`try/finally`), `prefers-reduced-motion` respecté (pas de rotation

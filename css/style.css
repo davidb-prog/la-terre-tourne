@@ -160,13 +160,13 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 }
 .canvas-wrap canvas { position: absolute; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: 100%; display: block; }
 
-/* touch-action: none jusqu'aux conteneurs (le choix de l'épisode 2) : le geste
-   posé sur une vue appartient TOUJOURS au glisser ou à la pince — un doigt un
-   peu de travers ne part jamais en défilement de page, même depuis le cadre
-   arrondi, les boutons de lieux ou le cadre des heures rangés sous le disque.
-   Les vues sont plafonnées en hauteur : il reste de la page autour pour
-   défiler. */
-.canvas-wrap, .globe-stage { touch-action: none; }
+/* touch-action: none sur les vues et leur cadre immédiat SEULEMENT : le geste
+   posé sur un canvas appartient toujours au glisser ou à la pince. Pas plus
+   loin : bloquer tout le .globe-stage interdisait de faire défiler la page en
+   touchant le cadre des heures France/là-bas rangé sous le disque (payé) —
+   le cadre, les puces et les boutons laissent défiler (le pan-x pan-y global
+   s'applique). */
+.canvas-wrap { touch-action: none; }
 #pole-view, #globe3d-view, #map-view { touch-action: none; cursor: grab; }
 #pole-view:active, #globe3d-view:active, #map-view:active { cursor: grabbing; }
 
@@ -370,10 +370,14 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 .scn.active { box-shadow: 0 0 0 3px rgba(255, 207, 92, .55); }
 .scn-emoji { font-size: 1.6rem; line-height: 1; }
 .scn-sub { font-weight: 400; font-size: .76rem; opacity: .8; }
-.scn-reveil { background: linear-gradient(180deg, #4a3a0d, #332807); border-color: var(--sun-deep); color: var(--sun); }
+/* les couleurs de la famille (reprises d'ou-va-le-soleil) : matin rose,
+   midi bleu, soir or, nuit violet */
+.scn-reveil { background: linear-gradient(180deg, #4a1d33, #2d1122); border-color: var(--rose); color: #ffb3cd; }
 .scn-midi { background: linear-gradient(180deg, #1c3a63, #132644); border-color: #3f6db3; color: #bcd9ff; }
-.scn-dodo { background: linear-gradient(180deg, #2b1e52, #1c1433); border-color: #5f43b3; color: #cabcff; }
-.scn-bali-lever { background: linear-gradient(180deg, #4a1d33, #2d1122); border-color: var(--rose); color: #ffb3cd; }
+.scn-dodo { background: linear-gradient(180deg, #4a3a0d, #332807); border-color: var(--sun-deep); color: var(--sun); }
+/* le scénario du lever là-bas s'appelle lever-la-bas (l'ancienne règle
+   scn-bali-lever ne s'appliquait plus : le bouton restait gris) */
+.scn-lever-la-bas { background: linear-gradient(180deg, #2b1e52, #1c1433); border-color: #5f43b3; color: #cabcff; }
 
 .story { margin-top: 12px; }
 .story-invite { margin: 4px 2px; color: var(--muted); }
@@ -580,6 +584,10 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 
 /* l'en-tête du jeu : trouver l'heure dans les pays qu'on connaît */
 .game-head { margin: 22px 4px 12px; }
+.game-head-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px 12px; flex-wrap: wrap;
+}
 .game-head h2 {
   margin: 0 0 4px; font-size: 1.15rem; color: var(--sun);
 }

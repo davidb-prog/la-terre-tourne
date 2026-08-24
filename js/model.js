@@ -359,6 +359,17 @@ export function blocsScenario(scn, atH, place, estPuce) {
   return blocs;
 }
 
+// Le récit du « moment libre » : quand aucun scénario n'est affiché, cliquer
+// un lieu (le jeu du globe et de la carte) raconte quand même l'instant
+// présent — chez nous, puis là-bas. Mêmes blocs que blocsScenario sans texte
+// de France fixe : aux heures rondes des scénarios les phrases retrouvent
+// leurs mp3 enregistrés, aux autres heures le conteur passe en synthèse
+// (le repli permanent — la voix enregistrée ne couvre que les moments du
+// corpus, pas les 1 440 minutes du jour).
+export function blocsMoment(atH, place, estPuce) {
+  return blocsScenario({ id: 'libre' }, atH, place, estPuce);
+}
+
 // Les boutons-scénarios : la Terre tourne en douceur jusqu'au moment choisi,
 // puis on raconte la France (texte fixe) et le lieu choisi (phrase générée).
 // Le dernier scénario est dynamique : le lever du soleil chez l'invité.
