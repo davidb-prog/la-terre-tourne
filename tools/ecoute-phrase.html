@@ -95,7 +95,10 @@
       // le texte EXACT du bloc phrase-1s9xf4w du manifeste (la voix enregistrée
       // ne ment jamais) — il sert aussi de repli synthèse si le mp3 manque
       var PHRASE = 'Il est 15 heures : le soleil brille, on joue dehors.';
-      var MP3 = '../assets/audio/phrase-1s9xf4w.mp3';
+      // anti-cache : après un re-tirage, le navigateur ressert volontiers
+      // l'ancien mp3 (leçon payée sur tools/ecoute.html) — l'horodatage force
+      // la version fraîche à chaque ouverture de la page
+      var MP3 = '../assets/audio/phrase-1s9xf4w.mp3?v=' + Date.now();
       var btn = document.getElementById('btn-ecouter');
       var note = document.getElementById('note');
 
