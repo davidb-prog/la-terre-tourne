@@ -77,17 +77,20 @@ se partage.
   **empilés** (grille 1×1, `aria-pressed` montre l'un et cache l'autre) — l'ancien libellé
   « ▶ Elle tourne toute seule » changeait la largeur des boutons et décalait toute la
   page à chaque clic. Libellés harmonisés : « ⏸ Pause » / « ▶ Lecture » et
-  « 🔊 avec la voix » / « 🔇 sans la voix » — le bouton de voix a un **jumeau posé sur le
-  titre du globe 3D, à côté du ⏸/▶** (`btn-scn-voice-jeu`, même état, même clé ; il vivait
-  dans `.game-head` mais un bouton seul sous un titre laisse une rangée à moitié vide —
-  même raison pour laquelle `.scenario-title` garde titre et bouton sur UNE ligne sans
-  repli : le texte se replie, pas le bouton). Les couleurs des 4 boutons-scénarios
-  sont celles de la famille (reprises d'ou-va-le-soleil : matin rose, midi bleu, soir or,
-  nuit violet — la classe du 4ᵉ est `scn-lever-la-bas`, l'ancienne `scn-bali-lever` ne
-  s'appliquait plus). Sans moment affiché, cliquer un pays reste **silencieux** — le
-  commentaire audio à chaque clic a été essayé puis retiré à la demande de David (la voix ne
-  raconte que les scénarios, et suit la destination quand un scénario est affiché). Pied de
-  page harmonisé : les autres épisodes
+  « 🔊 avec la voix » / « 🔇 sans la voix » (`.scenario-title` garde titre et bouton sur
+  UNE ligne sans repli : le texte se replie, pas le bouton ; le jumeau de voix
+  `btn-scn-voice-jeu` qui vivait sur le titre du globe 3D a été retiré, demandé par
+  David — voir ci-dessous, les clics du jeu ne parlent plus). Les couleurs des 4
+  boutons-scénarios sont celles de la famille (reprises d'ou-va-le-soleil : matin rose,
+  midi bleu, soir or, nuit violet — la classe du 4ᵉ est `scn-lever-la-bas`, l'ancienne
+  `scn-bali-lever` ne s'appliquait plus). Sans moment affiché, cliquer un pays reste
+  **silencieux** — le commentaire audio à chaque clic a été essayé puis retiré à la
+  demande de David (la voix ne raconte que les scénarios). Un clic direct sur le globe 3D
+  ou la carte à plat ne relance **jamais** la version sonore, même quand un scénario est
+  affiché (`choosePlace(hit, { sansVoix: true })` : le texte de l'histoire suit la
+  destination, la voix en cours se coupe au lieu de raconter l'ancienne — retiré aussi à
+  la demande de David) ; la voix ne suit la destination que choisie par la recherche, les
+  puces ou le ✕ d'une carte-horloge. Pied de page harmonisé : les autres épisodes
   en liens cliquables (sans « La mécanique des éclipses ») + bouton « 🧪 Tous les
   épisodes » vers <https://petit-labo.fr/>.
 - Boucle rAF résiliente (`try/finally`), `prefers-reduced-motion` respecté (pas de rotation
@@ -106,8 +109,8 @@ se partage.
   ≤ 640 px** — le résumé ne s'affiche qu'en mobile et duplique le h2 de `.explain-head`,
   chacun masqué à l'autre taille ; main.js la garde ouverte sur ordinateur) ;
   **jeu** « Amuse-toi à trouver l'heure… »
-  (`.game-head` — titre + consigne seuls — puis `.game-grid` : globe 3D avec ⏸/▶ et le
-  jumeau de voix 🔇/🔊 côte à côte dans son titre, les 2 boutons de lieux 🏠 chez nous /
+  (`.game-head` — titre + consigne seuls — puis `.game-grid` : globe 3D avec ⏸/▶ dans
+  son titre, les 2 boutons de lieux 🏠 chez nous /
   destination **incrustés dans son ciel, sous la Terre** (toutes tailles ; `width:
   max-content` sinon l'absolu `left:50%` replie les boutons), carte à plat avec sa recherche
   jumelle et les 9 idées répliquées (masquées sur mobile), et le bloc `.game-side` — le cadre
@@ -159,7 +162,8 @@ se partage.
   `cameraFrame`, contournement par la face nuit si le Soleil change de côté, saut sec en
   `prefers-reduced-motion`), boutons de lieux (🏠 chez nous / destination à son nom),
   recherche jumelle, scénarios (le scénario actif `activeScn` se rejoue quand la destination
-  change : l'histoire suit sans re-clic ; il s'efface dès qu'on reprend la main ; un **appui**
+  change : l'histoire suit sans re-clic — muette, voix coupée, si le changement vient d'un
+  clic sur le globe 3D ou la carte à plat ; il s'efface dès qu'on reprend la main ; un **appui**
   sur un bouton remonte la page en douceur jusqu'à la vue du pôle — `showPoleView`, patron
   d'ou-va-le-soleil : calée sous la barre collante sur mobile, seulement si hors champ sur
   grand écran, jamais lors des rejouages automatiques pour ne pas défiler sous le doigt qui

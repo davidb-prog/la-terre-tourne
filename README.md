@@ -47,7 +47,9 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
   destination. Si la destination vit sur le **même fuseau que la France** (Allemagne,
   Italie…), la phrase célèbre la coïncidence (« c'est la même heure que chez nous ! ») au
   lieu de répéter l'heure. Et si on **change de destination**, l'histoire affichée se met à
-  jour toute seule. Un bouton 🔇/🔊 active la **version sonore** : à chaque moment choisi, le
+  jour toute seule — en silence si le nouveau lieu vient d'un clic sur le globe 3D ou la
+  carte à plat : là, seul le texte suit. Un bouton 🔇/🔊 active la **version sonore** : à
+  chaque moment choisi, le
   conteur dit ce qui se passe chez nous et là-bas — même voix et même ton que l'histoire des
   fuseaux, avec les enchaînements ajoutés pour l'oral (« Chez nous… Et pendant ce temps, à
   Bali… »), la bonne préposition pour chaque idée de voyage (« en Guadeloupe », « au Japon »…
