@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Écouter une phrase — Petit labo</title>
+  <style>
+    /* Thème sombre de la famille (repris de css/style.css). Page-outil autonome :
+       zéro dépendance, ouvrable en double-cliquant le fichier ou via http.server. */
+    :root {
+      --bg: #0b1020;
+      --surface: #121a33;
+      --surface-2: #1c2540;
+      --border: #26304f;
+      --text: #e9edf8;
+      --muted: #9aa5c3;
+      --sun: #ffcf5c;
+      --teal: #46c2a5;
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background-color: var(--bg);
+      background-image: radial-gradient(1100px 700px at 72% -8%, #182450 0%, rgba(11, 16, 32, 0) 60%);
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.55;
+    }
+    .carte {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 26px 26px;
+      max-width: 520px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    }
+    h1 {
+      margin: 0 0 6px;
+      color: var(--sun);
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .phrase {
+      margin: 10px 0 22px;
+      font-size: 1.35rem;
+      font-weight: 600;
+    }
+    button {
+      font: inherit;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 12px 26px;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--teal); }
+    /* libellés empilés (patron de la famille) : la largeur du bouton ne bouge
+       pas quand ▶ devient ⏹ */
+    .piles { display: inline-grid; }
+    .piles > span { grid-area: 1 / 1; }
+    button[aria-pressed="false"] .l-stop,
+    button[aria-pressed="true"] .l-play { visibility: hidden; }
+    .note { margin: 18px 0 0; color: var(--muted); font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <main class="carte">
+    <h1>🔊 Écouter la phrase</h1>
+    <p class="phrase">« Il est 15 h, le soleil brille, on joue dehors. »</p>
+    <button id="btn-ecouter" type="button" aria-pressed="false">
+      <span class="piles">
+        <span class="l-play">▶ Écouter</span>
+        <span class="l-stop">⏹ Stop</span>
+      </span>
+    </button>
+    <p class="note" id="note">La phrase est lue par la synthèse vocale du navigateur,
+      avec la meilleure voix française trouvée sur l'appareil.</p>
+  </main>
+
+  <script>
+    (function () {
+      var PHRASE = 'Il est quinze heures, le soleil brille, on joue dehors.';
+      var btn = document.getElementById('btn-ecouter');
+      var note = document.getElementById('note');
+
+      if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
+        btn.disabled = true;
+        note.textContent = 'Ce navigateur n’a pas de synthèse vocale.';
+        return;
+      }
+
+      // même score que js/main.js : le français de France d'abord, les voix
+      // neurales avant les métalliques, les voix rigolotes en dernier
+      var voiceScore = function (v) {
+        var lang = (v.lang || '').replace('_', '-').toLowerCase();
+        var name = (v.name || '').toLowerCase();
+        var s = 0;
+        if (lang.indexOf('fr-fr') === 0) s += 60;
+        else if (lang.indexOf('fr') === 0) s += 20;
+        if (lang.indexOf('fr-ca') === 0) s -= 30;
+        if (/natural|neural|online|premium|enhanced|am[ée]lior[ée]e|siri/.test(name)) s += 30;
+        if (name.indexOf('google') !== -1) s += 24;
+        if (/audrey|thomas|aur[ée]lie|marie|denise|henri|[ée]lo[ïi]se|vivienne|r[ée]my|jacqueline|charline|coralie|hortense/.test(name)) s += 12;
+        if (!v.localService) s += 6;
+        if (/espeak|eloquence|compact|robot/.test(name)) s -= 50;
+        if (/eddy|\bflo\b|grandma|grandpa|\breed\b|rocko|sandy|shelley|jester|bells|organ|superstar|trinoids|whisper|zarvox|bad news|bahh|boing|bubbles|cellos|wobble/.test(name)) s -= 40;
+        return s;
+      };
+
+      var frVoices = [];
+      var refreshVoices = function () {
+        var all = window.speechSynthesis.getVoices();
+        frVoices = [];
+        for (var i = 0; i < all.length; i++) {
+          var v = all[i];
+          if ((v.lang || '').replace('_', '-').toLowerCase().indexOf('fr') === 0) frVoices.push(v);
+        }
+        frVoices.sort(function (a, b) { return voiceScore(b) - voiceScore(a); });
+      };
+      refreshVoices();
+      if ('onvoiceschanged' in window.speechSynthesis) {
+        window.speechSynthesis.onvoiceschanged = refreshVoices;
+      }
+
+      var setPlaying = function (on) {
+        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      };
+
+      btn.addEventListener('click', function () {
+        if (btn.getAttribute('aria-pressed') === 'true') {
+          window.speechSynthesis.cancel();
+          setPlaying(false);
+          return;
+        }
+        window.speechSynthesis.cancel();
+        var u = new SpeechSynthesisUtterance(PHRASE);
+        var voice = frVoices.length ? frVoices[0] : null;
+        u.lang = voice ? voice.lang : 'fr-FR';
+        if (voice) u.voice = voice;
+        u.rate = 0.92;
+        u.pitch = 1.04;
+        u.onend = function () { setPlaying(false); };
+        u.onerror = function () { setPlaying(false); };
+        setPlaying(true);
+        window.speechSynthesis.speak(u);
+      });
+    })();
+  </script>
+</body>
+</html>
