@@ -159,14 +159,19 @@
     <div class="panel canvas-panel globe-panel" id="globe-panel">
       <div class="canvas-title">
         <span>🌍 La Terre en 3D <span class="hint">(glisse pour la tourner · clique sur un pays pour l’observer)</span></span>
-        <button id="btn-spin-globe" class="spin-btn play-btn" aria-pressed="true"><span
-            class="play-on" aria-hidden="true">⏸ Pause</span><span
-            class="play-off" aria-hidden="true">▶ Lecture</span></button>
-        <!-- le même réglage de voix que les scénarios, à portée de main du jeu -->
-        <button id="btn-scn-voice-jeu" class="spin-btn scn-voice-btn" aria-pressed="false"
-          aria-label="Activer la voix qui raconte chaque moment choisi, chez nous et là-bas"><span
-            class="scn-voice-on" aria-hidden="true">🔊 avec la voix</span><span
-            class="scn-voice-off" aria-hidden="true">🔇 sans la voix</span></button>
+        <!-- les deux boutons vivent dans un groupe : ils restent côte à côte et
+             se replient ENSEMBLE sous le titre (sans le groupe, chacun se
+             repliait de son côté selon la largeur de l'écran) -->
+        <span class="title-btns">
+          <button id="btn-spin-globe" class="spin-btn play-btn" aria-pressed="true"><span
+              class="play-on" aria-hidden="true">⏸ Pause</span><span
+              class="play-off" aria-hidden="true">▶ Lecture</span></button>
+          <!-- le même réglage de voix que les scénarios, à portée de main du jeu -->
+          <button id="btn-scn-voice-jeu" class="spin-btn scn-voice-btn" aria-pressed="false"
+            aria-label="Activer la voix qui raconte chaque moment choisi, chez nous et là-bas"><span
+              class="scn-voice-on" aria-hidden="true">🔊 avec la voix</span><span
+              class="scn-voice-off" aria-hidden="true">🔇 sans la voix</span></button>
+        </span>
       </div>
       <div class="globe-stage">
         <div class="canvas-wrap ratio-square">
