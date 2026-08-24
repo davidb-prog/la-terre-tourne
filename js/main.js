@@ -5,7 +5,7 @@
 import { TAU, DEG, PLACES, HOME, SCENARIOS, wrap24, localClock, formatHM,
          periodWord, activityFor, dayBadge, sunriseHomeH,
          placePhrase, offsetDiffText, cameraFrame,
-         texteOral, blocsScenario, blocsMoment } from './model.js';
+         texteOral, blocsScenario } from './model.js';
 import { MapView, SkyView, PoleView, buildClock, pointInRing } from './views.js';
 import { Globe3D } from './view3d.js';
 import { GAZETTEER, DECOR, searchPlaces, flagEmoji, IDEES_VOYAGE } from './places.js';
@@ -103,7 +103,6 @@ function buildCards() {
         globe3d.pulse = { lonDeg: selected.lonDeg, latDeg: selected.latDeg, k: 1 };
         centerCameraOn(selected.lonDeg, selected.latDeg); // on recadre aussi
         if (activeScn) runScenario(activeScn.scn); // l'histoire suit
-        else tellMoment();
       });
       head.appendChild(close);
     }
@@ -159,10 +158,10 @@ function choosePlace(entry) {
   globe3d.pulse = { lonDeg: entry.lon, latDeg: entry.lat, k: 1 };
   centerCameraOn(entry.lon, entry.lat);
   // si un moment est affiché dans « Joue avec la Terre », son histoire (et sa
-  // version sonore) suit la nouvelle destination sans attendre un re-clic ;
-  // sinon, la voix (si elle est activée) raconte l'instant présent
+  // version sonore) suit la nouvelle destination sans attendre un re-clic —
+  // sans moment affiché, cliquer un pays reste silencieux (essayé puis
+  // retiré : le commentaire audio à chaque clic était de trop)
   if (activeScn) runScenario(activeScn.scn);
-  else tellMoment();
 }
 
 function wireSearch(inputId, resultsId) {
@@ -1118,9 +1117,7 @@ function toggleScnVoice() {
   try { window.localStorage.setItem('petit-labo-son', scnVoiceOn ? '1' : '0'); } catch (e) { /* tant pis */ }
   setScnVoiceUi();
   if (!narrator) return;
-  if (!scnVoiceOn) { narrator.stop(); return; }
-  if (activeScn) tellScenario();
-  else tellMoment(); // activer la voix depuis le jeu raconte tout de suite l'instant présent
+  if (scnVoiceOn) tellScenario(); else narrator.stop();
 }
 scnVoiceBtn.addEventListener('click', toggleScnVoice);
 scnVoiceBtnJeu.addEventListener('click', toggleScnVoice);
@@ -1135,16 +1132,6 @@ function spokenStory(scn, atH) {
 function tellScenario() {
   if (narrator && scnVoiceOn && activeScn) {
     narrator.narrate(spokenStory(activeScn.scn, activeScn.atH));
-  }
-}
-
-// Cliquer un pays sans scénario affiché parle AUSSI (le jeu du globe et de la
-// carte) : la voix racontait seulement quand un moment était choisi — pas
-// « systématiquement », donc jamais dans le jeu après un glisser (payé).
-function tellMoment() {
-  if (narrator && scnVoiceOn && !activeScn) {
-    const blocs = blocsMoment(sim.homeH, selected, !!puceNames[selected.name]);
-    narrator.narrate(blocs.map((b) => ({ id: b.id, text: texteOral(b.texte), pause: b.pause })));
   }
 }
 

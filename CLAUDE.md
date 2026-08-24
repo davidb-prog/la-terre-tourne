@@ -80,10 +80,10 @@ se partage.
   jeu** (`btn-scn-voice-jeu`, même état, même clé). Les couleurs des 4 boutons-scénarios
   sont celles de la famille (reprises d'ou-va-le-soleil : matin rose, midi bleu, soir or,
   nuit violet — la classe du 4ᵉ est `scn-lever-la-bas`, l'ancienne `scn-bali-lever` ne
-  s'appliquait plus). **La voix suit AUSSI les clics de pays sans scénario actif**
-  (`blocsMoment` du modèle, appelé par `tellMoment` de main.js — le jeu du globe et de la
-  carte parle : chez nous puis là-bas à l'instant présent ; aux heures hors corpus le
-  conteur passe en synthèse, le repli permanent). Pied de page harmonisé : les autres épisodes
+  s'appliquait plus). Sans moment affiché, cliquer un pays reste **silencieux** — le
+  commentaire audio à chaque clic a été essayé puis retiré à la demande de David (la voix ne
+  raconte que les scénarios, et suit la destination quand un scénario est affiché). Pied de
+  page harmonisé : les autres épisodes
   en liens cliquables (sans « La mécanique des éclipses ») + bouton « 🧪 Tous les
   épisodes » vers <https://petit-labo.fr/>.
 - Boucle rAF résiliente (`try/finally`), `prefers-reduced-motion` respecté (pas de rotation

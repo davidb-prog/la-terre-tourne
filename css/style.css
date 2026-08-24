@@ -458,6 +458,11 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 .play-btn[aria-pressed="true"] .play-off,
 .play-btn[aria-pressed="false"] .play-on { visibility: hidden; }
 
+/* la surbrillance verte de la famille (venue de la Lune) : l'état actif se voit */
+.play-btn[aria-pressed="true"], .scn-voice-btn[aria-pressed="true"] {
+  border-color: var(--teal); box-shadow: 0 0 0 2px rgba(70, 194, 165, 0.35);
+}
+
 /* ---------- petits écrans ---------- */
 
 @media (max-width: 480px) {
@@ -611,4 +616,10 @@ button:focus-visible, input:focus-visible, a:focus-visible {
   /* sauf dans la barre collante du haut, plus compacte */
   .sticky-times { font-size: .88rem; }
   .sticky-times .frame-row strong { font-size: 1rem; }
+}
+
+@media (max-width: 640px) {
+  /* des cibles tactiles d'au moins ~44 px pour les petits doigts (harmonisé
+     avec ou-va-le-soleil) */
+  .spin-btn, .listen-btn { min-height: 44px; padding-top: 8px; padding-bottom: 8px; }
 }
