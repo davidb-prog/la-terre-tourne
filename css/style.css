@@ -82,6 +82,11 @@ body {
 }
 .kicker-fiole { width: 24px; height: 24px; flex: none; }
 .site-header h1 { margin: .22em 0 .3em; font-size: clamp(2.1rem, 5.5vw, 3.1rem); line-height: 1.1; }
+/* sur mobile le titre-question rétrécit, au pixel près des autres épisodes
+   (ou-va-le-soleil, la-lune-change-de-forme) */
+@media (max-width: 640px) {
+  .site-header h1 { font-size: clamp(1.65rem, 7.5vw, 2.2rem); }
+}
 .tagline { margin: 0 auto; max-width: 62ch; color: var(--muted); }
 
 main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
@@ -288,6 +293,14 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 /* ---------- le grand curseur du temps ---------- */
 
 .globe-panel .canvas-title { display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap; }
+/* la charte des titres de la famille : couleur = fonction. Le violet
+   regarde depuis l'espace, le teal appartient au jeu (comme .view-head et
+   .game-head dans ou-va-le-soleil) ; le hint reste une phrase discrète.
+   La légende de la carte à plat (.map-panel) reste une phrase en gris. */
+.globe-panel .canvas-title > span { font-size: 1.02rem; font-weight: 800; }
+#pole-panel .canvas-title > span { color: var(--violet); }
+#globe-panel .canvas-title > span { color: var(--teal); }
+.canvas-title .hint { font-size: .8rem; font-weight: 400; color: var(--muted); }
 .spin-btn { margin-left: auto; padding: 5px 12px; font-size: .8rem; border-radius: 999px; }
 
 .time-control { margin-top: 12px; padding: 0 4px 2px; }
@@ -626,7 +639,8 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 /* l'en-tête du jeu : trouver l'heure dans les pays qu'on connaît */
 .game-head { margin: 22px 4px 12px; }
 .game-head h2 {
-  margin: 0 0 4px; font-size: 1.15rem; color: var(--sun);
+  /* teal : la couleur du jeu dans la famille (l'or reste à l'explication) */
+  margin: 0 0 4px; font-size: 1.15rem; color: var(--teal);
 }
 .game-head .hint { display: block; font-size: .88rem; }
 
