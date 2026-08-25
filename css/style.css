@@ -447,9 +447,20 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 .parents summary::-webkit-details-marker { display: none; }
 .parents summary::before { content: '▸ '; }
 .parents[open] summary::before { content: '▾ '; }
-.parents ul { margin: 0; padding: 0 24px 18px 2.6em; }
+/* les deux intertitres sont des repères de lecture (teal) : l'or reste au
+   résumé, seul titre de la note au sens de la charte */
+.parents h3 {
+  margin: 6px 24px 2px; font-family: var(--titres); font-size: 1rem;
+  font-weight: 700; color: var(--teal);
+}
+.parents ul { margin: 0; padding: 0 24px 14px 2.6em; }
 .parents li { margin: 8px 0; color: #c9d2ea; font-size: .93rem; }
 .parents strong { color: var(--text); }
+/* le mot de la fin, hors listes : ce qu'un parent retient s'il ne lit qu'une ligne */
+.parents-mot {
+  margin: 2px 24px 18px; padding-top: 12px; border-top: 1px solid var(--border);
+  color: #c9d2ea; font-size: .93rem;
+}
 
 /* ---------- boutons génériques ---------- */
 

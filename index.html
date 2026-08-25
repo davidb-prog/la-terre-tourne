@@ -234,55 +234,77 @@
     </div>
   </section>
 
+  <!-- la note se lit en deux temps (patron de la famille, déployé sur
+       ou-va-le-soleil) : le mode d'emploi d'abord, les licences ensuite,
+       et le mot savant détaché tout en bas -->
   <details class="panel parents">
-    <summary>📝 La note aux parents <span class="hint">(les petites simplifications du site)</span></summary>
+    <summary>📝 La note aux parents <span class="hint">(mode d’emploi et petites simplifications)</span></summary>
+
+    <h3>Comment on s’en sert</h3>
     <ul>
-      <li><strong>L’heure d’hiver, toute l’année.</strong> La France est montrée à UTC+1 (1 h
-        d’avance sur Greenwich) : écarts de −5 h avec la Guadeloupe et +7 h avec Bali. En été,
-        la France passe à UTC+2 et ces écarts deviennent −6 h et +6 h. Les heures des villes
-        cherchées sont aussi en heure standard, sans heure d’été.</li>
-      <li><strong>Un éternel jour de printemps.</strong> Ici le soleil se lève vers 6 h et se
-        couche vers 18 h partout, comme à l’équinoxe — en vrai, ça dépend de la saison et de la
-        latitude.</li>
-      <li><strong>Des bandes bien droites.</strong> Les fuseaux sont dessinés en 24 tranches
-        régulières de 15°. Les vraies frontières zigzaguent : des pays entiers choisissent
-        l’heure du voisin — la France vit d’ailleurs à l’heure de Berlin, pas à celle de
-        Greenwich juste à côté. Et certains pays choisissent la demi-heure : cherche l’Inde
-        (+5 h 30) ou le Népal (+5 h 45) !</li>
-      <li><strong>UTC, l’heure de référence.</strong> En haut de la carte à plat, chaque bande
-        affiche son décalage par rapport à UTC, le temps universel du méridien de Greenwich :
-        la France d’hiver vit à UTC+1, la Guadeloupe à UTC−4, Bali à UTC+8.</li>
-      <li><strong>La recherche fonctionne sans Internet</strong> : environ 220 villes et pays
-        sont embarqués dans la page, en heure standard. Un petit village ne sera pas trouvé —
-        les suggestions montrent ce qui existe.</li>
+      <li><strong>Le grand curseur 0–24 h commande tout.</strong> Toutes les vues montrent le
+        même instant. On peut aussi tourner le temps du doigt : en rond sur le grand disque,
+        d’un glisser horizontal sur le globe et la carte. Le bouton ⏸ fige la rotation
+        automatique.</li>
+      <li><strong>Choisir une destination ne change jamais l’heure.</strong> Recherche, puces
+        « idées de voyage » ou clic sur un pays : les horloges « chez nous / là-bas » suivent,
+        et le globe vole jusqu’au lieu choisi. Environ 220 villes et pays sont embarqués dans
+        la page — la recherche marche sans Internet, mais un petit village ne sera pas
+        trouvé : les suggestions montrent ce qui existe.</li>
+      <li><strong>Les quatre boutons-moments</strong> (réveil, déjeuner, dodo, lever du soleil
+        là-bas) racontent le même instant des deux côtés de la Terre — et l’histoire se
+        réécrit toute seule quand on change de destination.</li>
+      <li><strong>Le bouton 🔇/🔊</strong> allume la voix du conteur : elle lit la grande
+        histoire des fuseaux et chaque moment choisi, et le choix est retenu d’une visite à
+        l’autre (aucune donnée ne part de votre appareil). Un clic direct sur le globe ou la
+        carte reste silencieux : la voix ne raconte que les moments.</li>
+      <li><strong>Dans le jeu</strong>, on pince à deux doigts pour zoomer le globe et la
+        carte, sans changer l’heure ; zoomée, la carte se promène au doigt, et un double-tap
+        revient en douceur à la vue entière.</li>
+    </ul>
+
+    <h3>Ce que le site simplifie</h3>
+    <ul>
+      <li><strong>L’heure d’hiver, toute l’année.</strong> La France est montrée à UTC+1 :
+        −5 h avec la Guadeloupe, +7 h avec Bali. En été (UTC+2), ces écarts deviennent −6 h
+        et +6 h. Les villes cherchées sont aussi en heure standard, sans heure d’été.</li>
+      <li><strong>Un éternel jour de printemps.</strong> Le soleil se lève vers 6 h et se
+        couche vers 18 h partout, comme à l’équinoxe. En vrai, ça dépend de la saison et de
+        la latitude : c’est toute l’histoire de « Où va le Soleil la nuit ? ».</li>
       <li><strong>Un seul fuseau par pays.</strong> Les grands pays en comptent plusieurs
-        (11 en Russie, 6 aux États-Unis…) : le site affiche celui de la capitale — Moscou
-        pour la Russie, Washington pour les États-Unis, Brasilia pour le Brésil, Canberra
-        pour l’Australie… Pour comparer d’autres régions, cherchez directement une ville
+        (11 en Russie, 6 aux États-Unis…) : le site affiche celui de la capitale — Moscou,
+        Washington, Brasilia, Canberra… Pour une autre région, cherchez directement une ville
         (Los Angeles, New York…). Cas rigolo à raconter : la Chine, immense, vit
         officiellement toute entière à l’heure de Pékin !</li>
-      <li><strong>La voix qui raconte</strong> joue de vrais enregistrements quand le site en a
-        (aucune donnée ne part de votre appareil) ; sinon, c’est la voix de synthèse de votre
-        appareil qui prend le relais, et sa qualité varie beaucoup d’un téléphone à l’autre —
-        le site choisit alors la voix française la plus naturelle qu’il trouve, et le petit
-        menu à côté du bouton 🔊 permet d’en essayer une autre. Deux libertés d’oral : pour un
-        lieu trouvé à la recherche (hors idées de voyage), la voix dit « là-bas » — le nom et
-        le drapeau sont déjà sous vos yeux ; et dans le scénario « Le soleil se lève là-bas »,
-        elle arrondit à la demi-heure qui vient (« il est presque 7 h 30 ») pendant que l’écran
-        garde la minute exacte.</li>
-      <li><strong>Les cartes</strong> viennent de Natural Earth (domaine public), simplifiées ;
-        seules les frontières des pays sont tracées, pas les régions. Bali et la Guadeloupe ont
-        12 h d’écart pile : quand le soleil se lève sur l’une, il se couche sur l’autre.</li>
-      <li><strong>Le globe garde toujours la limite jour/nuit à l’écran.</strong> Le cadrage
-        ne montre jamais la face éclairée pile en face (le Soleil, dessiné sur le côté,
-        semblerait mal placé), et le Soleil ne reste jamais caché derrière la Terre : un lieu
+      <li><strong>Des bandes bien droites.</strong> Les fuseaux sont dessinés en 24 tranches
+        régulières de 15°, étiquetées sur la carte par leur décalage avec UTC, l’heure de
+        référence de Greenwich. Les vraies frontières zigzaguent : des pays entiers prennent
+        l’heure du voisin — la France vit à l’heure de Berlin, pas à celle de Greenwich juste
+        à côté — et certains choisissent la demi-heure : cherche l’Inde (+5 h 30) ou le
+        Népal (+5 h 45) !</li>
+      <li><strong>Les horloges disent l’heure légale, le ciel suit le soleil.</strong> D’où de
+        petits écarts réalistes : à « midi » à l’horloge, le soleil n’est pas pile au-dessus
+        de la France (il y culmine vers 12 h 50 en hiver) — le halo doré de la carte est
+        centré sur le vrai midi solaire.</li>
+      <li><strong>La Terre vue du pôle Nord.</strong> Sur la grande vue ronde en haut de page,
+        tous les lieux sont posés sur le même disque — même ceux de l’hémisphère sud (Bali…),
+        qu’on ne verrait pas vraiment depuis le pôle Nord. Ce qui compte ici, c’est la
+        tranche où chacun se trouve, donc son heure.</li>
+      <li><strong>La voix prend deux libertés.</strong> Pour un lieu trouvé à la recherche
+        (hors idées de voyage), elle dit « là-bas » — le nom et le drapeau sont déjà sous vos
+        yeux ; et dans « Le soleil se lève là-bas », elle arrondit à la demi-heure qui vient
+        (« il est presque 7 h 30 ») pendant que l’écran garde la minute exacte.</li>
+      <li><strong>Le globe garde toujours la limite jour/nuit à l’écran</strong> : jamais la
+        face éclairée pile en face, jamais le Soleil caché derrière la Terre. Une destination
         en pleine nuit s’affiche vers le bord sombre, à l’opposé du Soleil, plutôt qu’au
         centre d’un écran tout noir.</li>
-      <li><strong>La Terre vue du pôle Nord.</strong> Sur la grande vue ronde en haut de page
-        (la Terre vue de tout en haut), tous les lieux sont posés sur le même disque — même
-        ceux de l’hémisphère sud (Bali…), qu’on ne verrait pas vraiment depuis le pôle Nord.
-        Ce qui compte ici, c’est la tranche où chacun se trouve, donc son heure.</li>
+      <li><strong>Les cartes</strong> viennent de Natural Earth (domaine public),
+        simplifiées ; seules les frontières des pays sont tracées, pas les régions.</li>
     </ul>
+
+    <p class="parents-mot">Le mot magique à retenir : le <strong>fuseau horaire</strong> — une
+      des 24 tranches de la Terre où tout le monde vit à la même heure. La Terre tourne vers
+      l’est, et chaque tranche passe à son tour devant le Soleil.</p>
   </details>
 </main>
 
