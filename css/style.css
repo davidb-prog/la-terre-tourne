@@ -64,6 +64,11 @@ body {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   line-height: 1.55;
 }
+/* le fond fixe force des repeints à chaque défilement sur Android : sur mobile
+   les halos défilent avec la page (acquis d'ou-va-le-soleil) */
+@media (max-width: 640px) {
+  body { background-attachment: scroll; }
+}
 
 /* ---------- entête ---------- */
 
