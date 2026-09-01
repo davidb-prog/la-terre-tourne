@@ -679,6 +679,25 @@ wireMapDrag($('map-view'));
 
 // ---- les boutons-scénarios ----
 
+// « là-bas » ne se coupe jamais sur son trait d'union : sur téléphone, le
+// libellé « Le soleil se lève là-bas » se repliait en « là- / bas » et un
+// enfant qui apprend à lire y voyait deux mots. Traité côté affichage
+// seulement (un span insécable) — le texte du modèle reste intact, il est
+// partagé avec les récits du conteur et le manifeste de la voix enregistrée.
+const MOT_INSECABLE = 'là-bas';
+function fillLabelNoBreak(el, text) {
+  const parts = text.split(MOT_INSECABLE);
+  for (let i = 0; i < parts.length; i++) {
+    if (parts[i]) el.appendChild(document.createTextNode(parts[i]));
+    if (i < parts.length - 1) {
+      const nb = document.createElement('span');
+      nb.className = 'nobr';
+      nb.textContent = MOT_INSECABLE;
+      el.appendChild(nb);
+    }
+  }
+}
+
 const scnButtons = {};
 const scnBox = $('scenario-buttons');
 for (const scn of SCENARIOS) {
@@ -689,7 +708,7 @@ for (const scn of SCENARIOS) {
   em.className = 'scn-emoji';
   em.textContent = scn.emoji;
   const lab = document.createElement('span');
-  lab.textContent = scn.label;
+  fillLabelNoBreak(lab, scn.label);
   const sub = document.createElement('span');
   sub.className = 'scn-sub';
   sub.textContent = scn.sub;
