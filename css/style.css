@@ -416,6 +416,8 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 .scn.active { box-shadow: 0 0 0 3px rgba(255, 207, 92, .55); }
 .scn-emoji { font-size: 1.6rem; line-height: 1; }
 .scn-sub { font-weight: 400; font-size: .76rem; opacity: .8; }
+/* « là-bas » d'un seul tenant dans les libellés (posé par main.js) */
+.nobr { white-space: nowrap; }
 /* les couleurs de la famille (reprises d'ou-va-le-soleil) : matin rose,
    midi bleu, soir or, nuit violet */
 .scn-reveil { background: linear-gradient(180deg, #4a1d33, #2d1122); border-color: var(--rose); color: #ffb3cd; }
