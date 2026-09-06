@@ -189,7 +189,8 @@ Tout est dans [`js/model.js`](js/model.js) (aucun accès DOM, toutes les constan
   villes cherchées sont aussi en heure standard, sans heure d'été.
 - **Un équinoxe permanent.** Jour et nuit durent 12 h partout, le soleil se lève vers 6 h et se
   couche vers 18 h. En réalité, ça dépend de la saison et de la latitude ; le terminateur est
-  donc vertical, sans courbe saisonnière.
+  donc vertical, sans courbe saisonnière. C'est toute l'histoire de
+  [Pourquoi il y a des saisons ?](https://petit-labo.fr/la-terre-est-penchee/).
 - **Des bandes bien droites.** Les fuseaux sont dessinés en 24 tranches régulières de 15°. Les
   vraies frontières zigzaguent : des pays entiers choisissent l'heure du voisin — la France vit
   à l'heure de Berlin (UTC+1), pas à celle de Greenwich juste à côté. C'est pour ça qu'à
@@ -278,3 +279,5 @@ test/voix.test.mjs    tests Node du conteur : textes oraux, couverture, manifest
 - 🌙 [Pourquoi la Lune change de forme ?](https://petit-labo.fr/la-lune-change-de-forme/) —
   la Lune est toujours à moitié éclairée ; c'est nous qui la voyons d'un côté différent
   chaque nuit.
+- 🦘 [Pourquoi il y a des saisons ?](https://petit-labo.fr/la-terre-est-penchee/) — la Terre
+  est penchée et garde son penchant toute l'année : voilà l'été et l'hiver.
