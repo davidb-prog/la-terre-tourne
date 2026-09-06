@@ -639,7 +639,12 @@ function wireMapDrag(canvas) {
 // dans le vrai sens (vers l'est, sens inverse des aiguilles vu du pôle) ----
 
 function wirePoleDrag(canvas) {
-  let dragging = false, lastA = null;
+  // UN SEUL doigt tient la Terre : le pointeur qui l'a attrapée est mémorisé,
+  // les autres sont ignorés jusqu'au relâcher. Sans ça, un second doigt posé
+  // (la vue du pôle n'a pas de pince, contrairement aux deux vues du jeu, où
+  // makePinch neutralise déjà le glisser) écrasait l'angle de référence avec
+  // le sien et le mouvement suivant du premier doigt faisait sauter la Terre.
+  let holder = null, lastA = null;
   const angleAt = (e) => {
     const l = pole.layout;
     if (!l) return null;
@@ -651,14 +656,17 @@ function wirePoleDrag(canvas) {
   };
   canvas.addEventListener('pointerdown', (e) => {
     if (!pole.layout) return;
-    dragging = true;
+    // (le même pointeur peut ré-attraper : à la souris, un pointerup perdu
+    // ne doit pas condamner le disque)
+    if (holder !== null && holder !== e.pointerId) { e.preventDefault(); return; }
+    holder = e.pointerId;
     lastA = angleAt(e);
     if (canvas.setPointerCapture) canvas.setPointerCapture(e.pointerId);
     hideHint();
     e.preventDefault();
   });
   canvas.addEventListener('pointermove', (e) => {
-    if (!dragging) return;
+    if (e.pointerId !== holder) return;
     const a = angleAt(e);
     if (a === null || lastA === null) { lastA = a; return; }
     const dA = wrapPi(a - lastA);
@@ -668,7 +676,10 @@ function wirePoleDrag(canvas) {
     }
     lastA = a;
   });
-  const stopDrag = () => { dragging = false; lastA = null; };
+  const stopDrag = (e) => {
+    if (e && e.pointerId !== holder) return;
+    holder = null; lastA = null;
+  };
   canvas.addEventListener('pointerup', stopDrag);
   canvas.addEventListener('pointercancel', stopDrag);
 }

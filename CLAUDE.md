@@ -56,7 +56,12 @@ se partage.
   Soleil ne passe derrière la Terre que fugitivement, pendant un vol de caméra qui contourne
   par la face nuit (epsilon 0,02 sur sun[1] : sin(π) ≈ 1e-16 ne doit pas le classer
   « derrière ») ; glisser tourne la Terre (l'heure change — rotatif sur la vue du pôle,
-  horizontal sur le globe et la carte), jamais la caméra ; **pincer à deux doigts** (tactile)
+  horizontal sur le globe et la carte), jamais la caméra ; **un seul doigt tient la Terre
+  sur la vue du pôle** (le `pointerId` qui l'a attrapée est mémorisé, les autres sont
+  ignorés — cette vue n'a pas de pince, donc rien ne neutralisait le second doigt : il
+  écrasait l'angle de référence et le mouvement suivant du premier doigt faisait sauter
+  la Terre ; le même `pointerId` peut ré-attraper, un `pointerup` perdu à la souris ne
+  condamne pas le disque) ; **pincer à deux doigts** (tactile)
   zoome les deux vues du jeu **sans jamais changer l'heure ni sélectionner de pays** — globe :
   seul le rayon grossit (`globe3d.zoom`, borné 1–5, le Soleil sort du cadre en s'approchant,
   l'arc des Antilles grossit avec le zoom) ;
