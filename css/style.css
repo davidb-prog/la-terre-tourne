@@ -642,7 +642,10 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 
 /* libellés empilés (grille 1×1) : le bouton garde la largeur du plus long des
    deux états — basculer pause/lecture ou la voix ne décale jamais la page */
-.scn-voice-btn, .play-btn { display: inline-grid; align-items: center; justify-items: center; }
+/* écrits dans des lignes de titre en gras : ces boutons d'état reviennent à
+   la graisse normale, comme sur les autres épisodes (le 🔇/🔊 héritait du 700
+   du h2 des scénarios) */
+.scn-voice-btn, .play-btn { display: inline-grid; align-items: center; justify-items: center; font-weight: 400; }
 .scn-voice-btn > span, .play-btn > span { grid-row: 1; grid-column: 1; white-space: nowrap; }
 .scn-voice-btn[aria-pressed="false"] .scn-voice-on,
 .scn-voice-btn[aria-pressed="true"] .scn-voice-off,
@@ -797,4 +800,9 @@ button:focus-visible, input:focus-visible, a:focus-visible {
   /* des cibles tactiles d'au moins ~44 px pour les petits doigts (harmonisé
      avec ou-va-le-soleil) */
   .spin-btn, .listen-btn { min-height: 44px; padding-top: 8px; padding-bottom: 8px; }
+  /* les puces de villes et la bascule du jeu sont ce que l'enfant tape :
+     30–33 px de haut, c'étaient les plus petites cibles de la famille.
+     38 px (pas 44 : neuf puces à 44 coûteraient ~40 px de plus sur l'épisode
+     qui tient déjà le moins dans l'écran) — audit des boutons */
+  .search-chips button, .view-chip { min-height: 38px; }
 }
