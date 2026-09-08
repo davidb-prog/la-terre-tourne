@@ -142,6 +142,19 @@ se partage.
   globe), recherche rangée 3 sur toute la largeur ; mobile (par `order`) : globe →
   recherche → carte, pas de cadre.
   Pas de plein écran ; note aux parents
+- **L'en-tête se serre sur les écrans larges mais bas** (règle de la
+  famille née sur la-lune-change-de-forme, `min-width: 880px and
+  max-height: 849px`, le portable) : titre 2,4 rem, accroche 0,95 rem sur
+  deux lignes, respirations réduites — 239 → 151 px, rien de retiré (le H1
+  reste le H1, l'accroche reste lue). L'autre moitié de la règle de la
+  famille — **plafonner la largeur utile par la hauteur visible** — ne
+  s'applique PAS ici et n'est pas posée : la hauteur de la scène ne dépend
+  presque pas de la largeur (mesuré : 755 px + 0,056 × largeur — c'est la
+  colonne « chez nous », deux cartes-horloges + la recherche, qui fixe
+  ~660 px, le disque n'est que 7/12 de la largeur), rétrécir la page ne
+  gagnerait rien. Sur un 13" (1440×900), en-tête + scène débordent encore
+  de ~150 px : faire tenir cet épisode dans un portable demande de
+  plafonner la colonne des villes en hauteur, une décision à part.
 - `css/style.css` — thème sombre de la série ; la capsule « déjà demain / encore hier » tient
   dans la ligne du nom de la carte (line-height 1,2, padding 2 px) — plus haute que le nom,
   elle grandissait la carte de 4 px au-dessus de l'écran mobile et le disque sautait deux
@@ -312,7 +325,9 @@ Soleil et le croissant de nuit — jamais de « plein jour » plein cadre, Solei
 derrière la Terre, entier même rapproché sur mobile —, zéro erreur console). Le zoom à deux
 doigts a sa suite dédiée (`test-pinch.js` : touches synthétisées par CDP
 `Input.dispatchTouchEvent`, pince/dépince sur les deux vues du jeu, heure et destination
-inchangées, retour exact à la vue de départ, glissers à un doigt intacts, souris intacte). Lancer les
+inchangées, retour exact à la vue de départ, glissers à un doigt intacts, souris intacte). Deux passes de plus depuis la règle de largeur de la famille : portable 1440×820 et écran
+1920×1040 — la largeur utile attendue par le `clamp()` (lue depuis `--entete-px`), et
+en-tête + scène qui tiennent dans l'écran (ou le plancher atteint). Lancer les
 serveurs avant : `python3 -m http.server 8123` sur le site. Chromium : `chromium.launch()`
 avec repli `executablePath: '/opt/pw-browsers/chromium'`.
 
