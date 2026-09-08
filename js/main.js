@@ -887,7 +887,9 @@ function updateCards() {
       card.badge.className = 'day-badge' +
         (c.dayShift > 0 ? ' tomorrow' : c.dayShift < 0 ? ' yesterday' : '');
     }
-    card.sky.draw(sim.homeH);
+    // le ciel de la carte : dessiné seulement si les cartes sont à l'écran
+    // (les textes, eux, restent à jour — la barre collante les répète)
+    if (onScreen.cards) card.sky.draw(sim.homeH);
   }
   // le rappel « Chez nous, il est 12 h » a disparu de la page (l'heure se lit
   // sur la carte France) : le curseur garde la valeur en toutes lettres pour
@@ -904,6 +906,25 @@ function updateCards() {
 // ---- boucle d'animation ----
 
 const easeInOut = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+// ---- on ne dessine que les vues à l'écran : sur téléphone, le disque, le
+// globe 3D et la carte à plat ne sont jamais visibles ensemble, et chaque
+// image du globe coûte ~10 700 points projetés — les dessiner tous les trois
+// à chaque image faisait tomber la cadence (la nuit avançait par à-coups sur
+// la carte). Même règle pour les ciels des deux cartes-horloges. Marge de
+// 120 px : une vue est déjà à jour quand elle entre. Sans IntersectionObserver
+// (vieux Safari), tout se dessine comme avant. ----
+const onScreen = { pole: true, globe: true, map: true, cards: true };
+if (window.IntersectionObserver) {
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) onScreen[e.target.dataset.vue] = e.isIntersecting;
+  }, { rootMargin: '120px 0px' });
+  for (const [key, id] of [['pole', 'pole-view'], ['globe', 'globe3d-view'], ['map', 'map-view'], ['cards', 'cards']]) {
+    const c = $(id);
+    c.dataset.vue = key;
+    io.observe(c);
+  }
+}
 
 let lastMs = performance.now();
 function frame(ms) {
@@ -926,9 +947,9 @@ function frame(ms) {
       if (k >= 1) camAnim = null;
     }
     const places = displayedPlaces();
-    globe3d.draw(sim.homeH, places, selected.iso, selected.color);
-    map.draw(sim.homeH, places, selected.iso, selected.color);
-    pole.draw(sim.homeH, places);
+    if (onScreen.globe) globe3d.draw(sim.homeH, places, selected.iso, selected.color);
+    if (onScreen.map) map.draw(sim.homeH, places, selected.iso, selected.color);
+    if (onScreen.pole) pole.draw(sim.homeH, places);
     updateCards();
   } finally {
     // la boucle survit à un raté de rendu ponctuel (canvas en cours de layout…)
@@ -1213,20 +1234,29 @@ function tellScenario() {
 }
 
 // ---- la barre d'heures collante (mobile ≤ 640 px, voir style.css) : dès que
-// les cartes-horloges sortent de l'écran par le haut, elle garde les deux
-// heures sous les yeux — on voit l'heure changer en jouant avec les scénarios,
-// le curseur ou les glissers, sans remonter la page. Sans IntersectionObserver
-// (vieux Safari), elle reste simplement masquée. ----
+// la colonne « chez nous » (cartes-horloges ET recherche) est sortie de
+// l'écran par le haut, elle garde les deux heures et l'écart sous les yeux —
+// on voit l'heure changer en jouant avec les scénarios, le curseur ou les
+// glissers, sans remonter la page. On observe la recherche et non les cartes :
+// sinon la barre recouvrait le champ de recherche arrivé en haut de l'écran.
+// Sans IntersectionObserver (vieux Safari), elle reste simplement masquée. ----
 
+const stickyBar = $('sticky-times');
 if (window.IntersectionObserver) {
-  const stickyBar = $('sticky-times');
   new IntersectionObserver((entries) => {
     const e = entries[entries.length - 1];
     // seulement « sorties par le haut » : tout en haut de page, rien à montrer
     const gone = !e.isIntersecting && e.boundingClientRect.bottom < 0;
     if (gone) stickyBar.classList.add('show');
     else stickyBar.classList.remove('show');
-  }).observe($('cards'));
+  }).observe(document.querySelector('.stage-panel .search-panel'));
+}
+// pendant qu'on tape dans une recherche, la barre s'efface : iOS remonte le
+// champ actif tout en haut de l'écran, pile sous elle
+for (const id of ['place-search', 'place-search-map']) {
+  const inp = $(id);
+  inp.addEventListener('focus', () => stickyBar.classList.add('search-focus'));
+  inp.addEventListener('blur', () => stickyBar.classList.remove('search-focus'));
 }
 
 // ---- la boîte « Pourquoi les fuseaux horaires ? » : repliée sur mobile pour

@@ -206,7 +206,7 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 @media (min-width: 961px) {
   /* les deux blocs deviennent transparents (display: contents) : leurs
      enfants prennent chacun leur case — rangée 1 les en-têtes calés en bas,
-     rangée 2 les vues, rangée 3 la légende, rangée 4 la recherche. Le filet
+     rangée 2 les vues (carte + légende ensemble), rangée 3 la recherche. Le filet
      vertical passe à droite de la colonne du globe, continu sur les deux
      premières rangées (pas d'écart de rangée : les marges font l'espace). */
   .view-block-globe, .view-block-map { display: contents; }
@@ -217,10 +217,11 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
     border-right: 1px solid var(--border); padding-right: 14px; margin-right: 14px;
   }
   .game-frame { grid-column: 2; grid-row: 1; align-self: end; margin: 0 0 8px; }
-  .view-block-map .canvas-wrap { grid-column: 2; grid-row: 2; }
-  .map-legend { grid-column: 2; grid-row: 3; }
+  /* carte + légende font UNE case (la légende reste collée sous la carte :
+     la rangée des vues a la hauteur du globe, pas celle de la carte) */
+  .map-body { grid-column: 2; grid-row: 2; }
   .game-search {
-    grid-column: 1 / span 2; grid-row: 4; margin-top: 12px;
+    grid-column: 1 / span 2; grid-row: 3; margin-top: 12px;
     display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center;
   }
   .game-search .search-row { flex: 1 1 260px; }
@@ -360,6 +361,11 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
     transition: opacity .25s, visibility .25s, transform .25s;
   }
   .sticky-times.show { opacity: 1; visibility: visible; -webkit-transform: none; transform: none; }
+  /* pendant qu'on tape dans une recherche, elle s'efface (main.js) : iOS
+     remonte le champ actif tout en haut de l'écran, pile sous elle */
+  .sticky-times.search-focus { opacity: 0; visibility: hidden; -webkit-transform: translateY(-100%); transform: translateY(-100%); }
+  /* et le défilement vers un champ qui prend le focus s'arrête sous la barre */
+  html { scroll-padding-top: 68px; }
   .sticky-times .frame-row { padding-left: 6px; }
   .sticky-times .frame-row strong { margin-left: 4px; padding-left: 0; font-size: 1rem; }
   .sticky-times .frame-name { max-width: 8em; }
