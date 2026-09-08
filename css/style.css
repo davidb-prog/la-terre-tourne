@@ -435,7 +435,11 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
   color: var(--rose); border: 1px solid var(--rose); border-radius: 999px;
   padding: 2px 8px; margin-left: 6px; vertical-align: 3px; white-space: nowrap;
 }
-.day-badge { flex: none; font-size: .78rem; font-weight: 800; border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+/* la capsule tient DANS la ligne du nom (line-height serré, padding réduit :
+   ~21 px contre ~23 pour le nom) : en apparaissant, elle ne doit pas grandir
+   la carte — au-dessus de l'écran sur téléphone, 4 px de plus faisaient
+   sauter le disque deux fois pendant l'animation du lever là-bas (payé) */
+.day-badge { flex: none; font-size: .78rem; font-weight: 800; line-height: 1.2; border-radius: 999px; padding: 2px 10px; white-space: nowrap; }
 .day-badge.tomorrow { background: #2b1e52; color: #cabcff; border: 1px solid #5f43b3; }
 .day-badge.yesterday { background: #0e3a33; color: #7fe0c8; border: 1px solid #2f8f7a; }
 

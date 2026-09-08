@@ -142,7 +142,10 @@ se partage.
   globe), recherche rangée 3 sur toute la largeur ; mobile (par `order`) : globe →
   recherche → carte, pas de cadre.
   Pas de plein écran ; note aux parents
-- `css/style.css` — thème sombre de la série ; l'histoire des scénarios est une grille à deux
+- `css/style.css` — thème sombre de la série ; la capsule « déjà demain / encore hier » tient
+  dans la ligne du nom de la carte (line-height 1,2, padding 2 px) — plus haute que le nom,
+  elle grandissait la carte de 4 px au-dessus de l'écran mobile et le disque sautait deux
+  fois pendant l'animation du lever là-bas (trouvé par David) ; l'histoire des scénarios est une grille à deux
   colonnes (pastilles France/destination à la largeur de la plus large, textes alignés —
   `.story-line` en `display: contents`) ; **plus de boîtes dans la boîte** : dans les deux
   panneaux, cartes-horloges, recherche et cadres perdent fond, bordure et arrondi (rangées à
