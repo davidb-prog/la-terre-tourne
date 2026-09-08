@@ -91,6 +91,22 @@ body {
 
 main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 
+/* L'EN-TÊTE SE SERRE SUR LES ÉCRANS LARGES MAIS BAS (le portable — règle de
+   la famille, née sur la-lune-change-de-forme) : 239 px avant la première
+   image, c'est un tiers d'un 13" pour un kicker, un titre et trois lignes
+   d'accroche. Rien n'est retiré (le H1 reste le H1, l'accroche reste lue),
+   tout se resserre : titre à 2,4 rem, accroche à 0,95 rem sur deux lignes
+   (toute la largeur de l'en-tête), respirations réduites. Mesuré :
+   239 → 151 px.
+   Une règle sur la HAUTEUR : un 24" ou un téléphone gardent l'en-tête de
+   la charte. */
+@media (min-width: 880px) and (max-height: 849px) {
+  /* (pas de plafond de largeur sur cet épisode : la hauteur de sa scène ne dépend pas de la largeur) */
+  .site-header { padding: 8px 20px 14px; }
+  .site-header h1 { font-size: 2.4rem; margin: .18em 0 .22em; }
+  .tagline { font-size: .95rem; max-width: none; }
+}
+
 .panel {
   background: linear-gradient(180deg, var(--surface), var(--bg2));
   border: 1px solid var(--border);
