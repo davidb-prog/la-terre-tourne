@@ -212,8 +212,9 @@ se partage.
   choisit un pays), **l'heure affichée par tranches de 30 min** (`shownHomeH` : horloges,
   cadres, barre collante, `aria-valuetext` — en lecture la Terre fait un tour en 80 s, les
   minutes défilaient trop vite pour être lues ; arrondi au plus proche, 11 h 15 → 11 h 30
-  comme le « presque 11 h 30 » du lever ; le curseur avance par pas de 0,5 ; les dessins
-  suivent l'heure exacte), cadres
+  comme le « presque 11 h 30 » du lever ; le pouce du curseur glisse en continu, `step="any"`
+  — un pas de 0,5 le faisait sauter en lecture, signalé par David —, le clavier avance par
+  demi-heure (3 h avec Page↑/↓) ; les dessins suivent l'heure exacte), cadres
   jumeaux (`''`/`-globe`/`-sticky` + la phrase d'écart `#cards-diff` entre les cartes — la
   barre collante mobile apparaît dès que les cartes-horloges passent **sous sa propre
   hauteur** (`IntersectionObserver` sur `#cards`, `rootMargin` négatif = hauteur de la

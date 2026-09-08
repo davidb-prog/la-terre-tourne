@@ -141,8 +141,10 @@
              France, et dans la barre collante sur mobile ; le curseur porte la
              valeur en aria-valuetext (main.js) -->
         <div class="time-hint">Fais glisser pour changer l’heure chez nous</div>
-        <!-- pas de 30 min, comme l'heure affichée sur les horloges -->
-        <input type="range" id="time-slider" min="0" max="24" step="0.5" value="12"
+        <!-- pas « any » : le pouce glisse en continu pendant la lecture (un pas
+             de 30 min le faisait sauter) ; au clavier, main.js avance par
+             demi-heure, comme l'heure affichée -->
+        <input type="range" id="time-slider" min="0" max="24" step="any" value="12"
           aria-label="Choisir l’heure en France : le curseur fait tourner la Terre sur 24 heures">
         <div class="slider-scale" aria-hidden="true">
           <span>🌙 minuit</span><span>6 h</span><span>☀️ midi</span><span>18 h</span><span>🌙 minuit</span>

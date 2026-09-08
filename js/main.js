@@ -345,6 +345,18 @@ slider.addEventListener('input', () => {
   sim.homeH = wrap24(+slider.value);
   stopAuto();
 });
+// au clavier, le curseur avance par demi-heure (le pas natif est « any » pour
+// que le pouce glisse en continu pendant la lecture) — sur l'heure affichée,
+// donc la voix du lecteur d'écran change à chaque appui
+slider.addEventListener('keydown', (e) => {
+  const dir = (e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'PageUp') ? 1
+    : (e.key === 'ArrowLeft' || e.key === 'ArrowDown' || e.key === 'PageDown') ? -1 : 0;
+  if (!dir) return;
+  e.preventDefault();
+  sim.homeH = wrap24(shownHomeH() + dir * (e.key.startsWith('Page') ? 3 : 0.5));
+  slider.value = sim.homeH;
+  stopAuto();
+});
 slider.addEventListener('pointerdown', () => { sliderHeld = true; });
 window.addEventListener('pointerup', () => { sliderHeld = false; });
 window.addEventListener('pointercancel', () => { sliderHeld = false; });
