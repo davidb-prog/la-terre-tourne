@@ -184,7 +184,9 @@ se partage.
   lumière, hystérésis à ±0,05 sur cos ; le rendu « derrière la Terre, rayons qui frôlent » ne
   sert plus que pendant les vols de caméra), mode **compact** sous 520 px de canvas (Terre à
   0,315 au lieu de 0,28 du côté court, Soleil rapproché), villes-décor allumées la nuit,
-  hitTest inverse — pas de lib 3D, c'est voulu
+  hitTest inverse — pas de lib 3D, c'est voulu. Plus de « lueurs chaudes » aux points où
+  la limite jour/nuit touche le limbe : Soleil sur l'axe horizontal + équinoxe, ces points
+  sont toujours les pôles, ça se lisait « les pôles s'allument » (retiré, demandé par David)
 - `js/main.js` — boucle d'animation (**seules les vues à l'écran se dessinent** :
   `onScreen` par `IntersectionObserver`, marge 120 px — sur téléphone disque, globe 3D,
   carte et cartes-horloges ne sont jamais visibles ensemble, et le globe coûte ~4 ms par
@@ -205,9 +207,12 @@ se partage.
   grand écran, jamais lors des rejouages automatiques pour ne pas défiler sous le doigt qui
   choisit un pays), cadres
   jumeaux (`''`/`-globe`/`-sticky` + la phrase d'écart `#cards-diff` entre les cartes — la
-  barre collante mobile apparaît quand la **recherche** du haut (pas les cartes : elle
-  recouvrait le champ arrivé en haut de l'écran) est sortie par le haut,
-  `IntersectionObserver` avec garde : sans lui elle reste masquée ; elle s'efface
+  barre collante mobile apparaît dès que les cartes-horloges passent **sous sa propre
+  hauteur** (`IntersectionObserver` sur `#cards`, `rootMargin` négatif = hauteur de la
+  barre : elle ne recouvre que la fin des cartes, jamais la recherche qui suit — heures,
+  recherche et disque tiennent sur UN écran, exigé par David ; l'accrocher à la recherche
+  la faisait disparaître pendant qu'on tourne le disque, payé) ; sans observer elle reste
+  masquée ; elle s'efface
   (`search-focus`) pendant la frappe dans l'une des deux recherches — iOS remonte le champ
   actif pile sous elle — et `scroll-padding-top` cale le défilement de focus dessous ; même garde `matchMedia` pour replier `explain-fold` sur mobile et
   le rouvrir sur ordinateur), et le **conteur** `narrator` (patron canonique de la famille,

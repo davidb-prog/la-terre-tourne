@@ -1234,22 +1234,25 @@ function tellScenario() {
 }
 
 // ---- la barre d'heures collante (mobile ≤ 640 px, voir style.css) : dès que
-// la colonne « chez nous » (cartes-horloges ET recherche) est sortie de
-// l'écran par le haut, elle garde les deux heures et l'écart sous les yeux —
-// on voit l'heure changer en jouant avec les scénarios, le curseur ou les
-// glissers, sans remonter la page. On observe la recherche et non les cartes :
-// sinon la barre recouvrait le champ de recherche arrivé en haut de l'écran.
-// Sans IntersectionObserver (vieux Safari), elle reste simplement masquée. ----
+// les cartes-horloges sont sorties de l'écran par le haut, elle garde les deux
+// heures et l'écart sous les yeux — heures, recherche et disque tiennent
+// alors sur UN écran de téléphone, et on voit l'heure changer en tournant le
+// disque, avec le curseur ou les scénarios, sans remonter la page. Elle prend
+// le relais dès que les cartes passent SOUS sa propre hauteur (marge de
+// l'observer) : ainsi elle ne recouvre jamais que la fin des cartes, jamais
+// le titre ni le champ de la recherche qui suivent. Sans IntersectionObserver
+// (vieux Safari), elle reste simplement masquée. ----
 
 const stickyBar = $('sticky-times');
 if (window.IntersectionObserver) {
+  const barH = stickyBar.offsetHeight + 4; // 0 sur ordinateur (display: none)
   new IntersectionObserver((entries) => {
     const e = entries[entries.length - 1];
     // seulement « sorties par le haut » : tout en haut de page, rien à montrer
-    const gone = !e.isIntersecting && e.boundingClientRect.bottom < 0;
+    const gone = !e.isIntersecting && e.boundingClientRect.bottom < barH;
     if (gone) stickyBar.classList.add('show');
     else stickyBar.classList.remove('show');
-  }).observe(document.querySelector('.stage-panel .search-panel'));
+  }, { rootMargin: -barH + 'px 0px 0px 0px' }).observe($('cards'));
 }
 // pendant qu'on tape dans une recherche, la barre s'efface : iOS remonte le
 // champ actif tout en haut de l'écran, pile sous elle

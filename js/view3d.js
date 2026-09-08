@@ -171,15 +171,11 @@ export class Globe3D {
     this.nightCap(ctx, sun, -0.07, 0.4, cx, cy, R);
     this.nightCap(ctx, sun, -0.2, 0.3, cx, cy, R);
 
-    // lueurs chaudes là où le soleil se lève ou se couche en ce moment
-    const a1 = Math.atan2(-sun[0], sun[2]);
-    for (const a of [a1, a1 + Math.PI]) {
-      const px = cx + R * Math.cos(a), py = cy - R * Math.sin(a);
-      const wg = ctx.createRadialGradient(px, py, 1, px, py, 0.34 * R);
-      wg.addColorStop(0, 'rgba(255, 145, 60, 0.45)'); wg.addColorStop(1, 'rgba(255, 145, 60, 0)');
-      ctx.fillStyle = wg;
-      ctx.beginPath(); ctx.arc(px, py, 0.34 * R, 0, TAU); ctx.fill();
-    }
+    // (les anciennes « lueurs chaudes » aux deux points où la limite jour/nuit
+    // touche le bord de la Terre ont été retirées : le Soleil étant posé sur
+    // l'axe horizontal, à l'équinoxe ces points sont TOUJOURS les pôles — on
+    // lisait « les pôles s'allument », pas « le soleil se couche là ». Le
+    // crépuscule reste raconté par les trois calottes de nuit à seuils.)
 
     ctx.restore();
 
