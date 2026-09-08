@@ -17,14 +17,16 @@ const COL = {
   silhouette: '#0a0f22',
 };
 
-export function fitCanvas(canvas) {
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+// maxDpr : 2 par défaut (le globe 3D, cher) ; la carte à plat demande 3, son
+// fond est en cache et son crépuscule se lit de près sur un téléphone
+export function fitCanvas(canvas, maxDpr) {
+  const dpr = Math.min(window.devicePixelRatio || 1, maxDpr || 2);
   const w = canvas.clientWidth, h = canvas.clientHeight;
   const bw = Math.max(1, Math.round(w * dpr)), bh = Math.max(1, Math.round(h * dpr));
   if (canvas.width !== bw || canvas.height !== bh) { canvas.width = bw; canvas.height = bh; }
   const ctx = canvas.getContext('2d');
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  return { ctx: ctx, w: w, h: h };
+  return { ctx: ctx, w: w, h: h, dpr: dpr };
 }
 
 export function drawStars(view, ctx, w, h, count) {
@@ -113,6 +115,52 @@ export function pointInRing(lon, lat, ring) {
   return c;
 }
 
+// Le fond du planisphère : océan, 24 fuseaux en bandes alternées, pays (avec
+// leurs frontières), lacs, Antilles et petites îles. Ne dépend que de la
+// taille — MapView le met en cache dans un canvas hors écran.
+function drawMapBase(ctx, X, Y, ox, oy, W, H) {
+  // océan
+  const og = ctx.createLinearGradient(0, oy, 0, oy + H);
+  og.addColorStop(0, '#4b93e0'); og.addColorStop(0.5, '#3c7fd0'); og.addColorStop(1, '#2f6cb8');
+  ctx.fillStyle = og; ctx.fillRect(ox, oy, W, H);
+
+  // les 24 fuseaux : bandes alternées + limites discrètes
+  for (let m = -12; m <= 12; m++) {
+    const x0 = Math.max(ox, X(15 * m - 7.5)), x1 = Math.min(ox + W, X(15 * m + 7.5));
+    if (x1 <= x0) continue;
+    if (((m % 2) + 2) % 2 === 0) {
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+      ctx.fillRect(x0, oy, x1 - x0, H);
+    }
+  }
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.09)'; ctx.lineWidth = 1;
+  for (let k = 0; k < 24; k++) {
+    const x = X(-180 + 7.5 + k * 15);
+    ctx.beginPath(); ctx.moveTo(x, oy); ctx.lineTo(x, oy + H); ctx.stroke();
+  }
+
+  // pays (avec leurs frontières), lacs, Antilles
+  for (const country of COUNTRIES) {
+    ctx.fillStyle = ICE_ISOS[country.iso] ? COL.ice : COL.land;
+    for (const ring of country.rings) {
+      ringPath(ctx, ring, X, Y);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(10, 40, 32, 0.5)'; ctx.lineWidth = 0.8; ctx.stroke();
+    }
+  }
+  ctx.fillStyle = '#3c7fd0';
+  for (const lake of LAKES) { ringPath(ctx, lake, X, Y); ctx.fill(); }
+  ctx.fillStyle = COL.land;
+  for (const [lon, lat] of ANTILLES) {
+    ctx.beginPath(); ctx.ellipse(X(lon), Y(lat), 2, 2.6, 0.2, 0, TAU); ctx.fill();
+  }
+  for (const [lon, lat, r] of SPECKS) {
+    ctx.beginPath();
+    ctx.arc(X(lon), Y(lat), Math.max(1.4, r * W / 360), 0, TAU); ctx.fill();
+  }
+
+}
+
 export class MapView {
   constructor(canvas) {
     this.canvas = canvas;
@@ -137,8 +185,22 @@ export class MapView {
     };
   }
 
+  // le fond, rendu une fois par taille (et par densité d'écran)
+  baseImage(W, H, dpr) {
+    const key = W + 'x' + H + '@' + dpr;
+    if (this._baseKey !== key) {
+      const c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(W * dpr)); c.height = Math.max(1, Math.round(H * dpr));
+      const bc = c.getContext('2d');
+      bc.setTransform(dpr, 0, 0, dpr, 0, 0);
+      drawMapBase(bc, (lon) => (lon + 180) / 360 * W, (lat) => (90 - lat) / 180 * H, 0, 0, W, H);
+      this._base = c; this._baseKey = key;
+    }
+    return this._base;
+  }
+
   draw(homeH, places, highlightIso, highlightColor) {
-    const { ctx, w, h } = fitCanvas(this.canvas);
+    const { ctx, w, h, dpr } = fitCanvas(this.canvas, 3);
     ctx.fillStyle = COL.bg; ctx.fillRect(0, 0, w, h);
     drawStars(this, ctx, w, h, 90);
 
@@ -178,44 +240,15 @@ export class MapView {
       ctx.restore();
     };
 
-    // océan
-    const og = ctx.createLinearGradient(0, oy, 0, oy + H);
-    og.addColorStop(0, '#4b93e0'); og.addColorStop(0.5, '#3c7fd0'); og.addColorStop(1, '#2f6cb8');
-    ctx.fillStyle = og; ctx.fillRect(ox, oy, W, H);
-
-    // les 24 fuseaux : bandes alternées + limites discrètes
-    for (let m = -12; m <= 12; m++) {
-      const x0 = Math.max(ox, X(15 * m - 7.5)), x1 = Math.min(ox + W, X(15 * m + 7.5));
-      if (x1 <= x0) continue;
-      if (((m % 2) + 2) % 2 === 0) {
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
-        ctx.fillRect(x0, oy, x1 - x0, H);
-      }
-    }
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.09)'; ctx.lineWidth = 1;
-    for (let k = 0; k < 24; k++) {
-      const x = X(-180 + 7.5 + k * 15);
-      ctx.beginPath(); ctx.moveTo(x, oy); ctx.lineTo(x, oy + H); ctx.stroke();
-    }
-
-    // pays (avec leurs frontières), lacs, Antilles
-    for (const country of COUNTRIES) {
-      ctx.fillStyle = ICE_ISOS[country.iso] ? COL.ice : COL.land;
-      for (const ring of country.rings) {
-        ringPath(ctx, ring, X, Y);
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(10, 40, 32, 0.5)'; ctx.lineWidth = 0.8; ctx.stroke();
-      }
-    }
-    ctx.fillStyle = '#3c7fd0';
-    for (const lake of LAKES) { ringPath(ctx, lake, X, Y); ctx.fill(); }
-    ctx.fillStyle = COL.land;
-    for (const [lon, lat] of ANTILLES) {
-      ctx.beginPath(); ctx.ellipse(X(lon), Y(lat), 2, 2.6, 0.2, 0, TAU); ctx.fill();
-    }
-    for (const [lon, lat, r] of SPECKS) {
-      ctx.beginPath();
-      ctx.arc(X(lon), Y(lat), Math.max(1.4, r * W / 360), 0, TAU); ctx.fill();
+    // le FOND (océan, fuseaux, pays, lacs, îles) est identique d'une image à
+    // l'autre : dessiné une fois hors écran et recollé — c'était ~10 700 points
+    // à remplir et tracer à chaque image, le gros de la note sur téléphone
+    // (la nuit avançait par à-coups). Zoomée à la pince, la carte repasse en
+    // vectoriel pour rester nette.
+    if (z === 1) {
+      ctx.drawImage(this.baseImage(W, H, dpr), ox, oy, W, H);
+    } else {
+      drawMapBase(ctx, X, Y, ox, oy, W, H);
     }
 
     // la France toujours en rose, le pays cherché dans sa couleur
@@ -335,7 +368,9 @@ export class MapView {
         label(ctx, 'il est midi ici', x, y + 30, { align: 'center', size: 10, alpha: 0.9, color: COL.sun });
       }
     }));
-    both(sub + 180, (x) => fixed(x, Y(12), () => {
+    // la pleine lune « il est minuit ici » : sur les petits écrans elle
+    // encombre le bord de la carte (retirée sur mobile, demandé par David)
+    if (W >= 520) both(sub + 180, (x) => fixed(x, Y(12), () => {
       const y = Y(12);
       ctx.save();
       ctx.shadowColor = 'rgba(233, 237, 248, 0.8)'; ctx.shadowBlur = 12;

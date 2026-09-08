@@ -65,6 +65,11 @@ function displayedPlaces() { return [FRANCE, selected]; }
 
 const cardsBox = $('cards');
 let cards = [];
+// la phrase d'écart (« 5 h de retard sur nous ») vit ENTRE les deux cartes,
+// sur le filet qui les sépare : elle relie les deux heures qu'elle compare
+const cardsDiff = document.createElement('div');
+cardsDiff.className = 'cards-diff';
+cardsDiff.id = 'cards-diff';
 
 function buildCards() {
   cardsBox.innerHTML = '';
@@ -137,6 +142,9 @@ function buildCards() {
       digital: digital, period: period, activity: activity, badge: badge, cache: {},
     };
   });
+  // l'écart se glisse après la première carte (chez nous)
+  cardsBox.insertBefore(cardsDiff, cardsBox.children[1] || null);
+  cardsDiff.textContent = offsetDiffText(selected);
   frameCache.name = null; // le cadre du globe se resynchronise
 }
 
@@ -807,7 +815,7 @@ function runScenario(scn, opts) {
 function showPoleView() {
   const panel = $('pole-panel');
   const pr = panel.getBoundingClientRect();
-  const homeCol = document.querySelector('.home-col');
+  const homeCol = document.querySelector('.view-block-home');
   const stacked = pr.top >= homeCol.getBoundingClientRect().bottom - 1;
   if (stacked) {
     const target = Math.max(0, window.scrollY + pr.top - $('sticky-times').offsetHeight - 8);
@@ -831,9 +839,11 @@ function setText(cache, key, el, value) {
   el.textContent = value;
 }
 
-// les cadres posés sur la vue du pôle et sous le globe du jeu, plus la barre
-// collante du haut d'écran (mobile) : l'heure ici, l'heure là-bas, et l'écart
-// — même contenu aux trois endroits
+// les cadres jumeaux : incrusté sur la vue du pôle (ordinateur), en ligne
+// au-dessus de la carte à plat du jeu (ordinateur), et la barre collante du
+// haut d'écran (mobile, seul rappel pendant le jeu) : l'heure ici, l'heure
+// là-bas, et l'écart — même contenu aux trois endroits, plus la phrase
+// d'écart posée entre les deux cartes-horloges
 const FRAME_IDS = ['', '-globe', '-sticky'];
 const frameCache = { name: null };
 
@@ -851,6 +861,7 @@ function updateFrame() {
       $('frame-diff' + sfx).textContent = offsetDiffText(selected);
     }
   }
+  if (nameChanged) cardsDiff.textContent = offsetDiffText(selected);
   if (nameChanged) {
     // le bouton de la destination porte son nom : « revoir Bali », pas un jargon
     $('view-dest-label').textContent = selected.emoji + ' ' + selected.name;
@@ -876,10 +887,18 @@ function updateCards() {
       card.badge.className = 'day-badge' +
         (c.dayShift > 0 ? ' tomorrow' : c.dayShift < 0 ? ' yesterday' : '');
     }
-    card.sky.draw(sim.homeH);
+    // le ciel de la carte : dessiné seulement si les cartes sont à l'écran
+    // (les textes, eux, restent à jour — la barre collante les répète)
+    if (onScreen.cards) card.sky.draw(sim.homeH);
   }
-  setText(sim, '_homeText', $('home-time'), formatHM(sim.homeH).text);
-  setText(sim, '_homePeriod', $('home-period'), periodWord(sim.homeH));
+  // le rappel « Chez nous, il est 12 h » a disparu de la page (l'heure se lit
+  // sur la carte France) : le curseur garde la valeur en toutes lettres pour
+  // les lecteurs d'écran
+  const valueText = formatHM(sim.homeH).text + ', ' + periodWord(sim.homeH);
+  if (sim._valueText !== valueText) {
+    sim._valueText = valueText;
+    slider.setAttribute('aria-valuetext', valueText);
+  }
   updateFrame();
   if (!sliderHeld) slider.value = sim.homeH;
 }
@@ -887,6 +906,25 @@ function updateCards() {
 // ---- boucle d'animation ----
 
 const easeInOut = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+// ---- on ne dessine que les vues à l'écran : sur téléphone, le disque, le
+// globe 3D et la carte à plat ne sont jamais visibles ensemble, et chaque
+// image du globe coûte ~10 700 points projetés — les dessiner tous les trois
+// à chaque image faisait tomber la cadence (la nuit avançait par à-coups sur
+// la carte). Même règle pour les ciels des deux cartes-horloges. Marge de
+// 120 px : une vue est déjà à jour quand elle entre. Sans IntersectionObserver
+// (vieux Safari), tout se dessine comme avant. ----
+const onScreen = { pole: true, globe: true, map: true, cards: true };
+if (window.IntersectionObserver) {
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) onScreen[e.target.dataset.vue] = e.isIntersecting;
+  }, { rootMargin: '120px 0px' });
+  for (const [key, id] of [['pole', 'pole-view'], ['globe', 'globe3d-view'], ['map', 'map-view'], ['cards', 'cards']]) {
+    const c = $(id);
+    c.dataset.vue = key;
+    io.observe(c);
+  }
+}
 
 let lastMs = performance.now();
 function frame(ms) {
@@ -909,9 +947,9 @@ function frame(ms) {
       if (k >= 1) camAnim = null;
     }
     const places = displayedPlaces();
-    globe3d.draw(sim.homeH, places, selected.iso, selected.color);
-    map.draw(sim.homeH, places, selected.iso, selected.color);
-    pole.draw(sim.homeH, places);
+    if (onScreen.globe) globe3d.draw(sim.homeH, places, selected.iso, selected.color);
+    if (onScreen.map) map.draw(sim.homeH, places, selected.iso, selected.color);
+    if (onScreen.pole) pole.draw(sim.homeH, places);
     updateCards();
   } finally {
     // la boucle survit à un raté de rendu ponctuel (canvas en cours de layout…)
@@ -1196,20 +1234,32 @@ function tellScenario() {
 }
 
 // ---- la barre d'heures collante (mobile ≤ 640 px, voir style.css) : dès que
-// les cartes-horloges sortent de l'écran par le haut, elle garde les deux
-// heures sous les yeux — on voit l'heure changer en jouant avec les scénarios,
-// le curseur ou les glissers, sans remonter la page. Sans IntersectionObserver
+// les cartes-horloges sont sorties de l'écran par le haut, elle garde les deux
+// heures et l'écart sous les yeux — heures, recherche et disque tiennent
+// alors sur UN écran de téléphone, et on voit l'heure changer en tournant le
+// disque, avec le curseur ou les scénarios, sans remonter la page. Elle prend
+// le relais dès que les cartes passent SOUS sa propre hauteur (marge de
+// l'observer) : ainsi elle ne recouvre jamais que la fin des cartes, jamais
+// le titre ni le champ de la recherche qui suivent. Sans IntersectionObserver
 // (vieux Safari), elle reste simplement masquée. ----
 
+const stickyBar = $('sticky-times');
 if (window.IntersectionObserver) {
-  const stickyBar = $('sticky-times');
+  const barH = stickyBar.offsetHeight + 4; // 0 sur ordinateur (display: none)
   new IntersectionObserver((entries) => {
     const e = entries[entries.length - 1];
     // seulement « sorties par le haut » : tout en haut de page, rien à montrer
-    const gone = !e.isIntersecting && e.boundingClientRect.bottom < 0;
+    const gone = !e.isIntersecting && e.boundingClientRect.bottom < barH;
     if (gone) stickyBar.classList.add('show');
     else stickyBar.classList.remove('show');
-  }).observe($('cards'));
+  }, { rootMargin: -barH + 'px 0px 0px 0px' }).observe($('cards'));
+}
+// pendant qu'on tape dans une recherche, la barre s'efface : iOS remonte le
+// champ actif tout en haut de l'écran, pile sous elle
+for (const id of ['place-search', 'place-search-map']) {
+  const inp = $(id);
+  inp.addEventListener('focus', () => stickyBar.classList.add('search-focus'));
+  inp.addEventListener('blur', () => stickyBar.classList.remove('search-focus'));
 }
 
 // ---- la boîte « Pourquoi les fuseaux horaires ? » : repliée sur mobile pour

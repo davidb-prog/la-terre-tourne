@@ -104,50 +104,156 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 /* la voix des titres : Baloo 2 sur tout ce qui titre la page — jamais sur le
    corps du texte ni sur les boutons (leur font: inherit doit rester la pile
    système, taille partagée par toute la famille). La légende de la carte à
-   plat (.map-panel .canvas-title) est une phrase, pas un titre : elle reste
+   plat (.map-legend) est une phrase, pas un titre : elle reste
    en pile système. */
 .site-header h1, .kicker, .vignette-name, .search-title,
-.globe-panel .canvas-title > span, .scenario-title > span,
+.view-head > span, .scenario-title > span,
 .explain-head h2, .explain-summary h2, .game-head h2,
 .parents summary { font-family: var(--titres); }
 
-/* ---------- grille du simulateur ---------- */
+/* ---------- le bloc principal : un seul panneau ---------- */
 
-/* comme l'épisode 2 : d'abord l'heure chez nous et là-bas (avec la recherche
-   dessous), puis la vue depuis l'espace à droite */
-.sim-grid { display: grid; grid-template-columns: minmax(300px, 5fr) minmax(0, 7fr); gap: 16px; }
-@media (max-width: 960px) { .sim-grid { grid-template-columns: 1fr; } }
-.home-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-
-/* la recherche vit sous les deux cartes-horloges */
-.search-panel { padding: 12px 14px 14px; }
+/* patron des autres épisodes (« Le même moment, deux regards ») : l'heure chez
+   nous, l'heure là-bas, la recherche, la Terre vue du pôle Nord et la frise du
+   temps vivent dans UN panneau. Plus de boîtes dans la boîte : les
+   cartes-horloges, la recherche et le cadre des heures perdent fond, bordure et
+   arrondi — des rangées à plat, séparées par des filets ; seules les images
+   (ciels, disque) gardent leur cadre arrondi. Sur ordinateur, la colonne
+   « chez nous » (cartes + recherche) à gauche, le disque à droite ; la frise
+   ferme le bloc. */
+.stage-panel { padding: 14px 16px 16px; }
+.views-grid {
+  display: grid;
+  grid-template-columns: minmax(300px, 5fr) minmax(0, 7fr);
+  gap: 14px; align-items: stretch;
+}
+.view-block { min-width: 0; }
+.view-block-home { display: flex; flex-direction: column; gap: 14px; }
+/* les cartes absorbent la différence de hauteur avec le disque (leur ciel
+   grandit, plafonné) : la recherche se cale en bas de la colonne, face au
+   bas du disque */
+.view-block-home .vignettes { flex: 1 1 auto; gap: 10px; }
+.view-block-home .vignette { flex: 1 1 0; display: flex; flex-direction: column; }
+.view-block-home .sky-wrap { flex: 1 1 auto; min-height: 86px; max-height: 150px; }
+.view-block-home .search-panel { margin-top: auto; border-top: 1px solid var(--border); padding-top: 12px; }
+.stage-panel .vignette, .stage-panel .search-panel {
+  background: none; border: 0; border-radius: 0; padding: 0;
+}
+/* la couleur du lieu reste sur ce qui le nomme : le nom et l'horloge */
+.stage-panel .vignette-name { color: var(--place, var(--text)); }
+/* la phrase d'écart, posée par main.js sur le filet entre les deux horloges */
+.cards-diff {
+  display: flex; align-items: center; gap: 10px;
+  color: var(--muted); font-size: .85rem; white-space: nowrap;
+}
+.cards-diff::before, .cards-diff::after { content: ''; flex: 1 1 auto; height: 1px; background: var(--border); }
 .search-title { font-weight: 700; margin: 0 2px 8px; }
 .search-panel .search-row { margin: 0; }
+.view-block-space { border-left: 1px solid var(--border); padding-left: 14px; }
 
-/* la frise du temps, sur toute la largeur de la page */
-.time-panel { margin-top: 16px; padding: 14px 18px 16px; }
-.time-panel .time-control { margin-top: 0; }
+/* les têtes de vues : le titre (Baloo, couleur = fonction — violet pour
+   l'espace, teal pour le jeu), son hint discret, et le ⏸/▶ à droite ; le
+   titre se replie, jamais le bouton */
+.view-head { display: flex; align-items: center; gap: 8px 12px; margin: 0 2px 7px; }
+.view-head > span { flex: 1 1 0; min-width: 0; font-size: 1.02rem; font-weight: 800; }
+.view-head-space > span { color: var(--violet); }
+.view-head-globe > span { color: var(--teal); }
+.view-head .hint { font-size: .8rem; font-weight: 400; color: var(--muted); }
+.view-head-globe .hint { display: block; margin-top: 1px; }
+.view-head .play-btn { margin-left: auto; flex: none; }
 
-/* le jeu : sur grand écran, la Terre en 3D et la carte à plat côte à côte —
-   le globe un peu plus étroit (il passe en mode compact : Terre bien pleine),
-   la carte plus large et plus haute (16/10) pour équilibrer les hauteurs */
-.game-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
-.game-grid .map-panel { margin-top: 0; }
-@media (min-width: 961px) {
-  .game-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: start; }
-  .game-grid .globe-panel { grid-column: 1; grid-row: 1; }
-  .game-grid .map-panel { grid-column: 2; grid-row: 1 / span 2; }
-  .game-grid .game-side { grid-column: 1; grid-row: 2; }
-  .game-grid .ratio-map { aspect-ratio: 16 / 10; }
-  @supports not (aspect-ratio: 1 / 1) {
-    .game-grid .ratio-map { height: min(36vw, 430px); }
-  }
+/* la frise ferme le bloc ; la consigne discrète remplace l'ancien rappel
+   « Chez nous, il est 12 h » (l'heure se lit déjà sur la carte France) */
+.stage-panel .time-control { border-top: 1px solid var(--border); margin-top: 14px; padding-top: 12px; }
+.time-hint { color: var(--muted); font-size: .9rem; margin: 0 2px 8px; }
+
+@media (max-width: 960px) {
+  .views-grid { grid-template-columns: 1fr; }
+  .view-block-space { border-left: 0; padding-left: 0; border-top: 1px solid var(--border); padding-top: 12px; }
 }
-/* les boutons de lieux sont posés sous la Terre, dans le ciel étoilé du
-   globe (la place y est, ordinateur comme téléphone) ; le cadre des heures
-   vit dans son bloc .game-side — sous le globe sur ordinateur, entre le
-   globe et la carte sur mobile. Rien ne mord sur les vues. */
-.game-grid .globe-stage > .view-chips {
+@media (max-width: 640px) {
+  .stage-panel { padding: 12px 12px 14px; }
+  .view-block-home, .view-block-home .vignettes { gap: 12px; }
+  .view-block-home .sky-wrap { flex: none; height: 86px; max-height: none; }
+  .view-head .hint { display: block; margin-top: 1px; }
+  .view-head .play-btn { min-height: 36px; padding: 4px 12px; font-size: .9rem; }
+  /* le disque plafonné en hauteur d'écran (patron de la famille) : hauteur
+     EXPLICITE, jamais aspect-ratio + max-height (WebKit rétrécirait la largeur) */
+  .stage-panel .ratio-square { aspect-ratio: auto; height: min(92vw, 40vh); }
+  /* sur mobile, le cadre des heures ne vit plus sur le disque : la barre
+     collante du haut d'écran porte les deux heures et l'écart */
+  .stage-panel .globe-stage > .globe-frame { display: none; }
+  .stage-panel .time-control { margin-top: 12px; }
+}
+
+/* ---------- le jeu : un seul panneau, même patron ---------- */
+
+/* titre et consigne, puis globe 3D, recherche et carte à plat. Ordinateur :
+   globe à gauche (mode compact : Terre bien pleine), carte à droite en 16/10,
+   recherche et idées de voyage sur toute la largeur dessous ; le cadre des
+   deux heures est une LIGNE en tête de la colonne de la carte — il comble
+   exactement la hauteur du titre du globe, si bien que le haut de la carte
+   tombe pile sur le haut du globe. Mobile : globe, recherche, carte, et pas
+   de cadre (la barre collante). */
+.game-panel { padding: 14px 16px 16px; margin-top: 22px; }
+.game-panel .game-head { margin: 0 2px 12px; }
+.game-views { display: grid; grid-template-columns: 1fr; gap: 12px; }
+/* la légende de la carte est une phrase, pas un titre : pile système, gris */
+.map-legend { font-size: .88rem; color: var(--muted); margin: 8px 2px 0; }
+.game-search { border-top: 1px solid var(--border); padding-top: 12px; }
+.game-search .search-row { margin: 0; }
+.game-search .search-chips { margin: 8px 0 0; }
+@media (min-width: 961px) {
+  /* les deux blocs deviennent transparents (display: contents) : leurs
+     enfants prennent chacun leur case — rangée 1 les en-têtes calés en bas,
+     rangée 2 les vues (carte + légende ensemble), rangée 3 la recherche. Le filet
+     vertical passe à droite de la colonne du globe, continu sur les deux
+     premières rangées (pas d'écart de rangée : les marges font l'espace). */
+  .view-block-globe, .view-block-map { display: contents; }
+  .game-views { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 0; align-items: start; }
+  .view-head-globe { grid-column: 1; grid-row: 1; align-self: end; margin: 0 0 8px; }
+  .view-block-globe .globe-stage { grid-column: 1; grid-row: 2; }
+  .view-head-globe, .view-block-globe .globe-stage {
+    border-right: 1px solid var(--border); padding-right: 14px; margin-right: 14px;
+  }
+  .game-frame { grid-column: 2; grid-row: 1; align-self: end; margin: 0 0 8px; }
+  /* carte + légende font UNE case (la légende reste collée sous la carte :
+     la rangée des vues a la hauteur du globe, pas celle de la carte) */
+  .map-body { grid-column: 2; grid-row: 2; }
+  .game-search {
+    grid-column: 1 / span 2; grid-row: 3; margin-top: 12px;
+    display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center;
+  }
+  .game-search .search-row { flex: 1 1 260px; }
+  .game-search .search-chips { margin: 0; flex: 1 1 auto; }
+  .game-views .ratio-map { aspect-ratio: 16 / 10; }
+  @supports not (aspect-ratio: 1 / 1) {
+    .game-views .ratio-map { height: min(36vw, 430px); }
+  }
+  /* le cadre du jeu, à plat : France, la destination, l'écart à droite */
+  .game-frame .globe-frame {
+    position: static; display: flex; flex-direction: row; align-items: baseline; gap: 6px 18px;
+    background: none; border: 0; border-radius: 0; padding: 0 2px; pointer-events: none;
+    -webkit-backdrop-filter: none; backdrop-filter: none; font-size: .95rem;
+  }
+  .game-frame .frame-row { padding-left: 8px; }
+  .game-frame .frame-row strong { margin-left: 6px; padding-left: 0; font-size: 1.1rem; }
+  .game-frame .frame-diff { margin-left: auto; border-top: 0; padding-top: 0; font-size: .85rem; }
+}
+@media (max-width: 960px) {
+  .game-frame { display: none; }
+  .view-block-globe { order: 1; }
+  .game-search { order: 2; }
+  .view-block-map { order: 3; border-top: 1px solid var(--border); padding-top: 12px; }
+  /* sur téléphone, les idées de voyage du haut suffisent */
+  .game-search .search-chips { display: none; }
+}
+@media (max-width: 640px) {
+  .game-panel { padding: 12px 12px 14px; }
+}
+/* les boutons de lieux du jeu sont posés sous la Terre, dans le ciel étoilé
+   du globe, à toutes les tailles (la place y est). */
+.game-views .globe-stage > .view-chips {
   position: absolute; left: 50%; bottom: 10px;
   -webkit-transform: translateX(-50%); transform: translateX(-50%);
   margin: 0; flex-wrap: nowrap;
@@ -156,29 +262,11 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
   width: -webkit-max-content; width: max-content;
   max-width: calc(100% - 12px);
 }
-.game-grid .globe-stage > .view-chips .view-chip {
+.game-views .globe-stage > .view-chips .view-chip {
   /* garde-fou pour les très longs noms (« Papouasie… ») : on coupe avec … */
   max-width: 11em; overflow: hidden; text-overflow: ellipsis;
 }
-.game-side { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-.game-side .globe-frame {
-  position: static; z-index: auto; margin: 0; pointer-events: auto;
-  background: #0d1531;
-  -webkit-backdrop-filter: none; backdrop-filter: none;
-}
-@media (max-width: 960px) {
-  /* sur téléphone, le cadre des heures et les boutons s'intercalent entre le
-     globe 3D et la carte à plat — et le tout tient encore sur un écran */
-  .game-grid .globe-panel { order: 1; }
-  .game-grid .game-side { order: 2; }
-  .game-grid .map-panel { order: 3; }
-  .map-panel { display: flex; flex-direction: column; }
-  .map-panel .canvas-wrap { order: -1; }
-  .map-panel .canvas-title { margin: 12px 4px 6px; }
-}
 
-.canvas-panel { padding: 12px; }
-.canvas-title { font-size: .88rem; color: var(--muted); margin: 2px 4px 10px; }
 .canvas-wrap { position: relative; border-radius: 12px; overflow: hidden; background: #070b17; }
 .ratio-square { aspect-ratio: 1 / 1; }
 .ratio-map { aspect-ratio: 2 / 1; }
@@ -242,20 +330,9 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
   .view-chip { font-size: .76rem; padding: 6px 10px; }
 }
 
-/* sur mobile, on dégage le disque : le cadre des heures et les pastilles de
-   vue quittent l'incrustation et se rangent sous le globe, dans le flux */
+/* sur mobile, le rappel « attrape la Terre » descend au ras du disque (plus
+   de pastilles en dessous) */
 @media (max-width: 640px) {
-  .globe-stage { display: flex; flex-direction: column; }
-  .globe-stage > .globe-frame {
-    position: static; z-index: auto; margin: 10px 0 0; pointer-events: auto;
-    background: #0d1531;
-    -webkit-backdrop-filter: none; backdrop-filter: none;
-  }
-  .globe-stage > .view-chips {
-    position: static; -webkit-transform: none; transform: none;
-    margin: 10px 0 2px; max-width: 100%; flex-wrap: wrap; justify-content: center;
-  }
-  .globe-stage > .view-chips .view-chip { font-size: .82rem; padding: 8px 14px; }
   .globe-stage .drag-hint { bottom: 12px; }
 }
 
@@ -284,33 +361,28 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
     transition: opacity .25s, visibility .25s, transform .25s;
   }
   .sticky-times.show { opacity: 1; visibility: visible; -webkit-transform: none; transform: none; }
+  /* pendant qu'on tape dans une recherche, elle s'efface (main.js) : iOS
+     remonte le champ actif tout en haut de l'écran, pile sous elle */
+  .sticky-times.search-focus { opacity: 0; visibility: hidden; -webkit-transform: translateY(-100%); transform: translateY(-100%); }
+  /* et le défilement vers un champ qui prend le focus s'arrête sous la barre */
+  html { scroll-padding-top: 68px; }
   .sticky-times .frame-row { padding-left: 6px; }
   .sticky-times .frame-row strong { margin-left: 4px; padding-left: 0; font-size: 1rem; }
   .sticky-times .frame-name { max-width: 8em; }
-  .sticky-times .frame-diff { display: none; }
+  /* l'écart sur une seconde ligne : sur mobile, la barre est le SEUL rappel
+     pendant le jeu, elle doit porter toute la leçon — « 5 h de retard sur
+     nous », pas un « −5 h » opaque pour un enfant */
+  .sticky-times .frame-diff {
+    flex: 1 0 100%; border-top: 0; padding-top: 0; margin-top: -2px;
+    font-size: .78rem; text-align: center;
+  }
 }
 
 /* ---------- le grand curseur du temps ---------- */
 
-.globe-panel .canvas-title { display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap; }
-/* la charte des titres de la famille : couleur = fonction. Le violet
-   regarde depuis l'espace, le teal appartient au jeu (comme .view-head et
-   .game-head dans ou-va-le-soleil) ; le hint reste une phrase discrète.
-   La légende de la carte à plat (.map-panel) reste une phrase en gris. */
-.globe-panel .canvas-title > span { font-size: 1.02rem; font-weight: 800; }
-#pole-panel .canvas-title > span { color: var(--violet); }
-#globe-panel .canvas-title > span { color: var(--teal); }
-.canvas-title .hint { font-size: .8rem; font-weight: 400; color: var(--muted); }
 .spin-btn { margin-left: auto; padding: 5px 12px; font-size: .8rem; border-radius: 999px; }
 
 .time-control { margin-top: 12px; padding: 0 4px 2px; }
-.time-readout { font-size: 1.05rem; margin-bottom: 4px; }
-.time-readout strong {
-  /* rose comme tout ce qui est « France » (cadre, carte, vignette) */
-  font-size: 1.55rem; color: var(--rose); font-variant-numeric: tabular-nums;
-  margin: 0 2px 0 4px;
-}
-.period { color: var(--muted); }
 
 /* le curseur raconte lui-même la journée : nuit → aube → jour → crépuscule → nuit */
 #time-slider {
@@ -439,10 +511,6 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 .story-chip-bali { background: rgba(169, 139, 255, .14); color: var(--violet); border: 1px solid rgba(169, 139, 255, .5); }
 .story-text { margin: 2px 0 0; }
 
-/* ---------- carte du monde ---------- */
-
-.map-panel { margin-top: 16px; }
-
 /* ---------- note aux parents (repliée) ---------- */
 
 .parents { margin-top: 22px; }
@@ -537,7 +605,6 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 @media (max-width: 480px) {
   .clock-slot { width: 70px; height: 70px; }
   .clock-digital { font-size: 1.55rem; }
-  .time-readout strong { font-size: 1.35rem; }
   .scn { min-height: 64px; }
 }
 
@@ -613,12 +680,6 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 /* puce du lieu choisi dans l'histoire */
 .story-chip-selected { background: rgba(255, 207, 92, .14); color: var(--sun); border: 1px solid rgba(255, 207, 92, .5); }
 
-/* recherche posée dans le panneau carte */
-.map-panel .search-row { margin: 0 2px 10px; }
-/* les idées de voyage répliquées sous la carte, alignées à droite — sur
-   grand écran seulement (sur téléphone, celles du haut suffisent) */
-.map-panel .search-chips { margin: 10px 2px 0; justify-content: flex-end; }
-@media (max-width: 960px) { .map-panel .search-chips { display: none; } }
 /* (le titre de la carte n'a plus de bouton ⏸/▶ : le globe suffit à mettre en
    pause la rotation, les deux vues tournent ensemble) */
 
@@ -670,15 +731,10 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 @media (max-width: 640px) {
   /* les tout petits textes remontent vers 12,5 px minimum — les hints des
      titres de canvas passent sur leur propre ligne */
-  .canvas-title { font-size: .92rem; }
-  .canvas-title .hint { display: block; margin-top: 2px; font-size: .8rem; }
+  .map-legend { font-size: .92rem; }
   .slider-scale { font-size: .78rem; }
   .scn-sub { font-size: .8rem; }
-  /* sous 640 px, le cadre des heures n'est plus incrusté sur une vue : il a
-     la place de se lire confortablement */
-  .globe-frame { font-size: .9rem; }
-  .frame-row strong { font-size: 1.05rem; }
-  /* sauf dans la barre collante du haut, plus compacte */
+  /* la barre collante, seul cadre des heures sur mobile */
   .sticky-times { font-size: .88rem; }
   .sticky-times .frame-row strong { font-size: 1rem; }
 }

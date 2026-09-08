@@ -31,9 +31,12 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
   plat du jeu. Deux moteurs synchronisés ; choisir un lieu fait pulser son point sur le
   disque, sans jamais changer l'heure. Et sur les appareils sans drapeaux émoji (Windows), un
   📍 remplace proprement le drapeau au lieu de laisser apparaître « TH ».
-- **Le cadre des deux heures**, posé sur la vue du pôle et répliqué sous le globe du jeu :
-  l'heure en France, l'heure là-bas, et l'écart en toutes lettres (« 8 h d'avance sur
-  nous »).
+- **Un seul bloc** (patron des autres épisodes) : l'heure chez nous, l'heure là-bas —
+  l'**écart en toutes lettres** posé entre les deux (« 8 h d'avance sur nous ») —, la
+  recherche, la Terre vue du pôle Nord et la frise du temps vivent dans un même panneau, à
+  plat ; sur ordinateur le cadre des deux heures reste incrusté sur le disque, sur téléphone
+  c'est la **barre collante** du haut d'écran qui garde heures et écart sous les yeux dès
+  qu'on a défilé.
 - **Deux cartes-horloges** (France + destination) : horloge analogique, grosse heure digitale,
   mot-repère (« midi ! », « la nuit »…), activité du moment, badge « **déjà demain !** » /
   « **encore hier !** », et le ciel local dessiné en continu — nuit étoilée, aube rose, grand
@@ -75,15 +78,17 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
   continents et les frontières des ~180 pays (Natural Earth, embarqué dans `js/geo.js` —
   aucune tuile, aucune bibliothèque), la France surlignée en rose, la destination en doré, les
   24 fuseaux en tranches. Glisser horizontalement le fait tourner (l'heure change), un clic
-  sur un pays ou une ville-décor l'observe, et son heure s'affiche dans le cadre — et même
+  sur un pays ou une ville-décor l'observe, et son heure s'affiche au-dessus de la carte à
+  plat (sur téléphone, dans la barre collante) — et même
   les petites îles dessinées à la main (la Guadeloupe, Tahiti, les Maldives…) se laissent
   cliquer : sans polygone sous le doigt, c'est le lieu du répertoire le plus proche qui est
   choisi. Les deux
   **boutons de lieux** (🏠 chez nous / la destination) sont posés dans le ciel étoilé, juste
-  sous la Terre. Sur ordinateur, le globe et la carte s'affichent **côte à côte, sur un seul
-  écran** ; sur téléphone, l'enchaînement est globe 3D → cadre des heures → carte à plat —
-  **les deux vues tiennent ensemble sur l'écran** (titre et recherche de la carte passent
-  dessous), et la Terre occupe davantage le cadre pour rester lisible. Sur écran tactile, on
+  sous la Terre. Le jeu est un seul panneau, comme le bloc du haut : sur ordinateur, le globe
+  et la carte s'affichent **côte à côte, sur un seul écran**, le haut de la carte calé sur le
+  haut du globe, la recherche et les idées de voyage dessous ; sur téléphone, l'enchaînement
+  est globe 3D → recherche → carte à plat, et la Terre occupe davantage le cadre pour rester
+  lisible. Sur écran tactile, on
   **pince à deux doigts pour zoomer** les deux vues : la Terre 3D grossit (on la tourne au
   doigt pour explorer), la carte à plat se zoome autour des doigts et on **s'y promène au doigt**
   (un ou deux — tant qu'elle est zoomée, glisser la promène sans toucher à l'heure ; le
@@ -107,9 +112,9 @@ fuseaux horaires à une enfant de 5 ans, guidée par un parent qui lit à voix h
   caméra qui **vole en douceur** jusqu'au lieu (et contourne par la face nuit quand le Soleil
   doit changer de côté). Deux **boutons de lieux** sous le globe : 🏠 *chez nous* et la
   destination, à son nom (🌺 *Bali*…) — la sortie de secours quand on s'est perdu en glissant.
-- **Rien ne recouvre jamais les vues** : dans le jeu, le cadre des heures et les boutons de
-  lieux sont rangés sous le globe à toutes les tailles d'écran, et sous 640 px le cadre de la
-  vue du pôle descend lui aussi sous le disque.
+- **Rien ne recouvre jamais les vues du jeu** : les boutons de lieux vivent dans le ciel
+  sous la Terre, et le cadre des heures est une ligne au-dessus de la carte à plat (sur
+  téléphone, il s'efface : la barre collante fait le rappel).
 - Accessible : aria-labels sur tous les canvas, `prefers-reduced-motion` respecté (rien ne
   bouge tout seul), curseur utilisable au clavier, espace = pause.
 
@@ -156,9 +161,10 @@ raconter ne manque à l'appel. Quand les mp3 existent, le manifeste est vérifi�
 la voix enregistrée ne dit jamais autre chose que le texte du site.
 
 Le site est aussi vérifié en navigateur (Playwright/Chromium, desktop + mobile 390 px) : zéro
-erreur de console, structure de la page (heures chez nous/là-bas d'abord puis « Depuis
-l'espace », frise pleine largeur, jeu côte à côte sur ordinateur), glisser rotatif du disque
-(un quart de tour ≈ 6 h), sélection sans changer l'heure, cadres jumeaux, boutons de lieux,
+erreur de console, structure de la page (le bloc unique : heures chez nous/là-bas, écart,
+recherche, « Depuis l'espace », frise ; le jeu côte à côte sur ordinateur, haut de la carte
+sur le haut du globe ; l'ordre mobile et la barre collante avec l'écart), glisser rotatif du
+disque (un quart de tour ≈ 6 h), sélection sans changer l'heure, cadres jumeaux, boutons de lieux,
 bascule 🔇/🔊 des scénarios, sondes de pixels sur la position du Soleil et le croissant de
 nuit (jamais de « plein jour » plein cadre, Soleil entier même rapproché sur mobile).
 

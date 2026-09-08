@@ -113,32 +113,43 @@ se partage.
 
 ## Structure
 
-- `index.html` — page unique, organisée comme l'épisode 2 : grille principale avec la colonne
-  « chez nous » d'abord (`.home-col` : deux cartes-horloges France + destination, puis
-  recherche `search-panel` + 9 puces), et à droite le panneau `pole-panel` « 🚀 Depuis
-  l'espace » (**Terre vue du pôle Nord** `pole-view` dans `.globe-stage`, cadre des deux
-  heures) ; barre d'heures collante `sticky-times` (troisième jumeau du cadre, `aria-hidden`,
-  mobile seulement) ; frise du temps pleine largeur (`time-panel`, curseur 0–24 h) ; scénarios +
-  histoire (bouton 🔇/🔊 `btn-scn-voice` de version sonore) ; boîte « Pourquoi les fuseaux
-  horaires ? » à écouter (`<details>` `explain-fold`, **repliée sur mobile
+- `index.html` — page unique, au patron « un seul bloc » des autres épisodes : le panneau
+  `stage-panel` (`.views-grid` : colonne `.view-block-home` — deux cartes-horloges France +
+  destination avec la phrase d'**écart posée entre les deux** par main.js (`#cards-diff`),
+  puis recherche `search-panel` + 9 puces — et `.view-block-space` `#pole-panel`
+  « 🚀 Depuis l'espace », titre `.view-head` + **Terre vue du pôle Nord** `pole-view` dans
+  `.globe-stage` avec le cadre des deux heures incrusté (ordinateur seulement) ; la frise
+  `time-control` ferme le panneau, sous une consigne discrète `time-hint` — l'ancien rappel
+  « Chez nous, en France, il est 12 h » a été retiré, demandé par David : l'heure se lit déjà
+  sur la carte France, le curseur porte la valeur en `aria-valuetext`) ; barre d'heures
+  collante `sticky-times` (jumeau du cadre, `aria-hidden`, mobile seulement, elle porte
+  aussi l'**écart** en seconde ligne : sur mobile c'est le SEUL rappel pendant le jeu) ;
+  scénarios + histoire (bouton 🔇/🔊 `btn-scn-voice` de version sonore) ; boîte « Pourquoi
+  les fuseaux horaires ? » à écouter (`<details>` `explain-fold`, **repliée sur mobile
   ≤ 640 px** — le résumé ne s'affiche qu'en mobile et duplique le h2 de `.explain-head`,
-  chacun masqué à l'autre taille ; main.js la garde ouverte sur ordinateur) ;
-  **jeu** « Amuse-toi à trouver l'heure… »
-  (`.game-head` — titre + consigne seuls — puis `.game-grid` : globe 3D avec ⏸/▶ dans
-  son titre, les 2 boutons de lieux 🏠 chez nous /
-  destination **incrustés dans son ciel, sous la Terre** (toutes tailles ; `width:
-  max-content` sinon l'absolu `left:50%` replie les boutons), carte à plat avec sa recherche
-  jumelle et les 9 idées répliquées (masquées sur mobile), et le bloc `.game-side` — le cadre
-  jumeau `-globe` seul. Côte à côte dès 961 px avec `.game-side` sous le globe ; sur mobile
-  l'ordre (par `order` CSS) est globe → cadre → carte, les deux vues tiennent sur un écran,
-  et titre + recherche de la carte passent sous elle. Pas de plein écran) ; note aux parents
-- `css/style.css` — thème sombre de la série ; sur la vue du pôle, le cadre des heures est
-  incrusté (il se range dessous en **mobile ≤ 640 px**) ; dans le jeu (`.game-grid`), le cadre
-  et les boutons de lieux sont **toujours** rangés sous le globe, à toutes les tailles — rien
-  ne mord sur les vues ; section « lisibilité mobile » **en fin de feuille** (planchers
-  ≥ ~12,5 px : hints des titres de canvas sur leur ligne, graduation du curseur, cadre des
-  heures, sous-titres de scénarios — en fin de feuille exprès : à spécificité égale, elle doit
-  passer après les tailles de base)
+  chacun masqué à l'autre taille ; main.js la garde ouverte sur ordinateur) ; **jeu**
+  « Amuse-toi à trouver l'heure… », un seul panneau `game-panel` au même patron : `.game-head`
+  (titre + consigne « regarde l'heure qu'il est là-bas »), puis `.game-views` : globe 3D
+  `.view-block-globe` (⏸/▶ dans son titre, les 2 boutons de lieux 🏠 chez nous /
+  destination **incrustés dans son ciel, sous la Terre**, toutes tailles ; `width:
+  max-content` sinon l'absolu `left:50%` replie les boutons), la recherche jumelle
+  `.game-search` (9 idées répliquées, masquées sur mobile), et la carte à plat
+  `.view-block-map` : le cadre jumeau `-globe` en **ligne** `.game-frame`, puis `.map-body`
+  (carte + légende `.map-legend` ensemble). Ordinateur dès 961 px : les deux blocs passent en
+  `display: contents`, en-têtes calés en bas sur la rangée 1 (le cadre en ligne comble la
+  hauteur du titre du globe : le haut de la carte tombe pile sur le haut du globe), vues
+  rangée 2 (`.map-body` garde la légende collée sous la carte, la rangée ayant la hauteur du
+  globe), recherche rangée 3 sur toute la largeur ; mobile (par `order`) : globe →
+  recherche → carte, pas de cadre.
+  Pas de plein écran ; note aux parents
+- `css/style.css` — thème sombre de la série ; **plus de boîtes dans la boîte** : dans les deux
+  panneaux, cartes-horloges, recherche et cadres perdent fond, bordure et arrondi (rangées à
+  plat séparées par des filets), seules les images (ciels, disque, globe, carte) gardent leur
+  cadre arrondi ; sur mobile ≤ 640 px le cadre incrusté du disque est **masqué** (la barre
+  collante), le disque est plafonné à `min(92vw, 40vh)` en hauteur explicite (patron de la
+  famille) ; section « lisibilité mobile » **en fin de feuille** (planchers ≥ ~12,5 px :
+  légende de la carte, graduation du curseur, barre collante, sous-titres de scénarios — en
+  fin de feuille exprès : à spécificité égale, elle doit passer après les tailles de base)
 - `js/model.js` — logique horaire pure (lieux, horloges locales, report de jour, heure solaire,
   hauteur du soleil, scénarios et phrases générées — dont le cas « même fuseau que la
   France » —, écarts en toutes lettres, prépositions de lieu `placeLocative`, cadrage caméra
@@ -157,7 +168,13 @@ se partage.
   (9 villes toujours dessinées — la nuit, elles s'allument), `IDEES_VOYAGE` (les 9 puces,
   partagées interface/corpus vocal : seuls ces lieux ont une transition nommée enregistrée)
 - `js/views.js` — `MapView` (planisphère : bandes UTC étiquetées, halo doré du midi solaire,
-  nuit qui balaie, Greenwich sous UTC, hitTest), `PoleView` (la **vue principale** : Terre vue
+  nuit qui balaie, Greenwich sous UTC, hitTest ; le **fond** — océan, fuseaux, pays, lacs,
+  îles, `drawMapBase` — est rendu une fois par taille dans un canvas hors écran et recollé,
+  `baseImage` : c'était ~10 700 points à remplir et tracer à chaque image, la nuit avançait
+  par à-coups sur téléphone ; zoomée à la pince la carte repasse en vectoriel ; densité 3×
+  autorisée, `fitCanvas(canvas, 3)`, pour un crépuscule net ; la pleine lune « il est
+  minuit ici » n'est dessinée qu'à partir de 520 px de large, retirée sur mobile à la
+  demande de David), `PoleView` (la **vue principale** : Terre vue
   du pôle Nord, 24 tranches tournantes, moitié nuit fixe, Soleil à droite rapproché si la
   largeur manque, lieux sur leurs cercles, pulsation à la sélection, `layout` pour le glisser
   rotatif), `SkyView` (ciels des vignettes), `buildClock` (horloge SVG), helpers (`fitCanvas`,
@@ -167,8 +184,14 @@ se partage.
   lumière, hystérésis à ±0,05 sur cos ; le rendu « derrière la Terre, rayons qui frôlent » ne
   sert plus que pendant les vols de caméra), mode **compact** sous 520 px de canvas (Terre à
   0,315 au lieu de 0,28 du côté court, Soleil rapproché), villes-décor allumées la nuit,
-  hitTest inverse — pas de lib 3D, c'est voulu
-- `js/main.js` — boucle d'animation, curseur, glissers (vue du pôle : rotatif = changer
+  hitTest inverse — pas de lib 3D, c'est voulu. Plus de « lueurs chaudes » aux points où
+  la limite jour/nuit touche le limbe : Soleil sur l'axe horizontal + équinoxe, ces points
+  sont toujours les pôles, ça se lisait « les pôles s'allument » (retiré, demandé par David)
+- `js/main.js` — boucle d'animation (**seules les vues à l'écran se dessinent** :
+  `onScreen` par `IntersectionObserver`, marge 120 px — sur téléphone disque, globe 3D,
+  carte et cartes-horloges ne sont jamais visibles ensemble, et le globe coûte ~4 ms par
+  image, les deux ciels ~1,5 ms ; CPU ralenti ×4, la page passait de 4 à ~18 images/s au
+  disque ; sans observer, tout se dessine), curseur, glissers (vue du pôle : rotatif = changer
   l'heure ; globe : H = tourner la Terre, V = pencher, clic = choisir ; carte : H = changer
   l'heure, clic = choisir ; globe et carte : pince à deux doigts = zoomer, via `makePinch` —
   suivi des pointeurs tactiles, neutralise glisser et clic pendant la pince — et double-tap
@@ -183,9 +206,15 @@ se partage.
   d'ou-va-le-soleil : calée sous la barre collante sur mobile, seulement si hors champ sur
   grand écran, jamais lors des rejouages automatiques pour ne pas défiler sous le doigt qui
   choisit un pays), cadres
-  jumeaux (`''`/`-globe`/`-sticky` — la barre collante mobile apparaît quand les
-  cartes-horloges sortent de l'écran par le haut, `IntersectionObserver` avec garde : sans
-  lui elle reste masquée ; même garde `matchMedia` pour replier `explain-fold` sur mobile et
+  jumeaux (`''`/`-globe`/`-sticky` + la phrase d'écart `#cards-diff` entre les cartes — la
+  barre collante mobile apparaît dès que les cartes-horloges passent **sous sa propre
+  hauteur** (`IntersectionObserver` sur `#cards`, `rootMargin` négatif = hauteur de la
+  barre : elle ne recouvre que la fin des cartes, jamais la recherche qui suit — heures,
+  recherche et disque tiennent sur UN écran, exigé par David ; l'accrocher à la recherche
+  la faisait disparaître pendant qu'on tourne le disque, payé) ; sans observer elle reste
+  masquée ; elle s'efface
+  (`search-focus`) pendant la frappe dans l'une des deux recherches — iOS remonte le champ
+  actif pile sous elle — et `scroll-padding-top` cale le défilement de focus dessous ; même garde `matchMedia` pour replier `explain-fold` sur mobile et
   le rouvrir sur ordinateur), et le **conteur** `narrator` (patron canonique de la famille,
   porté depuis `ou-va-le-soleil/js/main.js`) : UN seul moteur `narrate(items)`/`stop()`
   partagé entre l'histoire des fuseaux et la **version sonore des scénarios** (bouton 🔇/🔊,
@@ -262,9 +291,10 @@ compagnon `generer-voix-petit-labo` ; règles dures :
 ## Vérification navigateur
 
 Suite Playwright maintenue dans le scratchpad des sessions (`test-site.js` : desktop +
-mouvement réduit + mobile 390 px, structure de la page — heures chez nous/là-bas d'abord puis
-« Depuis l'espace », recherche dans la colonne des cartes, frise pleine largeur, jeu côte à
-côte sur ordinateur —, glisser rotatif du disque (quart de tour ≈ 6 h), sélection sans
+mouvement réduit + mobile 390 px, structure de la page — le bloc unique : heures chez
+nous/là-bas, écart entre les deux, recherche, « Depuis l'espace », frise ; le jeu côte à côte
+sur ordinateur, haut de la carte sur le haut du globe ; ordre mobile et barre collante avec
+l'écart —, glisser rotatif du disque (quart de tour ≈ 6 h), sélection sans
 changer l'heure, boutons de lieux, bascule 🔇/🔊 des scénarios, sondes de pixels sur le
 Soleil et le croissant de nuit — jamais de « plein jour » plein cadre, Soleil jamais coincé
 derrière la Terre, entier même rapproché sur mobile —, zéro erreur console). Le zoom à deux
