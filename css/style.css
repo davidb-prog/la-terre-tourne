@@ -183,6 +183,30 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 .stage-panel .time-control { border-top: 1px solid var(--border); margin-top: 14px; padding-top: 12px; }
 .time-hint { color: var(--muted); font-size: .9rem; margin: 0 2px 8px; }
 
+/* LA RECHERCHE SE COMPACTE SUR LES ÉCRANS LARGES MAIS BAS (le portable —
+   variante légère de la règle de la famille, décision utilisateur) : sur cet
+   épisode c'est la colonne « chez nous » qui fixe la hauteur du panneau
+   (deux cartes-horloges + la recherche), pas le disque — rétrécir la page ne
+   gagnait rien. On ne touche PAS aux cartes (leurs ciels sont l'illustration
+   de « chez nous ») : seule la recherche se resserre — titre sur la ligne du
+   champ, champ moins haut, puces sur deux rangées au lieu de trois — et les
+   écarts de la colonne se réduisent. La frise peut rester un peu sous le pli
+   sur portable : ici le disque se tourne au doigt, le curseur est un second
+   accès. Sous 850 px de hauteur visible, grand écran seulement. */
+@media (min-width: 961px) and (max-height: 849px) {
+  .stage-panel .search-panel {
+    display: grid; grid-template-columns: auto minmax(0, 1fr);
+    gap: 6px 10px; align-items: center;
+  }
+  .stage-panel .search-panel .search-title { margin: 0; white-space: nowrap; }
+  .stage-panel .search-panel .search-row { display: contents; }
+  .stage-panel .search-panel .search-box { min-width: 0; }
+  .stage-panel .search-panel .search-box input { padding: 7px 14px; font-size: .95rem; }
+  .stage-panel .search-panel .search-chips { grid-column: 1 / -1; gap: 5px; }
+  .stage-panel .search-panel .search-chips button { font-size: .78rem; padding: 3px 9px; }
+  .view-block-home, .view-block-home .vignettes { gap: 10px; }
+}
+
 @media (max-width: 960px) {
   .views-grid { grid-template-columns: 1fr; }
   .view-block-space { border-left: 0; padding-left: 0; border-top: 1px solid var(--border); padding-top: 12px; }
