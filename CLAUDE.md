@@ -142,7 +142,12 @@ se partage.
   globe), recherche rangée 3 sur toute la largeur ; mobile (par `order`) : globe →
   recherche → carte, pas de cadre.
   Pas de plein écran ; note aux parents
-- `css/style.css` — thème sombre de la série ; **plus de boîtes dans la boîte** : dans les deux
+- `css/style.css` — thème sombre de la série ; la capsule « déjà demain / encore hier » tient
+  dans la ligne du nom de la carte (line-height 1,2, padding 2 px) — plus haute que le nom,
+  elle grandissait la carte de 4 px au-dessus de l'écran mobile et le disque sautait deux
+  fois pendant l'animation du lever là-bas (trouvé par David) ; l'histoire des scénarios est une grille à deux
+  colonnes (pastilles France/destination à la largeur de la plus large, textes alignés —
+  `.story-line` en `display: contents`) ; **plus de boîtes dans la boîte** : dans les deux
   panneaux, cartes-horloges, recherche et cadres perdent fond, bordure et arrondi (rangées à
   plat séparées par des filets), seules les images (ciels, disque, globe, carte) gardent leur
   cadre arrondi ; sur mobile ≤ 640 px le cadre incrusté du disque est **masqué** (la barre
@@ -203,9 +208,16 @@ se partage.
   change : l'histoire suit sans re-clic — muette, voix coupée, si le changement vient d'un
   clic sur le globe 3D ou la carte à plat ; il s'efface dès qu'on reprend la main ; un **appui**
   sur un bouton remonte la page en douceur jusqu'à la vue du pôle — `showPoleView`, patron
-  d'ou-va-le-soleil : calée sous la barre collante sur mobile, seulement si hors champ sur
+  d'ou-va-le-soleil : calée sous la barre collante sur mobile **sauf si le disque est déjà
+  aux trois quarts à l'écran** (les boutons sont juste sous lui : un recalage de 100 px
+  sous le doigt se lisait comme un saut, signalé par David), seulement si hors champ sur
   grand écran, jamais lors des rejouages automatiques pour ne pas défiler sous le doigt qui
-  choisit un pays), cadres
+  choisit un pays), **l'heure affichée par tranches de 30 min** (`shownHomeH` : horloges,
+  cadres, barre collante, `aria-valuetext` — en lecture la Terre fait un tour en 80 s, les
+  minutes défilaient trop vite pour être lues ; arrondi au plus proche, 11 h 15 → 11 h 30
+  comme le « presque 11 h 30 » du lever ; le pouce du curseur glisse en continu, `step="any"`
+  — un pas de 0,5 le faisait sauter en lecture, signalé par David —, le clavier avance par
+  demi-heure (3 h avec Page↑/↓) ; les dessins suivent l'heure exacte), cadres
   jumeaux (`''`/`-globe`/`-sticky` + la phrase d'écart `#cards-diff` entre les cartes — la
   barre collante mobile apparaît dès que les cartes-horloges passent **sous sa propre
   hauteur** (`IntersectionObserver` sur `#cards`, `rootMargin` négatif = hauteur de la

@@ -345,6 +345,18 @@ slider.addEventListener('input', () => {
   sim.homeH = wrap24(+slider.value);
   stopAuto();
 });
+// au clavier, le curseur avance par demi-heure (le pas natif est « any » pour
+// que le pouce glisse en continu pendant la lecture) — sur l'heure affichée,
+// donc la voix du lecteur d'écran change à chaque appui
+slider.addEventListener('keydown', (e) => {
+  const dir = (e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'PageUp') ? 1
+    : (e.key === 'ArrowLeft' || e.key === 'ArrowDown' || e.key === 'PageDown') ? -1 : 0;
+  if (!dir) return;
+  e.preventDefault();
+  sim.homeH = wrap24(shownHomeH() + dir * (e.key.startsWith('Page') ? 3 : 0.5));
+  slider.value = sim.homeH;
+  stopAuto();
+});
 slider.addEventListener('pointerdown', () => { sliderHeld = true; });
 window.addEventListener('pointerup', () => { sliderHeld = false; });
 window.addEventListener('pointercancel', () => { sliderHeld = false; });
@@ -818,7 +830,15 @@ function showPoleView() {
   const homeCol = document.querySelector('.view-block-home');
   const stacked = pr.top >= homeCol.getBoundingClientRect().bottom - 1;
   if (stacked) {
-    const target = Math.max(0, window.scrollY + pr.top - $('sticky-times').offsetHeight - 8);
+    // sur téléphone, les boutons-scénarios sont juste sous le disque : si le
+    // disque est déjà aux trois quarts à l'écran (sous la barre collante), on
+    // ne bouge pas — un recalage de 100 px sous le doigt se lisait comme un
+    // saut, pas comme une aide
+    const barH = $('sticky-times').offsetHeight;
+    const disk = $('pole-view').getBoundingClientRect();
+    const seen = Math.min(disk.bottom, window.innerHeight) - Math.max(disk.top, barH);
+    if (seen >= 0.75 * disk.height) return;
+    const target = Math.max(0, window.scrollY + pr.top - barH - 8);
     if (Math.abs(window.scrollY - target) > 30) {
       if (!reduceMotion && 'scrollBehavior' in document.documentElement.style) {
         window.scrollTo({ top: target, behavior: 'smooth' });
@@ -848,8 +868,9 @@ const FRAME_IDS = ['', '-globe', '-sticky'];
 const frameCache = { name: null };
 
 function updateFrame() {
-  const homeText = formatHM(sim.homeH).text;
-  const selText = formatHM(localClock(sim.homeH, selected).hours).text;
+  const shown = shownHomeH();
+  const homeText = formatHM(shown).text;
+  const selText = formatHM(localClock(shown, selected).hours).text;
   const nameChanged = frameCache.name !== selected.name;
   if (nameChanged) frameCache.name = selected.name;
   for (const sfx of FRAME_IDS) {
@@ -870,9 +891,17 @@ function updateFrame() {
   }
 }
 
+// L'heure AFFICHÉE (horloges, cadres, barre collante) avance par tranches de
+// 30 minutes : en lecture, la Terre fait un tour en 80 s et les minutes
+// défilaient trop vite pour être lues — les dessins (disque, globe, carte),
+// eux, suivent l'heure exacte. Arrondi au plus proche : 11 h 15 → 11 h 30,
+// comme le « presque 11 h 30 » du scénario du lever.
+function shownHomeH() { return wrap24(Math.round(sim.homeH * 2) / 2); }
+
 function updateCards() {
+  const shown = shownHomeH();
   for (const card of cards) {
-    const c = localClock(sim.homeH, card.place);
+    const c = localClock(shown, card.place);
     const hm = formatHM(c.hours);
     setText(card.cache, 'digital', card.digital, hm.text);
     setText(card.cache, 'period', card.period, periodWord(c.hours));
@@ -894,7 +923,7 @@ function updateCards() {
   // le rappel « Chez nous, il est 12 h » a disparu de la page (l'heure se lit
   // sur la carte France) : le curseur garde la valeur en toutes lettres pour
   // les lecteurs d'écran
-  const valueText = formatHM(sim.homeH).text + ', ' + periodWord(sim.homeH);
+  const valueText = formatHM(shown).text + ', ' + periodWord(shown);
   if (sim._valueText !== valueText) {
     sim._valueText = valueText;
     slider.setAttribute('aria-valuetext', valueText);

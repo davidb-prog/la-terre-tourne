@@ -435,7 +435,11 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
   color: var(--rose); border: 1px solid var(--rose); border-radius: 999px;
   padding: 2px 8px; margin-left: 6px; vertical-align: 3px; white-space: nowrap;
 }
-.day-badge { flex: none; font-size: .78rem; font-weight: 800; border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+/* la capsule tient DANS la ligne du nom (line-height serré, padding réduit :
+   ~21 px contre ~23 pour le nom) : en apparaissant, elle ne doit pas grandir
+   la carte — au-dessus de l'écran sur téléphone, 4 px de plus faisaient
+   sauter le disque deux fois pendant l'animation du lever là-bas (payé) */
+.day-badge { flex: none; font-size: .78rem; font-weight: 800; line-height: 1.2; border-radius: 999px; padding: 2px 10px; white-space: nowrap; }
 .day-badge.tomorrow { background: #2b1e52; color: #cabcff; border: 1px solid #5f43b3; }
 .day-badge.yesterday { background: #0e3a33; color: #7fe0c8; border: 1px solid #2f8f7a; }
 
@@ -499,9 +503,11 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
    scn-bali-lever ne s'appliquait plus : le bouton restait gris) */
 .scn-lever-la-bas { background: linear-gradient(180deg, #2b1e52, #1c1433); border-color: #5f43b3; color: #cabcff; }
 
-.story { margin-top: 12px; }
-.story-invite { margin: 4px 2px; color: var(--muted); }
-.story-line { display: flex; gap: 10px; align-items: flex-start; margin: 9px 0; font-size: 1.03rem; }
+/* deux colonnes : les pastilles (France, la destination) dans la première, à
+   la largeur de la plus large, les textes alignés dans la seconde */
+.story { margin-top: 12px; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 9px 10px; align-items: start; }
+.story-invite { margin: 4px 2px; color: var(--muted); grid-column: 1 / -1; }
+.story-line { display: contents; font-size: 1.03rem; }
 .story-chip {
   flex: none; padding: 3px 11px; border-radius: 999px; font-weight: 700; font-size: .85rem;
   white-space: nowrap;
@@ -509,7 +515,8 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 .story-chip-guadeloupe { background: rgba(70, 194, 165, .14); color: var(--teal); border: 1px solid rgba(70, 194, 165, .5); }
 .story-chip-france { background: rgba(255, 107, 157, .13); color: var(--rose); border: 1px solid rgba(255, 107, 157, .5); }
 .story-chip-bali { background: rgba(169, 139, 255, .14); color: var(--violet); border: 1px solid rgba(169, 139, 255, .5); }
-.story-text { margin: 2px 0 0; }
+.story-text { margin: 2px 0 0; font-size: 1.03rem; }
+.story-chip { justify-self: start; margin-top: 1px; }
 
 /* ---------- note aux parents (repliée) ---------- */
 
