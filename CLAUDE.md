@@ -152,9 +152,20 @@ se partage.
   presque pas de la largeur (mesuré : 755 px + 0,056 × largeur — c'est la
   colonne « chez nous », deux cartes-horloges + la recherche, qui fixe
   ~660 px, le disque n'est que 7/12 de la largeur), rétrécir la page ne
-  gagnerait rien. Sur un 13" (1440×900), en-tête + scène débordent encore
-  de ~150 px : faire tenir cet épisode dans un portable demande de
-  plafonner la colonne des villes en hauteur, une décision à part.
+  gagnerait rien. **Variante légère retenue (décision utilisateur)** : sous
+  la même condition, seule **la recherche se compacte** — titre sur la ligne
+  du champ (grille `auto 1fr`, `.search-row` en `display: contents`), champ
+  moins haut, puces à 0,78 rem sur deux rangées au lieu de trois, écarts de
+  la colonne à 10 px : la recherche passe de 189 à 105 px. Les cartes-horloges
+  ne se touchent PAS (leurs ciels sont l'illustration de « chez nous ») et le
+  plafond de largeur n'est toujours pas posé : re-mesuré après compactage,
+  la colonne des villes descend à ~565 px de minimum, le disque redevient le
+  plus haut seulement entre ~980 et 1140 px utiles — un plafond n'y
+  gagnerait que ~45 px de panneau sans faire tenir aucun écran. Sur un 13"
+  (1440×900), en-tête + scène débordent de ~150 px : la frise reste sous le
+  pli sur portable, accepté — ici le disque se tourne au doigt, le curseur
+  est un second accès. Toujours re-mesurer au script (colonne, disque,
+  panneau, bas du curseur) avant de toucher à ces marges.
 - `css/style.css` — thème sombre de la série ; la capsule « déjà demain / encore hier » tient
   dans la ligne du nom de la carte (line-height 1,2, padding 2 px) — plus haute que le nom,
   elle grandissait la carte de 4 px au-dessus de l'écran mobile et le disque sautait deux
