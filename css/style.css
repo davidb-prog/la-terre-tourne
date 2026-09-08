@@ -85,7 +85,12 @@ body {
 /* sur mobile le titre-question rétrécit, au pixel près des autres épisodes
    (ou-va-le-soleil, la-lune-change-de-forme) */
 @media (max-width: 640px) {
+  /* en-tête compact de la famille (saisons, soleil, Lune) : 18 px avant le
+     kicker au lieu de 38, accroche à 0,92 rem — la scène doit se voir dès le
+     premier écran */
+  .site-header { padding: 18px 16px 10px; }
   .site-header h1 { font-size: clamp(1.65rem, 7.5vw, 2.2rem); }
+  .tagline { font-size: .92rem; }
 }
 .tagline { margin: 0 auto; max-width: 62ch; color: var(--muted); }
 /* la révélation de l'accroche en or, comme sur les autres épisodes */
