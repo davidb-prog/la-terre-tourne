@@ -65,6 +65,11 @@ function displayedPlaces() { return [FRANCE, selected]; }
 
 const cardsBox = $('cards');
 let cards = [];
+// la phrase d'écart (« 5 h de retard sur nous ») vit ENTRE les deux cartes,
+// sur le filet qui les sépare : elle relie les deux heures qu'elle compare
+const cardsDiff = document.createElement('div');
+cardsDiff.className = 'cards-diff';
+cardsDiff.id = 'cards-diff';
 
 function buildCards() {
   cardsBox.innerHTML = '';
@@ -137,6 +142,9 @@ function buildCards() {
       digital: digital, period: period, activity: activity, badge: badge, cache: {},
     };
   });
+  // l'écart se glisse après la première carte (chez nous)
+  cardsBox.insertBefore(cardsDiff, cardsBox.children[1] || null);
+  cardsDiff.textContent = offsetDiffText(selected);
   frameCache.name = null; // le cadre du globe se resynchronise
 }
 
@@ -807,7 +815,7 @@ function runScenario(scn, opts) {
 function showPoleView() {
   const panel = $('pole-panel');
   const pr = panel.getBoundingClientRect();
-  const homeCol = document.querySelector('.home-col');
+  const homeCol = document.querySelector('.view-block-home');
   const stacked = pr.top >= homeCol.getBoundingClientRect().bottom - 1;
   if (stacked) {
     const target = Math.max(0, window.scrollY + pr.top - $('sticky-times').offsetHeight - 8);
@@ -831,9 +839,11 @@ function setText(cache, key, el, value) {
   el.textContent = value;
 }
 
-// les cadres posés sur la vue du pôle et sous le globe du jeu, plus la barre
-// collante du haut d'écran (mobile) : l'heure ici, l'heure là-bas, et l'écart
-// — même contenu aux trois endroits
+// les cadres jumeaux : incrusté sur la vue du pôle (ordinateur), en ligne
+// au-dessus de la carte à plat du jeu (ordinateur), et la barre collante du
+// haut d'écran (mobile, seul rappel pendant le jeu) : l'heure ici, l'heure
+// là-bas, et l'écart — même contenu aux trois endroits, plus la phrase
+// d'écart posée entre les deux cartes-horloges
 const FRAME_IDS = ['', '-globe', '-sticky'];
 const frameCache = { name: null };
 
@@ -851,6 +861,7 @@ function updateFrame() {
       $('frame-diff' + sfx).textContent = offsetDiffText(selected);
     }
   }
+  if (nameChanged) cardsDiff.textContent = offsetDiffText(selected);
   if (nameChanged) {
     // le bouton de la destination porte son nom : « revoir Bali », pas un jargon
     $('view-dest-label').textContent = selected.emoji + ' ' + selected.name;
@@ -878,8 +889,14 @@ function updateCards() {
     }
     card.sky.draw(sim.homeH);
   }
-  setText(sim, '_homeText', $('home-time'), formatHM(sim.homeH).text);
-  setText(sim, '_homePeriod', $('home-period'), periodWord(sim.homeH));
+  // le rappel « Chez nous, il est 12 h » a disparu de la page (l'heure se lit
+  // sur la carte France) : le curseur garde la valeur en toutes lettres pour
+  // les lecteurs d'écran
+  const valueText = formatHM(sim.homeH).text + ', ' + periodWord(sim.homeH);
+  if (sim._valueText !== valueText) {
+    sim._valueText = valueText;
+    slider.setAttribute('aria-valuetext', valueText);
+  }
   updateFrame();
   if (!sliderHeld) slider.value = sim.homeH;
 }

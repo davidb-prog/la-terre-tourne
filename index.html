@@ -64,8 +64,10 @@
     <h2 id="sim-title" class="visually-hidden">La Terre qui tourne, les horloges qui changent</h2>
 
     <!-- barre d'heures collante (mobile) : dès que les cartes-horloges sortent de
-         l'écran, elle garde les deux heures sous les yeux — troisième jumeau du
-         cadre des heures, masqué aux lecteurs d'écran (il répète l'existant) -->
+         l'écran, elle garde les deux heures ET l'écart sous les yeux — jumeau du
+         cadre des heures, masqué aux lecteurs d'écran (il répète l'existant). Sur
+         mobile, c'est le SEUL rappel pendant le jeu : les cadres des vues n'y
+         sont plus affichés -->
     <div class="sticky-times" id="sticky-times" aria-hidden="true">
       <div class="frame-row frame-row-home">
         <span class="frame-flag">🏠</span>
@@ -80,57 +82,65 @@
       <div class="frame-diff" id="frame-diff-sticky">5 h de retard sur nous</div>
     </div>
 
-    <div class="sim-grid">
-      <div class="home-col">
-        <div class="vignettes" id="cards" aria-live="polite"></div>
-        <div class="panel search-panel">
-          <div class="search-title">✈️ Change de destination :</div>
-          <div class="search-row">
-            <div class="search-box">
-              <input type="search" id="place-search" autocomplete="off" spellcheck="false"
-                placeholder="🔎 Cherche une ville ou un pays…"
-                aria-label="Chercher une ville ou un pays à comparer avec chez nous">
-              <div id="search-results" class="search-results" hidden></div>
+    <!-- UN seul panneau (patron « Le même moment, deux regards » des autres
+         épisodes) : l'heure chez nous, l'heure là-bas — l'écart entre les deux,
+         posé par main.js —, la recherche, la Terre vue du pôle Nord et la frise
+         du temps. Sur ordinateur, la colonne « chez nous » à gauche et le disque
+         à droite ; sur mobile, tout s'empile dans cet ordre. Plus de boîtes dans
+         la boîte : les rangées sont à plat, séparées par des filets. -->
+    <div class="panel stage-panel" id="stage-panel">
+      <div class="views-grid">
+        <div class="view-block view-block-home">
+          <div class="vignettes" id="cards" aria-live="polite"></div>
+          <div class="panel search-panel">
+            <div class="search-title">✈️ Change de destination :</div>
+            <div class="search-row">
+              <div class="search-box">
+                <input type="search" id="place-search" autocomplete="off" spellcheck="false"
+                  placeholder="🔎 Cherche une ville ou un pays…"
+                  aria-label="Chercher une ville ou un pays à comparer avec chez nous">
+                <div id="search-results" class="search-results" hidden></div>
+              </div>
+              <div class="search-chips" id="search-chips" aria-label="Quelques idées de voyage"></div>
             </div>
-            <div class="search-chips" id="search-chips" aria-label="Quelques idées de voyage"></div>
+          </div>
+        </div>
+
+        <div class="view-block view-block-space" id="pole-panel">
+          <div class="view-head view-head-space">
+            <span>🚀 Depuis l’espace <span class="hint">(glisse pour faire tourner la Terre)</span></span>
+            <!-- libellés empilés (grille 1×1) : largeur stable, rien ne se décale au clic -->
+            <button id="btn-spin" class="spin-btn play-btn" aria-pressed="true"><span
+                class="play-on" aria-hidden="true">⏸ Pause</span><span
+                class="play-off" aria-hidden="true">▶ Lecture</span></button>
+          </div>
+          <div class="globe-stage">
+            <div class="canvas-wrap ratio-square">
+              <canvas id="pole-view" aria-label="La Terre vue de tout en haut, au-dessus du pôle Nord : un disque découpé en 24 tranches, comme une orange — une tranche par heure. Le Soleil, posé à droite, éclaire toujours la moitié qui lui fait face ; l’autre moitié est dans la nuit. La France et la destination tournent avec l’heure et passent tour à tour du jour à la nuit. Faites glisser en rond pour faire tourner la Terre et changer l’heure."></canvas>
+              <div class="drag-hint" id="drag-hint">👆 Attrape la Terre et fais-la tourner !</div>
+            </div>
+            <div class="globe-frame" id="globe-frame">
+              <div class="frame-row frame-row-home">
+                <span class="frame-flag">🏠</span>
+                <span class="frame-name">France</span>
+                <strong id="frame-home-time">12 h 00</strong>
+              </div>
+              <div class="frame-row frame-row-sel">
+                <span class="frame-flag" id="frame-sel-flag">🏝️</span>
+                <span class="frame-name" id="frame-sel-name">Guadeloupe</span>
+                <strong id="frame-sel-time">7 h 00</strong>
+              </div>
+              <div class="frame-diff" id="frame-diff">5 h de retard sur nous</div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="panel canvas-panel globe-panel" id="pole-panel">
-        <div class="canvas-title">
-          <span>🚀 Depuis l’espace <span class="hint">(glisse pour faire tourner la Terre)</span></span>
-          <!-- libellés empilés (grille 1×1) : largeur stable, rien ne se décale au clic -->
-          <button id="btn-spin" class="spin-btn play-btn" aria-pressed="true"><span
-              class="play-on" aria-hidden="true">⏸ Pause</span><span
-              class="play-off" aria-hidden="true">▶ Lecture</span></button>
-        </div>
-        <div class="globe-stage">
-          <div class="canvas-wrap ratio-square">
-            <canvas id="pole-view" aria-label="La Terre vue de tout en haut, au-dessus du pôle Nord : un disque découpé en 24 tranches, comme une orange — une tranche par heure. Le Soleil, posé à droite, éclaire toujours la moitié qui lui fait face ; l’autre moitié est dans la nuit. La France et la destination tournent avec l’heure et passent tour à tour du jour à la nuit. Faites glisser en rond pour faire tourner la Terre et changer l’heure."></canvas>
-            <div class="drag-hint" id="drag-hint">👆 Attrape la Terre et fais-la tourner !</div>
-          </div>
-          <div class="globe-frame" id="globe-frame">
-            <div class="frame-row frame-row-home">
-              <span class="frame-flag">🏠</span>
-              <span class="frame-name">France</span>
-              <strong id="frame-home-time">12 h 00</strong>
-            </div>
-            <div class="frame-row frame-row-sel">
-              <span class="frame-flag" id="frame-sel-flag">🏝️</span>
-              <span class="frame-name" id="frame-sel-name">Guadeloupe</span>
-              <strong id="frame-sel-time">7 h 00</strong>
-            </div>
-            <div class="frame-diff" id="frame-diff">5 h de retard sur nous</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel time-panel">
       <div class="time-control">
-        <div class="time-readout">Chez nous, en France, il est
-          <strong id="home-time">12 h 00</strong> <span id="home-period" class="period">midi !</span></div>
+        <!-- pas de rappel « il est 12 h » ici : l'heure se lit déjà sur la carte
+             France, et dans la barre collante sur mobile ; le curseur porte la
+             valeur en aria-valuetext (main.js) -->
+        <div class="time-hint">Fais glisser pour changer l’heure chez nous</div>
         <input type="range" id="time-slider" min="0" max="24" step="0.25" value="12"
           aria-label="Choisir l’heure en France : le curseur fait tourner la Terre sur 24 heures">
         <div class="slider-scale" aria-hidden="true">
@@ -188,68 +198,78 @@
       </div>
     </details>
 
-    <div class="game-head">
-      <h2>🧭 Amuse-toi à trouver l’heure qu’il est dans les pays que tu connais !</h2>
-      <p class="hint">Clique sur un pays — sur la Terre en 3D ou sur la carte à plat — et lis son
-        heure dans le petit cadre.</p>
-    </div>
+    <!-- le jeu au même patron que le bloc du haut — un seul panneau : titre et
+         consigne, globe 3D, recherche, carte à plat (mobile : dans cet ordre ;
+         ordinateur : globe et carte côte à côte, recherche dessous). Le cadre
+         des deux heures du jeu est une LIGNE au-dessus de la carte à plat sur
+         ordinateur (rien ne chevauche les vues) et disparaît sur mobile, où la
+         barre collante du haut d'écran porte déjà les deux heures et l'écart. -->
+    <div class="panel game-panel">
+      <div class="game-head">
+        <h2>🧭 Amuse-toi à trouver l’heure qu’il est dans les pays que tu connais !</h2>
+        <p class="hint">Clique sur un pays — sur la Terre en 3D ou sur la carte à plat — et regarde
+          l’heure qu’il est là-bas.</p>
+      </div>
 
-    <div class="game-grid">
-    <div class="panel canvas-panel globe-panel" id="globe-panel">
-      <div class="canvas-title">
-        <span>🌍 La Terre en 3D <span class="hint">(glisse pour la tourner · clique sur un pays pour l’observer)</span></span>
-        <button id="btn-spin-globe" class="spin-btn play-btn" aria-pressed="true"><span
-            class="play-on" aria-hidden="true">⏸ Pause</span><span
-            class="play-off" aria-hidden="true">▶ Lecture</span></button>
-      </div>
-      <div class="globe-stage">
-        <div class="canvas-wrap ratio-square">
-          <canvas id="globe3d-view" aria-label="La Terre en trois dimensions, éclairée par le Soleil posé du côté d’où vient la lumière — la limite entre le jour et la nuit reste toujours visible, et côté nuit les villes s’allument. Les vrais continents et pays sont dessinés, la France est surlignée en rose, et les 24 fuseaux horaires apparaissent en tranches. Faites glisser horizontalement pour faire tourner la Terre et changer l’heure, verticalement pour la pencher, et cliquez sur un pays ou une ville pour l’observer. Sur un écran tactile, pincez à deux doigts pour zoomer, et tapez deux fois pour revenir à la vue entière."></canvas>
+      <div class="game-views">
+        <div class="view-block view-block-globe" id="globe-panel">
+        <div class="view-head view-head-globe">
+          <span>🌍 La Terre en 3D <span class="hint">(glisse pour la tourner · clique sur un pays pour l’observer)</span></span>
+          <button id="btn-spin-globe" class="spin-btn play-btn" aria-pressed="true"><span
+              class="play-on" aria-hidden="true">⏸ Pause</span><span
+              class="play-off" aria-hidden="true">▶ Lecture</span></button>
         </div>
-        <div class="view-chips" role="group" aria-label="Aller voir un lieu : le globe pivote jusqu’à lui, l’heure ne change pas">
-          <button id="view-france" class="view-chip" aria-pressed="false"
-            aria-label="Tourner le globe pour voir la France, chez nous — l’heure ne change pas">🏠 chez nous</button>
-          <button id="view-dest" class="view-chip active" aria-pressed="true"
-            aria-label="Tourner le globe pour revoir la Guadeloupe, la destination — l’heure ne change pas"><span id="view-dest-label">🏝️ Guadeloupe</span></button>
+          <div class="globe-stage">
+          <div class="canvas-wrap ratio-square">
+            <canvas id="globe3d-view" aria-label="La Terre en trois dimensions, éclairée par le Soleil posé du côté d’où vient la lumière — la limite entre le jour et la nuit reste toujours visible, et côté nuit les villes s’allument. Les vrais continents et pays sont dessinés, la France est surlignée en rose, et les 24 fuseaux horaires apparaissent en tranches. Faites glisser horizontalement pour faire tourner la Terre et changer l’heure, verticalement pour la pencher, et cliquez sur un pays ou une ville pour l’observer. Sur un écran tactile, pincez à deux doigts pour zoomer, et tapez deux fois pour revenir à la vue entière."></canvas>
+          </div>
+          <div class="view-chips" role="group" aria-label="Aller voir un lieu : le globe pivote jusqu’à lui, l’heure ne change pas">
+            <button id="view-france" class="view-chip" aria-pressed="false"
+              aria-label="Tourner le globe pour voir la France, chez nous — l’heure ne change pas">🏠 chez nous</button>
+            <button id="view-dest" class="view-chip active" aria-pressed="true"
+              aria-label="Tourner le globe pour revoir la Guadeloupe, la destination — l’heure ne change pas"><span id="view-dest-label">🏝️ Guadeloupe</span></button>
+          </div>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <div class="panel canvas-panel map-panel">
-      <div class="canvas-title">
-        <span>La même chose, à plat — chaque bande debout est un
-          <strong>fuseau horaire</strong> : + ou − quelques heures par rapport à UTC,
-          l’heure de Greenwich</span>
-      </div>
-      <div class="search-row">
-        <div class="search-box">
-          <input type="search" id="place-search-map" autocomplete="off" spellcheck="false"
-            placeholder="🔎 Cherche une ville ou un pays…"
-            aria-label="Chercher une ville ou un pays (même recherche que sur le globe)">
-          <div id="search-results-map" class="search-results" hidden></div>
+        <div class="view-block game-search">
+        <div class="search-row">
+          <div class="search-box">
+            <input type="search" id="place-search-map" autocomplete="off" spellcheck="false"
+              placeholder="🔎 Cherche une ville ou un pays…"
+              aria-label="Chercher une ville ou un pays (même recherche que sur le globe)">
+            <div id="search-results-map" class="search-results" hidden></div>
+          </div>
         </div>
-      </div>
-      <div class="canvas-wrap ratio-map">
-        <canvas id="map-view" aria-label="Carte du monde avec les vrais continents. Les 24 fuseaux horaires apparaissent en bandes verticales, chacune avec son décalage en heures par rapport à UTC ; la moitié plongée dans la nuit est assombrie et se déplace quand l’heure change. Faites glisser horizontalement pour changer l’heure, et cliquez sur un pays ou une ville pour l’observer. Sur un écran tactile, pincez à deux doigts pour zoomer, puis promenez-vous dans la carte du doigt — tant qu’elle est zoomée, glisser la déplace sans changer l’heure — et tapez deux fois pour revenir à la carte entière."></canvas>
-      </div>
-      <div class="search-chips" id="search-chips-map" aria-label="Quelques idées de voyage"></div>
-    </div>
+        <div class="search-chips" id="search-chips-map" aria-label="Quelques idées de voyage"></div>
+        </div>
 
-    <div class="game-side">
-      <div class="globe-frame" id="globe-frame-globe">
-        <div class="frame-row frame-row-home">
-          <span class="frame-flag">🏠</span>
-          <span class="frame-name">France</span>
-          <strong id="frame-home-time-globe">12 h 00</strong>
+        <div class="view-block view-block-map">
+          <div class="game-frame">
+            <div class="globe-frame" id="globe-frame-globe">
+              <div class="frame-row frame-row-home">
+                <span class="frame-flag">🏠</span>
+                <span class="frame-name">France</span>
+                <strong id="frame-home-time-globe">12 h 00</strong>
+              </div>
+              <div class="frame-row frame-row-sel">
+                <span class="frame-flag" id="frame-sel-flag-globe">🏝️</span>
+                <span class="frame-name" id="frame-sel-name-globe">Guadeloupe</span>
+                <strong id="frame-sel-time-globe">7 h 00</strong>
+              </div>
+              <div class="frame-diff" id="frame-diff-globe">5 h de retard sur nous</div>
+            </div>
+          </div>
+          <div class="canvas-wrap ratio-map">
+            <canvas id="map-view" aria-label="Carte du monde avec les vrais continents. Les 24 fuseaux horaires apparaissent en bandes verticales, chacune avec son décalage en heures par rapport à UTC ; la moitié plongée dans la nuit est assombrie et se déplace quand l’heure change. Faites glisser horizontalement pour changer l’heure, et cliquez sur un pays ou une ville pour l’observer. Sur un écran tactile, pincez à deux doigts pour zoomer, puis promenez-vous dans la carte du doigt — tant qu’elle est zoomée, glisser la déplace sans changer l’heure — et tapez deux fois pour revenir à la carte entière."></canvas>
+          </div>
+          <div class="map-legend">
+            <span>La même chose, à plat — chaque bande debout est un
+              <strong>fuseau horaire</strong> : + ou − quelques heures par rapport à UTC,
+              l’heure de Greenwich</span>
+          </div>
         </div>
-        <div class="frame-row frame-row-sel">
-          <span class="frame-flag" id="frame-sel-flag-globe">🏝️</span>
-          <span class="frame-name" id="frame-sel-name-globe">Guadeloupe</span>
-          <strong id="frame-sel-time-globe">7 h 00</strong>
-        </div>
-        <div class="frame-diff" id="frame-diff-globe">5 h de retard sur nous</div>
       </div>
-    </div>
     </div>
   </section>
 
