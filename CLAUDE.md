@@ -284,6 +284,20 @@ se partage.
   `test/voix.test.mjs` — 47 vérifications (textes oraux, arrondi jamais en retard, blocs,
   **couverture** : tout ce que le site peut raconter est dans le corpus, manifeste ↔ site)
 
+## Le conteur : les clips en mémoire
+
+Acquis de `la-terre-est-penchee`, porté en septembre 2026. Safari iOS ne
+réutilise pas le cache d'un `fetch` pour un `<audio>` : le « préchauffage »
+du bloc suivant ne servait à rien — silences de une à trois secondes entre
+deux phrases selon le réseau. Au départ d'une narration, **tous ses clips se
+téléchargent en parallèle en blobs** et se jouent depuis ces blobs (gardés
+pour la session). Le premier clip part en `src` direct, dans le geste (iOS
+n'autorise le premier `play()` que là) — SAUF si son blob est déjà là
+(`clipsPrets`, lu de façon synchrone, donc toujours dans le geste) : une
+histoire rejouée ne repart plus à froid. Vérifié au navigateur (CDP, iPhone
+émulé) : les blocs suivants et le rejeu partent en `blob:`, aucun clip
+téléchargé deux fois.
+
 ## La voix enregistrée (ElevenLabs)
 
 Le conteur peut jouer des **mp3 commités** dans `assets/audio/` au lieu de la synthèse. La
