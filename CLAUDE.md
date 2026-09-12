@@ -297,6 +297,22 @@ n'autorise le premier `play()` que là) — SAUF si son blob est déjà là
 histoire rejouée ne repart plus à froid. Vérifié au navigateur (CDP, iPhone
 émulé) : les blocs suivants et le rejeu partent en `blob:`, aucun clip
 téléchargé deux fois.
+**Et le premier clip a la route pour lui** (retour utilisateur, réseau
+faible : « retard à l'allumage » sur les boutons — tout partait au tap, en
+parallèle, le premier bloc attendait derrière la dizaine de phrases du
+récit) : UNE file de fond (`fileDeFond`, un téléchargement à la fois),
+GELÉE tant qu'un premier clip part à froid en src direct
+(`premierClipEnRoute`, libérée à `playing`, à l'erreur, au stop, ou après
+8 s) ; les blocs suivants d'une narration y entrent en tête, dans l'ordre
+du récit, le premier bloc en dernier ; les réchauffements en queue. Et le
+**réchauffement du premier clip** (`rechaufferPremiersClips`) : les trois
+scénarios s'ouvrent sur le même bloc `voix-chez-nous` — quand la rangée des
+scénarios entre à l'écran (repli : premier toucher), il entre dans la file
+— voix active seulement, manifeste arrivé (sinon on repasse à son arrivée),
+jamais à l'ouverture de la page. Mesuré au navigateur sous 3G bridée
+(300 ms, 40 Ko/s) : premier bloc à froid seul sur le réseau, joue en
+0,55 s ; les phrases suivantes l'une après l'autre, le bloc 2 part de la
+mémoire à la fin du premier ; réchauffé : quelques millisecondes.
 
 ## La voix enregistrée (ElevenLabs)
 
