@@ -1144,6 +1144,40 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
   // interrompue par une phrase robotique. Entre blocs, la respiration par
   // défaut (620 ms) ; `pause` la raccourcit pour les fichiers qui portent
   // déjà leur suspension (les annonces en « … »).
+  // Les clips EN MÉMOIRE (acquis de la-terre-est-penchee). Safari iOS ne
+  // réutilise pas le cache d'un `fetch` pour un <audio> (les médias passent
+  // par des requêtes de plage, cache à part) : le « préchauffage » du bloc
+  // suivant ne servait à rien, chaque clip se retéléchargeait à son tour —
+  // silences de une à trois secondes entre deux phrases selon le réseau.
+  // Désormais, au départ d'une narration, tous ses clips se téléchargent EN
+  // PARALLÈLE en blobs et se jouent depuis ces blobs (gardés pour la
+  // session, rejouer est instantané). Le PREMIER clip part en src direct,
+  // dans le geste de l'utilisateur (iOS n'autorise le premier play() que
+  // là) — SAUF si son blob est DÉJÀ là (`clipsPrets`, lu de façon
+  // synchrone, donc toujours dans le geste) : une histoire rejouée, ou une
+  // narration d'un seul bloc, ne repart plus à froid. Échec de
+  // téléchargement → src direct (comme avant).
+  const clipsEnMemoire = {};
+  const clipsPrets = {};
+  const chargerClip = (src) => {
+    if (src.indexOf('data:') === 0 || !window.fetch || !window.URL || !URL.createObjectURL) {
+      return Promise.resolve(src);
+    }
+    if (!clipsEnMemoire[src]) {
+      clipsEnMemoire[src] = fetch(src)
+        .then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.blob(); })
+        .then((b) => { clipsPrets[src] = URL.createObjectURL(b); return clipsPrets[src]; })
+        .catch(() => { delete clipsEnMemoire[src]; return src; });
+    }
+    return clipsEnMemoire[src];
+  };
+  const precharger = (items) => {
+    items.forEach((it) => {
+      const src = audioSrc(it.id, it.text);
+      if (src) chargerClip(src);
+    });
+  };
+
   const narrate = (items, onDone) => {
     stopSpeaking();
     refreshVoices(); // certaines listes de voix n'arrivent qu'après le chargement
@@ -1151,6 +1185,7 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
     curDone = onDone || null;
     const enregistre = items.every((it) => audioSrc(it.id, it.text));
     let at = 0;
+    if (enregistre) precharger(items); // tous les clips de la narration partent ensemble
     const next = () => {
       if (myGen !== gen) return;
       if (at >= items.length) { settle(); return; }
@@ -1166,24 +1201,23 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
       if (!src) { fallback(); return; }
       const a = getLecteur();
       const pause = typeof it.pause === 'number' ? it.pause : 620;
-      a.onended = () => { if (myGen === gen) window.setTimeout(after, pause); };
-      a.onerror = fallback;
-      a.src = src;
-      const p = a.play();
-      if (p && p.then) p.then(null, fallback);
-      // pendant que ce bloc joue, préchauffer le fichier du suivant : son
-      // chargement se fait d'avance (cache HTTP) et ne s'ajoute plus au
-      // blanc entre les blocs au premier passage en ligne
-      if (at < items.length && window.fetch) {
-        const nx = audioSrc(items[at].id, items[at].text);
-        if (nx && nx.indexOf('data:') !== 0) {
-          fetch(nx).catch(() => { /* le lecteur retentera au vrai chargement */ });
-        }
-      }
+      const premier = at === 1;
+      const jouer = (url) => {
+        if (myGen !== gen) return;
+        a.onended = () => { if (myGen === gen) window.setTimeout(after, pause); };
+        a.onerror = fallback;
+        a.src = url;
+        const p = a.play();
+        if (p && p.then) p.then(null, fallback);
+      };
+      // le premier bloc part dans le geste : depuis la mémoire si son blob
+      // est déjà là, sinon en src direct ; les suivants attendent leur blob
+      if (premier) jouer(clipsPrets[src] || src);
+      else chargerClip(src).then(jouer, () => jouer(src));
     };
     next();
   };
-  narrator = { narrate: narrate, stop: stopSpeaking };
+  narrator = { narrate: narrate, stop: stopSpeaking, precharger: precharger };
 
   // -- « Écouter l'histoire » : la boîte des fuseaux, phrase à phrase --
   listenBtn.hidden = false;
