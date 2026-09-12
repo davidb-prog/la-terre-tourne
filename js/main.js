@@ -1019,6 +1019,7 @@ if (window.__VOIX_MANIFESTE && window.__VOIX_MANIFESTE.blocs) {
     .then((r) => (r.ok ? r.json() : null))
     .then((m) => {
       if (m && m.blocs) audioBlocs = m.blocs;
+      rechaufferPremiersClips(); // demandé avant l'arrivée du manifeste ? c'est le moment
       // le conseil « voix robotiques » ne concerne que le repli synthèse
       if (Object.keys(audioBlocs).length > 0) {
         const vh = $('voice-hint');
@@ -1105,7 +1106,9 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
       try { lecteur.pause(); } catch (e) { /* déjà arrêté */ }
       lecteur.onended = null;
       lecteur.onerror = null;
+      lecteur.onplaying = null;
     }
+    libererLaRoute();
     settle();
   };
 
@@ -1157,6 +1160,16 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
   // synchrone, donc toujours dans le geste) : une histoire rejouée, ou une
   // narration d'un seul bloc, ne repart plus à froid. Échec de
   // téléchargement → src direct (comme avant).
+  // ET LE PREMIER CLIP A LA ROUTE POUR LUI (retour utilisateur, réseau
+  // faible : « retard à l'allumage » sur les boutons). Tout partait au tap,
+  // en parallèle : le premier bloc partageait la bande passante avec la
+  // dizaine de phrases du récit et arrivait en dernier. Désormais UNE SEULE
+  // file de fond (`fileDeFond`, un téléchargement à la fois), GELÉE tant
+  // qu'un premier clip part à froid en src direct (`premierClipEnRoute`,
+  // libérée à `playing`, à l'erreur, au stop, ou après 8 s) ; les blocs
+  // suivants d'une narration y entrent EN TÊTE, dans l'ordre du récit, le
+  // premier bloc en dernier (il rejouera de la mémoire) ; les
+  // réchauffements (`precharger`) en queue.
   const clipsEnMemoire = {};
   const clipsPrets = {};
   const chargerClip = (src) => {
@@ -1171,12 +1184,32 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
     }
     return clipsEnMemoire[src];
   };
-  const precharger = (items) => {
+  let fileDeFond = [];
+  let fileEnCours = false;
+  let premierClipEnRoute = false;
+  const avancerFile = () => {
+    if (fileEnCours || premierClipEnRoute || !fileDeFond.length) return;
+    const src = fileDeFond.shift();
+    if (clipsPrets[src]) { avancerFile(); return; }
+    fileEnCours = true;
+    const apres = () => { fileEnCours = false; avancerFile(); };
+    chargerClip(src).then(apres, apres);
+  };
+  const mettreEnFile = (items, enTete) => {
+    const srcs = [];
     items.forEach((it) => {
       const src = audioSrc(it.id, it.text);
-      if (src) chargerClip(src);
+      if (src && !clipsPrets[src] && fileDeFond.indexOf(src) < 0 && srcs.indexOf(src) < 0) srcs.push(src);
     });
+    fileDeFond = enTete ? srcs.concat(fileDeFond) : fileDeFond.concat(srcs);
+    avancerFile();
   };
+  const libererLaRoute = () => {
+    if (!premierClipEnRoute) return;
+    premierClipEnRoute = false;
+    avancerFile();
+  };
+  const precharger = (items) => { mettreEnFile(items, false); };
 
   const narrate = (items, onDone) => {
     stopSpeaking();
@@ -1185,7 +1218,6 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
     curDone = onDone || null;
     const enregistre = items.every((it) => audioSrc(it.id, it.text));
     let at = 0;
-    if (enregistre) precharger(items); // tous les clips de la narration partent ensemble
     const next = () => {
       if (myGen !== gen) return;
       if (at >= items.length) { settle(); return; }
@@ -1195,6 +1227,7 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
       const fallback = () => {
         if (fell || myGen !== gen) return;
         fell = true;
+        if (at === 1) libererLaRoute();
         speakSeq(sentenceChunks(it.text, true), myGen, after);
       };
       const src = enregistre ? audioSrc(it.id, it.text) : null;
@@ -1206,14 +1239,33 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
         if (myGen !== gen) return;
         a.onended = () => { if (myGen === gen) window.setTimeout(after, pause); };
         a.onerror = fallback;
+        a.onplaying = null;
         a.src = url;
         const p = a.play();
         if (p && p.then) p.then(null, fallback);
       };
+      if (!premier) { chargerClip(src).then(jouer, () => jouer(src)); return; }
       // le premier bloc part dans le geste : depuis la mémoire si son blob
-      // est déjà là, sinon en src direct ; les suivants attendent leur blob
-      if (premier) jouer(clipsPrets[src] || src);
-      else chargerClip(src).then(jouer, () => jouer(src));
+      // est déjà là, sinon en src direct — et la file de fond attend qu'il
+      // joue avant de faire partir la suite, dans l'ordre du récit
+      const laSuite = items.slice(1);
+      if (clipsPrets[src]) {
+        jouer(clipsPrets[src]);
+        mettreEnFile(laSuite, true);
+        return;
+      }
+      premierClipEnRoute = true;
+      let libere = false;
+      const liberer = () => {
+        if (libere) return;
+        libere = true;
+        if (a.onplaying === liberer) a.onplaying = null;
+        if (myGen === gen) mettreEnFile(laSuite.concat([it]), true);
+        libererLaRoute();
+      };
+      jouer(src);
+      a.onplaying = liberer;
+      window.setTimeout(liberer, 8000); // filet : un « playing » qui ne vient pas ne gèle pas la file
     };
     next();
   };
@@ -1279,7 +1331,45 @@ function toggleScnVoice() {
   try { window.localStorage.setItem('petit-labo-son', scnVoiceOn ? '1' : '0'); } catch (e) { /* tant pis */ }
   setScnVoiceUi();
   if (!narrator) return;
-  if (scnVoiceOn) tellScenario(); else narrator.stop();
+  if (scnVoiceOn) { tellScenario(); demanderRechauffement(); } else narrator.stop();
+}
+
+// Le RÉCHAUFFEMENT du premier clip (retour utilisateur, réseau faible :
+// « retard à l'allumage » sur les boutons) : le premier clip d'une narration
+// part à froid, en src direct, dans le geste — le seul remède est qu'il soit
+// déjà en mémoire AVANT le tap. Ici les trois scénarios s'ouvrent sur le
+// même bloc (« voix-chez-nous ») : quand la rangée des scénarios entre à
+// l'écran (repli sans IntersectionObserver : au premier toucher), il entre
+// dans la file de fond — voix active seulement, et une fois le manifeste
+// arrivé (sinon on repasse). Rien n'est téléchargé à l'ouverture de la page.
+let rechauffementVoulu = false;
+let rechauffementFait = false;
+function rechaufferPremiersClips() {
+  if (rechauffementFait || !rechauffementVoulu || !narrator || !scnVoiceOn) return;
+  if (!Object.keys(audioBlocs).length) return; // le manifeste n'est pas encore là
+  rechauffementFait = true;
+  const items = [];
+  for (const scn of SCENARIOS) {
+    const atH = scn.sunriseAt ? sunriseHomeH(selected.lonDeg) : scn.homeH;
+    items.push(spokenStory(scn, atH)[0]);
+  }
+  narrator.precharger(items);
+}
+function demanderRechauffement() {
+  rechauffementVoulu = true;
+  rechaufferPremiersClips();
+}
+if (narrator) {
+  if (window.IntersectionObserver) {
+    const guetteur = new IntersectionObserver((entrees) => {
+      for (const e of entrees) {
+        if (e.isIntersecting) { guetteur.disconnect(); demanderRechauffement(); return; }
+      }
+    });
+    guetteur.observe(scnBox);
+  } else {
+    document.addEventListener('pointerdown', demanderRechauffement);
+  }
 }
 scnVoiceBtn.addEventListener('click', toggleScnVoice);
 
