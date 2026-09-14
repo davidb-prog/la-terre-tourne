@@ -151,6 +151,9 @@ function buildCards() {
 // ---- la recherche de lieux : deux moteurs synchronisés, zéro appel réseau ----
 
 function choosePlace(entry, opts) {
+  // jalon « fin » (mesure.js) : pas de jeu à gagner ici — aller au bout, c'est
+  // avoir choisi une destination, par la recherche, une puce, le globe ou la carte
+  if (window.jalon) window.jalon('fin');
   selected = {
     id: 'selected', selectable: true, isDefault: false,
     name: entry.n,
@@ -1293,6 +1296,7 @@ if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
   };
   listenBtn.addEventListener('click', () => {
     if (reading) { stopSpeaking(); return; } // le onDone remet le bouton
+    if (window.jalon) window.jalon('audio'); // jalon d'engagement (mesure.js)
     startReading();
   });
   // partir ailleurs (autre application, autre onglet, écran verrouillé)
@@ -1331,7 +1335,10 @@ function toggleScnVoice() {
   try { window.localStorage.setItem('petit-labo-son', scnVoiceOn ? '1' : '0'); } catch (e) { /* tant pis */ }
   setScnVoiceUi();
   if (!narrator) return;
-  if (scnVoiceOn) { tellScenario(); demanderRechauffement(); } else narrator.stop();
+  if (scnVoiceOn) {
+    if (window.jalon) window.jalon('audio'); // le conteur des scénarios compte aussi
+    tellScenario(); demanderRechauffement();
+  } else narrator.stop();
 }
 
 // Le RÉCHAUFFEMENT du premier clip (retour utilisateur, réseau faible :
