@@ -639,6 +639,13 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 }
 .fiole-labo { width: 22px; height: 22px; flex: none; }
 .btn-menu-labo:focus-visible { outline: 2px solid var(--sun-deep); }
+/* la dernière ligne du pied : le lien « Mentions légales » du portail (une
+   seule page pour toute la famille), en petit et un peu effacé — gris
+   `--muted` plutôt que l'or des liens : obligatoire, mais il s'adresse à
+   qui vérifie qui édite le labo, jamais au parent qui vient jouer */
+.footer-mentions { margin: 14px 0 0; font-size: .8rem; }
+.footer-mentions a { color: var(--muted); }
+
 
 /* libellés empilés (grille 1×1) : le bouton garde la largeur du plus long des
    deux états — basculer pause/lecture ou la voix ne décale jamais la page */
