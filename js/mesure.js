@@ -17,11 +17,25 @@
    <code>.goatcounter.com. Le vider suffit à tout couper — le fichier ne charge
    alors plus rien, aucune requête vers un tiers, aucune trace.
 
+   Les JALONS d'engagement : en plus de la page vue, l'épisode signale deux
+   moments à GoatCounter, comptés comme des événements (chemin
+   ev/<épisode>/<jalon>, une fois par session et par chemin, comme une page) :
+   « audio », l'enfant a lancé le conteur ; « fin », il est allé au bout de
+   l'épisode (le sens exact est propre à chaque épisode : voir l'appel dans
+   main.js). Rapportés aux ouvertures de la page,
+   ils disent si l'épisode est vécu ou seulement ouvert. Un jalon est un fait
+   sur la page, jamais une mesure sur la personne : aucune durée, aucune
+   valeur individuelle, rien d'écrit chez le visiteur. main.js appelle
+   window.jalon('audio') et window.jalon('fin') ; sans compte, hors ligne ou
+   avant l'arrivée de count.js, l'appel ne fait rien.
+
    Compat mobiles anciens : pas d'optional chaining ni de nullish. */
 (function () {
   'use strict';
 
   var CODE = 'davidb-prog';
+
+  window.jalon = function () {}; // remplacé plus bas si la mesure est active
 
   if (!CODE) { return; }
 
@@ -34,4 +48,14 @@
   s.async = true;
   s.setAttribute('data-goatcounter', 'https://' + CODE + '.goatcounter.com/count');
   document.head.appendChild(s);
+
+  var envoyes = {};
+  window.jalon = function (nom) {
+    if (envoyes[nom]) { return; }
+    var gc = window.goatcounter;
+    if (!gc || typeof gc.count !== 'function') { return; } // count.js pas encore là
+    envoyes[nom] = true;
+    var episode = window.location.pathname.split('/')[1] || 'episode';
+    gc.count({ path: 'ev/' + episode + '/' + nom, title: 'Jalon ' + nom, event: true });
+  };
 })();
