@@ -279,7 +279,7 @@ test/voix.test.mjs    tests Node du conteur : textes oraux, couverture, manifest
 - 🌒 [La mécanique des éclipses](https://petit-labo.fr/eclipse-explorer/) — les deux
   coïncidences qui fabriquent une éclipse.
 - 🌅 [Où va le Soleil la nuit ?](https://petit-labo.fr/ou-va-le-soleil/) — le Soleil
-  ne bouge pas : c'est la Terre qui tourne, et la nuit c'est quand ta maison lui tourne le dos.
+  ne s'en va pas : c'est la Terre qui tourne, et la nuit c'est quand ta maison lui tourne le dos.
 - 🌍 **Quelle heure est-il là-bas ?** (ce site) — la Terre tourne, et il n'est pas la même
   heure partout.
 - 🌙 [Pourquoi la Lune change de forme ?](https://petit-labo.fr/la-lune-change-de-forme/) —
