@@ -372,6 +372,15 @@ en-tête + scène qui tiennent dans l'écran (ou le plancher atteint). Lancer le
 serveurs avant : `python3 -m http.server 8123` sur le site. Chromium : `chromium.launch()`
 avec repli `executablePath: '/opt/pw-browsers/chromium'`.
 
+## Artifact de test familial
+
+`node tools/build-artifact.mjs` écrit `tools/artifact.html` (gitignoré) : une page unique
+auto-contenue — CSS, police, JS bundlé, les 165 clips en data URI dans
+`window.__VOIX_MANIFESTE`, sans `mesure.js`. À publier telle quelle avec l'outil Artifact,
+**au même URL à chaque itération** : <https://claude.ai/code/artifact/1W6UpeNKKUVCHgHrUiM3SP>
+(depuis une autre session : passer cette URL au paramètre `url`). Jamais de fichiers à côté
+de la page : sur claude.ai, `fetch` du manifeste échoue en silence et tout retombe en synthèse.
+
 ## Conventions
 
 - Textes UI et commentaires en français ; apostrophe typographique « ' » dans les chaînes UI.
